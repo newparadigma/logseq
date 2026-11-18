@@ -13,17 +13,16 @@ importers:
         version: 12.8.0
     devDependencies:
       '@logseq/nbb-logseq':
-        specifier: git+https://github.com/logseq/nbb-logseq.git#feat-db-v34
-        version: https://codeload.github.com/logseq/nbb-logseq/tar.gz/4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb
+        specifier: file:../vendor/nbb-logseq
+        version: file:../vendor/nbb-logseq
       fs-extra:
         specifier: ^11.3.4
         version: 11.3.4
 
 packages:
 
-  '@logseq/nbb-logseq@https://codeload.github.com/logseq/nbb-logseq/tar.gz/4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb':
-    resolution: {tarball: https://codeload.github.com/logseq/nbb-logseq/tar.gz/4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb}
-    version: 1.2.173-feat-db-v34
+  '@logseq/nbb-logseq@file:../vendor/nbb-logseq':
+    resolution: {directory: ../vendor/nbb-logseq, type: directory}
     engines: {node: '>=20.10.0'}
     hasBin: true
 
@@ -176,7 +175,7 @@ packages:
 
 snapshots:
 
-  '@logseq/nbb-logseq@https://codeload.github.com/logseq/nbb-logseq/tar.gz/4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb':
+  '@logseq/nbb-logseq@file:../vendor/nbb-logseq':
     dependencies:
       import-meta-resolve: 4.1.0
 

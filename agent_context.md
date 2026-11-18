@@ -7,12 +7,13 @@
 
 ## Status (as of 2026-11-18)
 - Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
-- Not done yet: the GitHub fork of `logseq/logseq` and the personal branch, the macOS build (needs a Mac; never built so far), and vendoring of the git dependencies.
+- Done: the GitHub fork of `logseq/logseq` (reported by the user).
+- Done: vendored 17 Git dependencies into `deps/vendor/`, including development/test tooling, transitive Git dependencies, and iOS Drops. See "Vendored dependencies" below.
+- Not done yet: confirmation of the personal branch and the first macOS build.
 - Suggested next steps:
-  1. The user forks `logseq/logseq` and creates the branch `personal` from tag `2.0.2`.
-  2. Vendor the git dependencies into the fork (optional; see below).
-  3. Build the unsigned macOS app.
-  4. Point the server's `.env` at the fork and the `personal` branch.
+  1. Confirm the fork URL, personal branch, and intended base revision.
+  2. Build the unsigned macOS app.
+  3. Point the server's `.env` at the fork and the personal branch.
 
 ## License and repositories
 - `logseq/logseq` is **AGPL-3.0** (`LICENSE.md`); `libs/cljs-sdk` is MIT. Private modification and use carry no obligations.
@@ -43,9 +44,23 @@
 | logseq/nbb-logseq (npm git dep for deps/* tests and scripts; branch `feat-db-v34`, commit 4d9f1382...) | MIT | yes |
 
 - When forking these, copy all branches; `gh repo fork` copies all branches by default.
-- Alternative the user was offered: **vendor** them into the fork (`deps/vendor/<name>` + `:local/root`), keeping each library's LICENSE file. Result: one self-contained repo. This has not been decided yet.
+- Decision: vendor Git dependencies into this repository (`deps/vendor/<name>` + `:local/root`) instead of maintaining separate forks. Implemented on 2026-11-18; npm/Maven packages remain external.
 - Logseq npm packages (`mldoc` AGPL, `@logseq/react-tweet-embed`, `@logseq/simple-wave-record`) come from the npm registry, where published versions are immutable. Fork them only if they need fixes.
-- iOS pods come from node_modules and Android deps from Maven/Google; there are no git deps there.
+- Correction: iOS also had a direct Git dependency on `omaralbeik/Drops` at tag `1.7.0`. It is now vendored and referenced through a local Podfile path. Other iOS pods come from node_modules/registries; Android dependencies use Maven/Google.
+
+## Vendored dependencies (2026-11-18)
+- Source checkout: `8bcad1f273f9ebced4d5bf161ccbee29ff136ff3`; no dependency version upgrade was performed. This checkout has not been verified as tag `2.0.2`.
+- `deps/vendor/manifest.json` records the original repositories, pinned refs, full commit SHAs, archive SHA-256 values, and retained paths. `deps/vendor/README.md` explains scope and maintenance.
+- 17 snapshots: datascript, hsx, rfx, cljs-time, clj-fractional-indexing, logseq-schema, glogi, malli, cljc-fsrs, bb-tasks, carve, clj-kondo-bb, nbb-logseq, nbb-test-runner, test-runner, wally, Drops.
+- The earlier dependency table omitted bb-tasks, nbb-test-runner, test-runner, Drops, and transitive carve/clj-kondo-bb. Treat the vendor manifest as the source of truth for the current checkout.
+- Clojure, Babashka, and nbb manifests use local paths, including transitive Git dependencies. Upstream development aliases/examples/tests are omitted from the library snapshots; runtime source and resources are retained unchanged.
+- nbb-logseq uses its existing compiled JavaScript and local pnpm `file:` dependencies in six consumers. Its `import-meta-resolve` constraint is pinned to the existing locked version `4.1.0`; the six lockfiles retain all other package versions.
+- Drops keeps its original podspec, Swift sources, and license. Podfile/Podfile.lock use a local path; the Podfile checksum is updated.
+- Third-party snapshots are excluded from project translation and spelling checks.
+- Validation passed: application, server, and app E2E Maven dependency resolution; all six affected npm frozen-lockfile installs; common-library suite (27 tests, 153 assertions, no failures); semantic comparison of 44 EDN manifests and 76 local paths; 216 copied files match their pinned archives byte for byte and all vendor files are visible to git. All six lockfiles preserve registry package versions and dependency snapshots. TOML/Ruby/YAML syntax and local Drops configuration checks pass.
+- The sync-server release build completed (266 files, 161 compiled). It reported 24 type-inference warnings in unchanged vendored datascript/cljs-time sources. Full macOS/iOS packaging and browser E2E execution have not been run.
+- Tooling: `spec-dev-tool` was not installed. Clojure CLI 1.12.4.1618, Babashka 1.12.215, and pnpm 10.33.0 were downloaded to `/tmp/logseq-vendor-downloads/` for validation. The available Node version was 26.8.1; the server release compiler used installed JDK 25. The normal target toolchain remains Node 24 / Java 21. Installed node_modules and ignored build caches remain local.
+- npm/Maven packages, toolchains, and runtime binaries still use external sources; this change does not provide a fully offline build or replace account authentication.
 
 ## Auth and external services (important)
 - Sync requires a **Logseq account**. The app's sign-in is hardcoded to Logseq's AWS Cognito via aws-amplify:

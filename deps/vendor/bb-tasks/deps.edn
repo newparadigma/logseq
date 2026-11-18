@@ -1,0 +1,7 @@
+{:deps
+ {djblue/portal {:mvn/version "0.58.5"},
+  borkdude/carve
+  {:local/root "../carve", :exclusions [clj-kondo/clj-kondo]},
+  me.tagaholic/dlint {:mvn/version "0.1.0"},
+  io.replikativ/datalog-parser {:mvn/version "0.2.30"}},
+ :paths ["src"]}

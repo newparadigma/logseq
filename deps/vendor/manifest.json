@@ -1,0 +1,230 @@
+{
+  "dependencies": [
+    {
+      "name": "malli",
+      "repository": "https://github.com/metosin/malli",
+      "ref": "52ea58a36ff5172b38dfc526ca638afa7226a4a0",
+      "commit": "52ea58a36ff5172b38dfc526ca638afa7226a4a0",
+      "archive-sha256": "1d2b26937b594282774448915eae62adbd92e33f2c99237673b485964268cd40",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "resources",
+        "src"
+      ]
+    },
+    {
+      "name": "bb-tasks",
+      "repository": "https://github.com/logseq/bb-tasks",
+      "ref": "7cc218286c03f093996539b8195de56a0ec5df6a",
+      "commit": "7cc218286c03f093996539b8195de56a0ec5df6a",
+      "archive-sha256": "d5c9ec5f895199e65f3717799be29cbef646329a3e4bbc52347c9e54d83f2f4d",
+      "paths": [
+        "LICENSE.md",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "hsx",
+      "repository": "https://github.com/logseq/hsx",
+      "ref": "21615ffa2aa530cc830e3464b793a53ef4fdd18c",
+      "commit": "21615ffa2aa530cc830e3464b793a53ef4fdd18c",
+      "archive-sha256": "cebb7881ae33e9a7e1f4d641afded5dccd1dc76e729f9f47f45c986f00a77aca",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "rfx",
+      "repository": "https://github.com/logseq/rfx",
+      "ref": "d37aaceb37fcaf969c5cd04646dfdb985d65d3c2",
+      "commit": "d37aaceb37fcaf969c5cd04646dfdb985d65d3c2",
+      "archive-sha256": "d94633f74ed07a7a4534b7d0697960127b67d6acc812fd8620d4e02e87a3bfbd",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "modules",
+        "resources"
+      ]
+    },
+    {
+      "name": "datascript",
+      "repository": "https://github.com/logseq/datascript",
+      "ref": "3f141af97b70e1f14c65eaa119acd822ebece37e",
+      "commit": "3f141af97b70e1f14c65eaa119acd822ebece37e",
+      "archive-sha256": "271852a7898eda4522210bb9625c76df2d850156d1451d0c5b27c976bea6d9dd",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "cljs-time",
+      "repository": "https://github.com/logseq/cljs-time",
+      "ref": "5704fbf48d3478eedcf24d458c8964b3c2fd59a9",
+      "commit": "5704fbf48d3478eedcf24d458c8964b3c2fd59a9",
+      "archive-sha256": "9d9108177d83383788c154895c4c825301d0176d0201de7f73f96eb08ebdba4a",
+      "paths": [
+        "README.md",
+        "deps.edn",
+        "resources",
+        "src"
+      ]
+    },
+    {
+      "name": "glogi",
+      "repository": "https://github.com/lambdaisland/glogi",
+      "ref": "30328a045141717aadbbb693465aed55f0904976",
+      "commit": "30328a045141717aadbbb693465aed55f0904976",
+      "archive-sha256": "fcc7c8380603aab961b677b97eae06b5a569f72fc214b26f01df007b46084922",
+      "paths": [
+        "LICENSE.txt",
+        "README.md",
+        "deps.edn",
+        "resources",
+        "src"
+      ]
+    },
+    {
+      "name": "logseq-schema",
+      "repository": "https://github.com/logseq/logseq-schema",
+      "ref": "6eeb51cd6d80bbffa0873c1e79790dc1f4ff68cf",
+      "commit": "6eeb51cd6d80bbffa0873c1e79790dc1f4ff68cf",
+      "archive-sha256": "55c1e36e6b9c37f5fe9ccd68e0d97e04929d212c3a0a6ef59979426960a00756",
+      "paths": [
+        "deps.edn",
+        "readme.md",
+        "src"
+      ]
+    },
+    {
+      "name": "wally",
+      "repository": "https://github.com/logseq/wally",
+      "ref": "8571fae7c51400ac61c8b1026cbfba68279bc461",
+      "commit": "8571fae7c51400ac61c8b1026cbfba68279bc461",
+      "archive-sha256": "cd27ba86704c3c5488830609d0808f02009741426c6c2ad3fca73552c540cb02",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "clj-fractional-indexing",
+      "repository": "https://github.com/logseq/clj-fractional-indexing",
+      "ref": "1087f0fb18aa8e25ee3bbbb0db983b7a29bce270",
+      "commit": "1087f0fb18aa8e25ee3bbbb0db983b7a29bce270",
+      "archive-sha256": "ac64bd07fe0cde1f365fe2d87b1e98fd3cbadc8e1aefc359fb92fc45ba940ee9",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "cljc-fsrs",
+      "repository": "https://github.com/open-spaced-repetition/cljc-fsrs",
+      "ref": "eeef3520df664e51c3d0ba2031ec2ba071635442",
+      "commit": "eeef3520df664e51c3d0ba2031ec2ba071635442",
+      "archive-sha256": "732f5e179bc901e4a1980c7ffd198137e44b77c51c52551131611e2deb9443c1",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "nbb-test-runner",
+      "repository": "https://github.com/nextjournal/nbb-test-runner",
+      "ref": "b379325cfa5a3306180649da5de3bf5166414e71",
+      "commit": "b379325cfa5a3306180649da5de3bf5166414e71",
+      "archive-sha256": "ce8ed79b8962cc40123618ff30fbf4695b8cac842c7fdd694f428dcaf70a6b76",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    },
+    {
+      "name": "test-runner",
+      "repository": "https://github.com/cognitect-labs/test-runner",
+      "ref": "dfb30dd",
+      "commit": "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73",
+      "archive-sha256": "99f6afd7fce33c541d2bccf0002901c6e13ef923b9c7939b83015d45ff91e5bf",
+      "paths": [
+        "LICENSE",
+        "deps.edn",
+        "readme.md",
+        "src"
+      ]
+    },
+    {
+      "name": "nbb-logseq",
+      "repository": "https://github.com/logseq/nbb-logseq",
+      "ref": "4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb",
+      "commit": "4d9f1382ce2cec6f39bf12df49ba425f1bd5f3fb",
+      "archive-sha256": "668c3b6a2ae163ae8a858accc07ad841fc5e8f9c5a2ee8a58601bb2b27e3ac90",
+      "paths": [
+        "LICENSE.md",
+        "README.md",
+        "cli.js",
+        "index.mjs",
+        "lib",
+        "package.json"
+      ]
+    },
+    {
+      "name": "Drops",
+      "repository": "https://github.com/omaralbeik/Drops",
+      "ref": "1.7.0",
+      "commit": "a183ee6f79f21c940092a19c2cba756555422371",
+      "archive-sha256": "db41603b4043b0f63e54ab72c4a1923a3ed2477e011ef01cf0abbb32db52bfe0",
+      "paths": [
+        "Drops.podspec",
+        "LICENSE",
+        "README.md",
+        "Sources"
+      ]
+    },
+    {
+      "name": "carve",
+      "repository": "https://github.com/borkdude/carve",
+      "ref": "fdd1d0bc432f63db69e3a72167ef5e46f10dfba7",
+      "commit": "fdd1d0bc432f63db69e3a72167ef5e46f10dfba7",
+      "archive-sha256": "ef7502d7fcbbfc3411e6504652c57d91c7508fd0d1bfa9ed179570f29de6e45a",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "resources",
+        "src"
+      ]
+    },
+    {
+      "name": "clj-kondo-bb",
+      "repository": "https://github.com/clj-kondo/clj-kondo-bb",
+      "ref": "adfc7df",
+      "commit": "adfc7df0f8d18e7de0a730d35a946ec3ba4c4a16",
+      "archive-sha256": "e682ca3e017ec86fd4a5925b9a1990607d672ceb4d495fc29600970e95668423",
+      "paths": [
+        "LICENSE",
+        "README.md",
+        "deps.edn",
+        "src"
+      ]
+    }
+  ]
+}

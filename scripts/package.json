@@ -7,7 +7,7 @@
     "test": "pnpm exec nbb-logseq -cp test -m logseq.tasks.test-runner"
   },
   "devDependencies": {
-    "@logseq/nbb-logseq": "git+https://github.com/logseq/nbb-logseq.git#feat-db-v34"
+    "@logseq/nbb-logseq": "file:../deps/vendor/nbb-logseq"
   },
   "dependencies": {
     "better-sqlite3": "12.8.0",

@@ -20,6 +20,7 @@ tne = "tne"
 Damon = "Damon"
 [files]
 extend-exclude = ["resources/*",
+                  "deps/vendor/**",
                   "src/resources/*",
                   "scripts/resources/*",
                   "src/test/fixtures/*",

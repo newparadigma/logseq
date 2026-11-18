@@ -87,6 +87,7 @@ ui_attributes = [
 # Glob patterns for files to skip during lint.
 # These patterns are also applied when using --git-changed.
 exclude_patterns = [
+  "deps/vendor/**", # Third-party library snapshots
   "**/test/**",
   "**/node_modules/**",
   "**/static/**",
@@ -311,6 +312,7 @@ ignore_context_functions = [
 # NOTE: **/profiler.cljs is intentionally NOT excluded here so that translation
 # key references inside profiler.cljs are detected and not reported as unused.
 exclude_patterns = [
+  "deps/vendor/**", # Third-party library snapshots
   "**/test/**",
   "**/tests/**",
   "**/dev/**",

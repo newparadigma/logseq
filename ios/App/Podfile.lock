@@ -65,7 +65,7 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/.pnpm/@capacitor+splash-screen@8.0.1_@capacitor+core@8.3.1/node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/.pnpm/@capacitor+status-bar@8.0.2_@capacitor+core@8.3.1/node_modules/@capacitor/status-bar`)"
   - "CapgoCapacitorNavigationBar (from `../../node_modules/.pnpm/@capgo+capacitor-navigation-bar@8.1.5_@capacitor+core@8.3.1/node_modules/@capgo/capacitor-navigation-bar`)"
-  - Drops (from `https://github.com/omaralbeik/Drops.git`, tag `1.7.0`)
+  - Drops (from `../../deps/vendor/Drops`)
   - "JcesarmobileSslSkip (from `../../node_modules/.pnpm/@jcesarmobile+ssl-skip@0.9.0/node_modules/@jcesarmobile/ssl-skip`)"
   - "SendIntent (from `../../node_modules/.pnpm/send-intent@7.0.0_@capacitor+core@8.3.1/node_modules/send-intent`)"
 
@@ -113,17 +113,11 @@ EXTERNAL SOURCES:
   CapgoCapacitorNavigationBar:
     :path: "../../node_modules/.pnpm/@capgo+capacitor-navigation-bar@8.1.5_@capacitor+core@8.3.1/node_modules/@capgo/capacitor-navigation-bar"
   Drops:
-    :git: https://github.com/omaralbeik/Drops.git
-    :tag: 1.7.0
+    :path: "../../deps/vendor/Drops"
   JcesarmobileSslSkip:
     :path: "../../node_modules/.pnpm/@jcesarmobile+ssl-skip@0.9.0/node_modules/@jcesarmobile/ssl-skip"
   SendIntent:
     :path: "../../node_modules/.pnpm/send-intent@7.0.0_@capacitor+core@8.3.1/node_modules/send-intent"
-
-CHECKOUT OPTIONS:
-  Drops:
-    :git: https://github.com/omaralbeik/Drops.git
-    :tag: 1.7.0
 
 SPEC CHECKSUMS:
   AparajitaCapacitorSecureStorage: 8128d05cafcb13b00448e20fb388a0edccd44b12
@@ -151,6 +145,6 @@ SPEC CHECKSUMS:
   KeychainSwift: 4a71a45c802fd9e73906457c2dcbdbdc06c9419d
   SendIntent: 8a6f646a4489f788d253ffbd1082a98ea388d870
 
-PODFILE CHECKSUM: cbe0ea6549f3dd4fc86276229afae9a13b3fc09c
+PODFILE CHECKSUM: e06724383bdd8eb3c6a6344817ac9abeaa695839
 
 COCOAPODS: 1.16.2

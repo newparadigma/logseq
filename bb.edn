@@ -1,13 +1,11 @@
 {:paths ["scripts/src" "src/main" "src/resources"]
  :deps
  {metosin/malli
-  {:git/url "https://github.com/metosin/malli"
-   :sha     "52ea58a36ff5172b38dfc526ca638afa7226a4a0"}
+  {:local/root "deps/vendor/malli"}
   borkdude/rewrite-edn {:mvn/version "0.5.9"}
   logseq/bb-tasks
   #_{:local/root "../bb-tasks"}
-  {:git/url "https://github.com/logseq/bb-tasks"
-   :git/sha "7cc218286c03f093996539b8195de56a0ec5df6a"}
+  {:local/root "deps/vendor/bb-tasks"}
   logseq/graph-parser
   {:local/root "deps/graph-parser"}
   org.clj-commons/digest

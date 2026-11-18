@@ -2,13 +2,10 @@
  :deps
  {org.clojure/clojure                   {:mvn/version "1.12.4"}
   org.clojure/clojurescript             {:mvn/version "1.12.134"}
-  io.factorhouse/hsx                    {:git/url "https://github.com/logseq/hsx"
-                                         :sha     "21615ffa2aa530cc830e3464b793a53ef4fdd18c"}
-  io.github.logseq/rfx                  {:git/url "https://github.com/logseq/rfx.git"
-                                         :git/sha "d37aaceb37fcaf969c5cd04646dfdb985d65d3c2"}
+  io.factorhouse/hsx                    {:local/root "deps/vendor/hsx"}
+  io.github.logseq/rfx                  {:local/root "deps/vendor/rfx"}
 
-  datascript/datascript                 {:git/url "https://github.com/logseq/datascript" ;; fork
-                                         :sha     "3f141af97b70e1f14c65eaa119acd822ebece37e"}
+  datascript/datascript                 {:local/root "deps/vendor/datascript"}
   ;; datascript/datascript                 {:local/root "../../datascript"}
 
   datascript-transit/datascript-transit {:mvn/version "0.3.0"}
@@ -20,8 +17,7 @@
   cljs-bean/cljs-bean                   {:mvn/version "1.9.0"}
   prismatic/dommy                       {:mvn/version "1.1.0"}
   org.clojure/core.match                {:mvn/version "1.1.0"}
-  com.andrewmcveigh/cljs-time           {:git/url "https://github.com/logseq/cljs-time" ;; fork
-                                         :sha     "5704fbf48d3478eedcf24d458c8964b3c2fd59a9"}
+  com.andrewmcveigh/cljs-time           {:local/root "deps/vendor/cljs-time"}
   ;; TODO: delete cljs-drag-n-drop and use dnd-kit
   cljs-drag-n-drop/cljs-drag-n-drop     {:mvn/version "0.1.0"}
   cljs-http/cljs-http                   {:mvn/version "0.1.49"}
@@ -34,8 +30,7 @@
   org.clojure/core.async                {:mvn/version "1.8.741"}
   thheller/shadow-cljs                  {:mvn/version "3.4.4"}
   expound/expound                       {:mvn/version "0.9.0"}
-  com.lambdaisland/glogi                {:git/url "https://github.com/lambdaisland/glogi"
-                                         :git/sha "30328a045141717aadbbb693465aed55f0904976"}
+  com.lambdaisland/glogi                {:local/root "deps/vendor/glogi"}
   camel-snake-kebab/camel-snake-kebab   {:mvn/version "0.4.3"}
   instaparse/instaparse                 {:mvn/version "1.5.0"}
   org.clojars.mmb90/cljs-cache          {:mvn/version "0.1.4"}
@@ -46,16 +41,13 @@
   logseq/db-sync                        {:local/root "deps/db-sync"}
   logseq/publishing                     {:local/root "deps/publishing"}
   logseq/shui                           {:local/root "deps/shui"}
-  metosin/malli                         {:git/url "https://github.com/metosin/malli"
-                                         :sha     "52ea58a36ff5172b38dfc526ca638afa7226a4a0"}
+  metosin/malli                         {:local/root "deps/vendor/malli"}
   com.cognitect/transit-cljs            {:mvn/version "0.8.280"}
 
-  io.github.open-spaced-repetition/cljc-fsrs {:git/sha "eeef3520df664e51c3d0ba2031ec2ba071635442"
-                                              :git/url "https://github.com/open-spaced-repetition/cljc-fsrs"}
+  io.github.open-spaced-repetition/cljc-fsrs {:local/root "deps/vendor/cljc-fsrs"}
   tick/tick                              {:mvn/version "1.0"}
 
-  logseq/logseq-schema                   {:git/url "https://github.com/logseq/logseq-schema"
-                                          :git/sha "6eeb51cd6d80bbffa0873c1e79790dc1f4ff68cf"}}
+  logseq/logseq-schema                   {:local/root "deps/vendor/logseq-schema"}}
 
  :aliases {:cljs {:extra-paths ["src/dev-cljs/" "src/test/" "src/electron/"]
                   :extra-deps  {org.clojure/tools.namespace      {:mvn/version "1.5.0"}

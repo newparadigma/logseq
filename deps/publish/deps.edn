@@ -1,11 +1,9 @@
 {:paths ["src" "test" "../../resources"]
  :deps
  {org.clojure/clojure                   {:mvn/version "1.12.4"}
-  io.factorhouse/hsx                    {:git/url "https://github.com/logseq/hsx"
-                                         :sha     "21615ffa2aa530cc830e3464b793a53ef4fdd18c"}
+  io.factorhouse/hsx                    {:local/root "../vendor/hsx"}
 
-  datascript/datascript                 {:git/url "https://github.com/logseq/datascript" ;; fork
-                                         :sha     "3f141af97b70e1f14c65eaa119acd822ebece37e"}
+  datascript/datascript                 {:local/root "../vendor/datascript"}
   datascript-transit/datascript-transit {:mvn/version "0.3.0"
                                          :exclusions [datascript/datascript]}
   funcool/promesa                       {:mvn/version "11.0.678"}

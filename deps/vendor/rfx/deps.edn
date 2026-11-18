@@ -1,0 +1,4 @@
+{:paths ["modules/rfx/src" "modules/re-frame-bridge/src"],
+ :deps
+ {org.clojure/clojure {:mvn/version "1.12.0"},
+  org.clojure/tools.logging {:mvn/version "1.3.0"}}}

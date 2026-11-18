@@ -1,0 +1,7 @@
+{:paths ["src"],
+ :deps
+ {clj-kondo/clj-kondo {:mvn/version "2023.01.20"},
+  io.github.clj-kondo/clj-kondo-bb {:local/root "../clj-kondo-bb"},
+  rewrite-clj/rewrite-clj {:mvn/version "1.1.45"},
+  org.babashka/cli {:mvn/version "0.6.44"}},
+ :tools/usage {:ns-default carve.api}}

@@ -1,0 +1,6 @@
+{:paths ["src"],
+ :deps
+ {metosin/malli {:mvn/version "0.16.1"},
+  com.lambdaisland/glogi {:local/root "../glogi"},
+  logseq/clj-fractional-indexing
+  {:local/root "../clj-fractional-indexing"}}}

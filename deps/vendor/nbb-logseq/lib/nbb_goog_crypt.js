@@ -1,0 +1,13 @@
+import { $APP, shadow$provide } from "./nbb_core.js";
+const shadow_esm_import = function(x) { return import(x) };
+var $pb=new $APP.l(null,"xorByteArray","xorByteArray",-1522110755,null),aqb=new $APP.l(null,"stringToByteArray","stringToByteArray",-2102733163,null),bqb=new $APP.l(null,"byteArrayToString","byteArrayToString",-356221137,null),cqb=new $APP.l(null,"byteArrayToHex","byteArrayToHex",864272229,null),dqb=new $APP.l(null,"stringToUtf8ByteArray","stringToUtf8ByteArray",1367479552,null),eqb=new $APP.l(null,"hexToByteArray","hexToByteArray",107461068,null),fqb=new $APP.l(null,"utf8ByteArrayToString","utf8ByteArrayToString",
+1858630322,null);/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+var B9={Nl:!1,ci:{}};B9.ci.Pn=function(a){$APP.Gv.setTimeout(()=>{throw a;},0)};B9.ci.Sl=!1;B9.vo=function(a){return B9.Ll(a,!0)};B9.Ll=function(a,b){for(var c=[],d=0,e=0;e<a.length;e++){var f=a.charCodeAt(e);if(f>255){var k=Error("go/unicode-to-byte-error");if(B9.ci.Sl||b)throw k;B9.Nl&&B9.ci.Pn(k);c[d++]=f&255;f>>=8}c[d++]=f}return c};B9.Yl=function(a){return B9.Wl(a)};
+B9.Wl=function(a){if(a.length<=8192)return String.fromCharCode.apply(null,a);for(var b="",c=0;c<a.length;c+=8192)b+=String.fromCharCode.apply(null,Array.prototype.slice.call(a,c,c+8192));return b};B9.Xl=function(a,b){return Array.prototype.map.call(a,function(c){c=c.toString(16);return c.length>1?c:"0"+c}).join(b||"")};B9.Bm=function(a){for(var b=[],c=0;c<a.length;c+=2)b.push(parseInt(a.substring(c,c+2),16));return b};B9.Kn=function(a){return B9.On(a)};
+B9.On=function(a){for(var b=[],c=0,d=0;d<a.length;d++){var e=a.charCodeAt(d);e<128?b[c++]=e:(e<2048?b[c++]=e>>6|192:((e&64512)==55296&&d+1<a.length&&(a.charCodeAt(d+1)&64512)==56320?(e=65536+((e&1023)<<10)+(a.charCodeAt(++d)&1023),b[c++]=e>>18|240,b[c++]=e>>12&63|128):b[c++]=e>>12|224,b[c++]=e>>6&63|128),b[c++]=e&63|128)}return b};B9.Sn=function(a){return B9.Zl(a)};
+B9.Zl=function(a){for(var b=[],c=0,d=0;c<a.length;){var e=a[c++];if(e<128)b[d++]=String.fromCharCode(e);else if(e>191&&e<224){var f=a[c++];b[d++]=String.fromCharCode((e&31)<<6|f&63)}else if(e>239&&e<365){f=a[c++];var k=a[c++],n=a[c++];e=((e&7)<<18|(f&63)<<12|(k&63)<<6|n&63)-65536;b[d++]=String.fromCharCode(55296+(e>>10));b[d++]=String.fromCharCode(56320+(e&1023))}else f=a[c++],k=a[c++],b[d++]=String.fromCharCode((e&15)<<12|(f&63)<<6|k&63)}return b.join("")};
+B9.Wn=function(a,b){for(var c=[],d=0;d<a.length;d++)c.push(a[d]^b[d]);return c};$APP.FM.g($APP.lC,null);$APP.Tv(new $APP.F(null,2,[$APP.$u,new $APP.F(null,1,[$APP.lC,B9],null),$APP.Oq,new $APP.F(null,1,[$APP.lC,new $APP.F(null,7,[cqb,B9.Xl,bqb,B9.Yl,eqb,B9.Bm,aqb,B9.Ll,dqb,B9.Kn,fqb,B9.Sn,$pb,B9.Wn],null)],null)],null));
