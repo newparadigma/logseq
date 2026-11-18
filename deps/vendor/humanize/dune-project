@@ -1,0 +1,26 @@
+(lang dune 3.23)
+
+(using melange 0.1)
+
+(name humanize)
+
+(generate_opam_files true)
+
+(authors "rcmerci")
+
+(maintainers "rcmerci")
+
+(package
+ (name humanize)
+ (synopsis "Human-readable strings for numbers, lists, filesizes, and time spans")
+ (description
+  "An OCaml port inspired by clj-commons/humanize. It formats numbers, file sizes, English lists, plural nouns, durations, and relative datetimes.")
+ (license MIT)
+ (source
+  (github rcmerci/humanize))
+ (depends
+  (ocaml
+   (>= 5.0))
+  melange)
+ (tags
+  (humanize formatting numbers time text ocaml melange)))

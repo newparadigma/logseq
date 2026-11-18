@@ -225,6 +225,87 @@
         "deps.edn",
         "src"
       ]
+    },
+    {
+      "name": "melange-edn",
+      "repository": "https://github.com/logseq/melange-edn",
+      "ref": "main",
+      "commit": "3cb79f278e972388a0a2b2ea1caec7a008a0b956",
+      "archive-sha256": "6c52b0cffd59249a2a0ad994d511370bd7189beecec888ebe5eee1f11b13e504",
+      "paths": [
+        ".gitignore",
+        "CHANGES.md",
+        "LICENSE",
+        "benchmark",
+        "dune-project",
+        "lib",
+        "lib_jsoo",
+        "lib_melange",
+        "lib_native",
+        "melange-edn-core.opam",
+        "melange-edn-jsoo.opam",
+        "melange-edn-melange.opam",
+        "melange-edn-native.opam",
+        "melange-edn-ppx.opam",
+        "package-lock.json",
+        "package.json",
+        "ppx",
+        "readme.md",
+        "test"
+      ]
+    },
+    {
+      "name": "melange-transit",
+      "repository": "https://github.com/logseq/melange-transit",
+      "ref": "main",
+      "commit": "38ca92e299cf34c897d9a44091fe86e55b1315ee",
+      "archive-sha256": "6b29795a413e44dfc20479159d9238af36e6e21ad6f0cd0b8e1ef7c875bfc846",
+      "paths": [
+        ".gitignore",
+        "README.md",
+        "dune-project",
+        "lib",
+        "melange-transit-core.opam",
+        "melange-transit-jsoo.opam",
+        "melange-transit-melange.opam",
+        "melange-transit-native.opam",
+        "package-lock.json",
+        "package.json",
+        "test"
+      ]
+    },
+    {
+      "name": "rrbvec",
+      "repository": "https://github.com/logseq/rrbvec",
+      "ref": "main",
+      "commit": "dd5ce904f91d53235b5136f7a771f3f074c3971d",
+      "archive-sha256": "aed0c632d3612edbc925f24a8d30ad0f5ec16e5d202996872708c95c57b69e35",
+      "paths": [
+        ".gitignore",
+        "README.md",
+        "bin",
+        "dune-project",
+        "lib",
+        "rrbvec.opam",
+        "test"
+      ]
+    },
+    {
+      "name": "humanize",
+      "repository": "https://github.com/rcmerci/humanize",
+      "ref": "main",
+      "commit": "747879af704dff4dd1897bc0f9a53a361071371c",
+      "archive-sha256": "1762d6cf831a4a26a60be04f303733853d2632a4ab31f50214c4fc4b9c4e458a",
+      "paths": [
+        ".gitignore",
+        ".ocamlformat",
+        "README.md",
+        "bin",
+        "dune-project",
+        "humanize.opam",
+        "lib",
+        "test"
+      ]
     }
   ]
 }

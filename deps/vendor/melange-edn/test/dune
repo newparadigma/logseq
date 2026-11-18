@@ -1,0 +1,163 @@
+(library
+ (name test_support)
+ (modules test_support)
+ (modes :standard melange))
+
+(test
+ (name test_core_package)
+ (package melange-edn-core)
+ (modules test_core_package)
+ (libraries melange-edn-core test_support))
+
+(test
+ (name test_core)
+ (package melange-edn-native)
+ (modules test_core)
+ (libraries alcotest melange-edn-native))
+
+(test
+ (name test_json)
+ (package melange-edn-native)
+ (modules test_json)
+ (libraries melange-edn-native test_support))
+
+(test
+ (name test_signature_native)
+ (package melange-edn-native)
+ (modules test_signature_native)
+ (libraries melange-edn-core melange-edn-native test_support))
+
+(test
+ (name test_ppx_native)
+ (package melange-edn-ppx)
+ (modules test_ppx_native)
+ (libraries melange-edn-core test_support)
+ (preprocess
+  (pps melange-edn-ppx)))
+
+(executable
+ (name test_jsoo)
+ (modules test_jsoo)
+ (modes js)
+ (libraries js_of_ocaml melange-edn-jsoo test_support))
+
+(executable
+ (name test_signature_jsoo)
+ (modules test_signature_jsoo)
+ (modes js)
+ (libraries melange-edn-core melange-edn-jsoo test_support))
+
+(executable
+ (name test_ppx_jsoo)
+ (modules test_ppx_jsoo)
+ (modes js)
+ (libraries melange-edn-core test_support)
+ (preprocess
+  (pps melange-edn-ppx)))
+
+(melange.emit
+ (target melange_edn_melange)
+ (package melange-edn-melange)
+ (modules test_melange)
+ (module_systems commonjs)
+ (libraries melange-edn-melange test_support))
+
+(melange.emit
+ (target melange_edn_signature)
+ (package melange-edn-melange)
+ (modules test_signature_melange)
+ (module_systems commonjs)
+ (libraries melange-edn-melange test_support))
+
+(melange.emit
+ (target melange_edn_ppx)
+ (package melange-edn-ppx)
+ (modules test_ppx_melange)
+ (module_systems commonjs)
+ (libraries melange-edn-melange test_support)
+ (preprocess
+  (pps melange-edn-ppx)))
+
+(executable
+ (name test_ppx_driver)
+ (modules test_ppx_driver)
+ (libraries melange-edn-ppx ppxlib)
+ (link_flags -linkall))
+
+(rule
+ (alias runtest)
+ (package melange-edn-ppx)
+ (deps
+  test_ppx_compile_failures.sh
+  ppx_failures/empty.ml
+  ppx_failures/malformed.ml
+  ppx_failures/multiple.ml
+  ppx_failures/non_string.ml
+  ppx_failures/antiquotation_empty.ml
+  ppx_failures/antiquotation_hyphen.ml
+  ppx_failures/antiquotation_keyword.ml
+  ppx_failures/antiquotation_qualified.ml
+  ppx_failures/antiquotation_slash.ml
+  ppx_failures/antiquotation_uppercase.ml
+  ppx_failures/antiquotation_any.ml
+  ppx_failures/antiquotation_int.ml
+  ppx_failures/antiquotation_string.ml
+  ppx_failures/antiquotation_unbound.ml)
+ (action
+  (run
+   sh
+   %{dep:test_ppx_compile_failures.sh}
+   %{ocamlc}
+   %{exe:test_ppx_driver.exe}
+   %{lib:melange-edn-core:melange_edn.cma}
+   %{dep:ppx_failures/empty.ml}
+   %{dep:ppx_failures/malformed.ml}
+   %{dep:ppx_failures/multiple.ml}
+   %{dep:ppx_failures/non_string.ml}
+   %{dep:ppx_failures/antiquotation_empty.ml}
+   %{dep:ppx_failures/antiquotation_hyphen.ml}
+   %{dep:ppx_failures/antiquotation_keyword.ml}
+   %{dep:ppx_failures/antiquotation_qualified.ml}
+   %{dep:ppx_failures/antiquotation_slash.ml}
+   %{dep:ppx_failures/antiquotation_uppercase.ml}
+   %{dep:ppx_failures/antiquotation_any.ml}
+   %{dep:ppx_failures/antiquotation_int.ml}
+   %{dep:ppx_failures/antiquotation_string.ml}
+   %{dep:ppx_failures/antiquotation_unbound.ml})))
+
+(rule
+ (alias runtest)
+ (package melange-edn-ppx)
+ (deps
+  test_ppx_jsoo.bc.js
+  (alias melange)
+  melange_edn_ppx/test/test_ppx_melange.js)
+ (action
+  (progn
+   (run node test_ppx_jsoo.bc.js)
+   (run node melange_edn_ppx/test/test_ppx_melange.js))))
+
+(rule
+ (alias runtest)
+ (package melange-edn-jsoo)
+ (enabled_if
+  (= %{profile} dev))
+ (deps test_jsoo.bc.js test_signature_jsoo.bc.js)
+ (action
+  (progn
+   (run node test_jsoo.bc.js)
+   (run node test_signature_jsoo.bc.js))))
+
+(rule
+ (alias runtest)
+ (package melange-edn-melange)
+ (enabled_if
+  (= %{profile} dev))
+ (deps
+  (alias melange)
+  melange_edn_melange/test/test_melange.js
+  melange_edn_signature/test/test_signature_melange.js)
+ (action
+  (progn
+   (run node melange_edn_melange/test/test_melange.js)
+   (run node melange_edn_signature/test/test_signature_melange.js))))

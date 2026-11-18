@@ -1,0 +1,5 @@
+/_build/
+/node_modules/
+/*.install
+/.dir-locals.el
+/.DS_Store

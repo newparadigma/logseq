@@ -1,0 +1,5 @@
+(library
+ (name transit_core)
+ (public_name melange-transit-core)
+ (modules transit_core)
+ (modes byte native))

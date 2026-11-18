@@ -1,0 +1,11 @@
+(copy_files ../lib/melange_edn.ml)
+
+(copy_files ../lib/melange_edn.mli)
+
+(library
+ (name melange_edn_melange)
+ (public_name melange-edn-melange)
+ (modules melange_edn melange_edn_melange)
+ (modes melange)
+ (wrapped false)
+ (libraries melange.js))

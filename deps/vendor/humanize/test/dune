@@ -1,0 +1,27 @@
+(test
+ (name test_humanize)
+ (modules test_humanize)
+ (libraries humanize))
+
+(executable
+ (name test_no_unix_dependency)
+ (modules test_no_unix_dependency))
+
+(melange.emit
+ (target humanize_melange)
+ (modules test_melange)
+ (module_systems commonjs)
+ (libraries humanize))
+
+(rule
+ (alias runtest)
+ (deps
+  (alias melange)
+  (:library_dune ../lib/dune)
+  (:implementation ../lib/humanize.ml)
+  test_no_unix_dependency.exe
+  humanize_melange/test/test_melange.js)
+ (action
+  (progn
+   (run ./test_no_unix_dependency.exe %{library_dune} %{implementation})
+   (run node humanize_melange/test/test_melange.js))))

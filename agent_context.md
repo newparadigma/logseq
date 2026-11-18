@@ -8,11 +8,11 @@
 ## Status (as of 2026-11-18)
 - Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
 - Done: the GitHub fork of `logseq/logseq` (reported by the user).
-- Done: vendored 17 Git dependencies into `deps/vendor/`, including development/test tooling, transitive Git dependencies, and iOS Drops. See "Vendored dependencies" below.
+- Done: vendored 21 Git repositories into `deps/vendor/`, including development/test tooling, transitive Git dependencies, the OCaml CLI libraries, and iOS Drops. See "Vendored dependencies" below.
 - Not done yet: confirmation of the personal branch and the first macOS build.
 - Suggested next steps:
   1. Confirm the fork URL, personal branch, and intended base revision.
-  2. Build the unsigned macOS app.
+  2. Prepare container-based builds; do not install npm/opam/toolchain packages on the host. The desktop packaging strategy still needs validation.
   3. Point the server's `.env` at the fork and the personal branch.
 
 ## License and repositories
@@ -51,7 +51,14 @@
 ## Vendored dependencies (2026-11-18)
 - Source checkout: `8bcad1f273f9ebced4d5bf161ccbee29ff136ff3`; no dependency version upgrade was performed. This checkout has not been verified as tag `2.0.2`.
 - `deps/vendor/manifest.json` records the original repositories, pinned refs, full commit SHAs, archive SHA-256 values, and retained paths. `deps/vendor/README.md` explains scope and maintenance.
-- 17 snapshots: datascript, hsx, rfx, cljs-time, clj-fractional-indexing, logseq-schema, glogi, malli, cljc-fsrs, bb-tasks, carve, clj-kondo-bb, nbb-logseq, nbb-test-runner, test-runner, wally, Drops.
+- Initial 17 snapshots: datascript, hsx, rfx, cljs-time, clj-fractional-indexing, logseq-schema, glogi, malli, cljc-fsrs, bb-tasks, carve, clj-kondo-bb, nbb-logseq, nbb-test-runner, test-runner, wally, Drops.
+- Follow-up: the initial scan missed `cli/logseq-cli.opam` and `cli/logseq-cli.opam.template`. Four additional repositories are now vendored: melange-edn, melange-transit, humanize, rrbvec (21 repositories total, providing six additional opam packages). Their original refs floated on `main`; the current commits were resolved and recorded in the vendor manifest rather than silently retaining moving branches.
+- Both CLI opam files now use local `pin-depends` paths. Run opam dependency setup from `cli/`, matching the existing CI workflows, because opam interprets relative URLs against its working directory. Docker images must copy both the CLI and vendor trees with their relative layout intact.
+- OCaml snapshots preserve all 122 upstream files byte for byte, including Dune build definitions, opam manifests, tests, and available licenses. The CLI's Dune files are unchanged. No transitive Git pins were found in those four repositories. Upstream `dev-repo` metadata remains informational.
+- Container-only validation passed: opam 2.3.0 registered all six packages from local paths with Docker networking disabled, both before and after relocating the project. Direct pinning of an intentionally missing rrbvec tree failed and identified that exact path. The generated CLI opam file's pin section matches its template; existing package metadata/constraints are unchanged.
+- A second disposable Docker container successfully ran `opam install . --deps-only --yes` from the copied CLI directory. All six local packages built and installed: melange-edn-core/melange-edn-melange 0.5.0, melange-transit-core/melange-transit-melange 0.1.2, humanize.dev, rrbvec.dev. Other dependencies came from the opam registry. Validation used Debian 13, OCaml 5.3.0, Dune 3.24.2, and Melange 7.0.1-53; the repository workflow's OCaml 5.1.1 target and full desktop packaging were not tested in this follow-up.
+- Known opam behavior: `--yes` may continue after an extra pin's source cannot be retrieved. Container setup should preflight the four local source directories; the vendor README includes that check.
+- User decision: future package/toolchain installation and builds belong in Docker containers, with no further npm/opam/toolchain installations on the host. The Docker daemon is available. Validation containers use read-only project mounts and copy sources internally; no host node_modules or opam switch is created by this follow-up.
 - The earlier dependency table omitted bb-tasks, nbb-test-runner, test-runner, Drops, and transitive carve/clj-kondo-bb. Treat the vendor manifest as the source of truth for the current checkout.
 - Clojure, Babashka, and nbb manifests use local paths, including transitive Git dependencies. Upstream development aliases/examples/tests are omitted from the library snapshots; runtime source and resources are retained unchanged.
 - nbb-logseq uses its existing compiled JavaScript and local pnpm `file:` dependencies in six consumers. Its `import-meta-resolve` constraint is pinned to the existing locked version `4.1.0`; the six lockfiles retain all other package versions.

@@ -1,0 +1,4 @@
+(library
+ (name humanize)
+ (public_name humanize)
+ (modes :standard melange))

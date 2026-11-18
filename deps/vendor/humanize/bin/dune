@@ -1,0 +1,4 @@
+(executable
+ (public_name humanize)
+ (name main)
+ (libraries humanize))
