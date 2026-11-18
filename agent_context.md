@@ -9,10 +9,11 @@
 - Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
 - Done: the GitHub fork of `logseq/logseq` (reported by the user).
 - Done: vendored 21 Git repositories into `deps/vendor/`, including development/test tooling, transitive Git dependencies, the OCaml CLI libraries, and iOS Drops. See "Vendored dependencies" below.
-- Not done yet: confirmation of the personal branch and the first macOS build.
+- Done: the first macOS ARM64 build, named `LogseqDEV`, compiled, packaged, and ad-hoc signed inside Docker. Artifact and verification details are below.
+- Not done yet: confirmation of the personal branch, full desktop UI/sync testing, and deployment against the personal sync server.
 - Suggested next steps:
   1. Confirm the fork URL, personal branch, and intended base revision.
-  2. Prepare container-based builds; do not install npm/opam/toolchain packages on the host. The desktop packaging strategy still needs validation.
+  2. Install/test the built LogseqDEV app. Keep future npm/opam/toolchain installations inside Docker.
   3. Point the server's `.env` at the fork and the personal branch.
 
 ## License and repositories
@@ -94,15 +95,23 @@
 - Setting it also enables the sync (RTC) UI (`rtc-group?` in `src/main/frontend/handler/user.cljs`).
 - The URL is converted to `wss://<host>/sync/<graph-id>`.
 
-## macOS desktop build (not yet run; needs a Mac)
+## macOS desktop build — LogseqDEV ARM64 (2026-11-18)
+- Completed: compilation, macOS packaging, and ad-hoc signing inside Linux Docker. No host package installation was performed. Native macOS tools were used only to extract and verify the result; the app binary was exercised in Node mode without opening the GUI or user graphs.
+- User-requested application name: `LogseqDEV`. Desktop package name/productName are `LogseqDEV`; bundle ID is `com.logseq.logseqdev`. This also gives Electron a separate default userData profile (`~/Library/Application Support/LogseqDEV`). Shared graph paths and `~/.logseq` behavior have not been changed.
+- Artifact: `static/dist/LogseqDEV-darwin-arm64-2.0.2.zip`, 182,110,482 bytes; SHA-256 `9782e92edf5c3be38fd4f8f1a9a3efe3ddc40921e198ace1e1bc4cf6966e5361`. `static/dist/verification.json` and `SHA256SUMS` accompany it. It is ad-hoc signed, without an Apple Developer certificate or notarization. No DMG was produced.
+- Source snapshot: Git checkout `9e3eeb9a00` plus the requested desktop name/ID changes, captured as `/tmp/logseq-macos-build-20261118/source.tar` (tracked working files, without `.git` or host node_modules). Embedded revision metadata is `dev` because Git metadata was excluded. Docker build image: `logseq-macos-builder:local`.
+- Temporary orchestration lives under `/tmp/logseq-macos-build-20261118/`; logs are in `.tmp/macos-build-20261118/` (`image.log`, `build.log`, `package.log`, `sign.log`, `runtime-smoke.log`). Docker launch wrappers remove their container on success, error, and interrupt; interruption cleanup was exercised during the name change. All build containers, the temporary `logseq-macos-build-work-20261118` volume, and the extracted host verification copy were removed after successful verification. Docker build images remain cached; a new build must recreate its work volume.
+- Toolchain: Node 24, pnpm 10.33.0, Java 21, Clojure CLI 1.12.4.1618, OCaml 5.3.0/Dune 3.24.2/Melange 7.0.1-53. Frozen npm installs were preserved. All five CLJS release targets completed (app, db-worker, db-worker-node, electron, publishing; 107 compiler warnings total), followed by worker bundling, webpack, and the OCaml CLI bundle.
+- Packaging correction: invoking electron-builder from `static/` under the root workspace caused its dependency collector to fall back to the Linux frontend dependency tree. CLI dotted `supportedArchitectures` settings did not install the Darwin binding. The final desktop tree was isolated under `/work/package/static` in Docker with its own `pnpm-workspace.yaml` containing `supportedArchitectures: {os: [darwin], cpu: [arm64]}`. It was installed independently with the same frozen resources lockfile. keytar's macOS ARM64 N-API prebuild was installed explicitly; rebuild was disabled only after verifying the prebuilt architecture. Linux/Windows native modules were excluded from the app.
+- electron-builder 26.17.0 packaged the macOS ZIP on Linux but skipped signing, leaving an invalid original Electron resource seal after renaming. rcodesign 0.29.0 (checksum-verified Linux ARM64 release) recursively ad-hoc signed the app and native modules **inside Docker**; Linux `zip -r -y` then recreated the final archive with symlinks preserved.
+- Verification passed: ZIP integrity; CFBundleName/CFBundleExecutable `LogseqDEV`; CFBundleIdentifier `com.logseq.logseqdev`; executable mode; ARM64 Mach-O executable and both `.node` modules; sidecar presence; native macOS `codesign --verify --deep --strict`; real Darwin ARM64 binary execution with Electron 42.11.16 / Node 24.19.0, loading keytar and zvec successfully. Full GUI, graphs, sync, updater, and notarization were not tested.
 - Toolchain (per `.github/workflows/build.yml`): Node 24, pnpm 10.33.0, Java 21, Clojure CLI 1.12.4.x.
 - Commands:
   - `pnpm install && pnpm release-electron:unsigned`.
   - The unsigned script `scripts/electron-builder-unsigned.mjs` disables signing and hardened runtime.
   - The build installs `static/` dependencies itself.
 - Output: **`static/dist/`** (dmg + zip, e.g. `Logseq-darwin-arm64-2.0.2.dmg`). `docs/develop-logseq.md` says `static/out/`, which is outdated.
-- First launch: right-click → Open (the app is unsigned).
-- The app ID `com.logseq.logseq` and the name "Logseq" are the same as the official app, so both use the same data folder. Change `appId`/`productName` if they should coexist.
+- For the delivered app, use the LogseqDEV artifact and identity above; the simple release command does not include the Docker cross-packaging/ad-hoc signing corrections described here.
 
 ## iOS / Android notes (later)
 - iOS: Mac + Xcode + CocoaPods; `pnpm run-ios-release` (see `docs/develop-logseq-on-mobile.md`). Must change:

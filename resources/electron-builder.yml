@@ -1,4 +1,4 @@
-appId: com.logseq.logseq
+appId: com.logseq.logseqdev
 electronUpdaterCompatibility: ">=2.16"
 
 directories:

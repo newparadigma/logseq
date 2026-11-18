@@ -1,6 +1,6 @@
 {
-  "name": "Logseq",
-  "productName": "Logseq",
+  "name": "LogseqDEV",
+  "productName": "LogseqDEV",
   "version": "2.0.2",
   "packageManager": "pnpm@10.33.0",
   "main": "electron.js",
