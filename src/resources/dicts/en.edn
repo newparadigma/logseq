@@ -768,6 +768,8 @@
  :graph/left "Left graph."
  :graph/link-count (fn [n] (str n " " (if (= 1 n) "link" "links")))
  :graph/local-graphs "Local graphs:"
+ :graph/missing-confirm-desc "The folder of graph \"{1}\" was not found. It may have been deleted or moved outside Logseq. Remove it from the graph list?"
+ :graph/missing-startup-warning "Graph \"{1}\" was not opened because its folder was not found."
  :graph/name-placeholder "your graph name"
  :graph/no-selected-node "No graph node selected."
  :graph/node-count (fn [n] (str n " " (if (= 1 n) "node" "nodes")))
@@ -777,6 +779,7 @@
  :graph/preparing "Preparing"
  :graph/refresh-remote-graphs "Refresh remote graphs"
  :graph/remote-graphs "Remote graphs:"
+ :graph/remove-missing-action "Remove from list"
  :graph/removed "Removed graph \"{1}\""
  :graph/removed-and-redirecting "Removed graph \"{1}\". Redirecting to graph \"{2}\""
  :graph/removed-from-sync "This graph has been removed from Logseq Sync."
@@ -1825,6 +1828,11 @@
  :settings.sync-server/clear-success "Sync server URL cleared. Using official Logseq Sync."
  :settings.sync-server/reset "Reset to default"
  :settings.sync-server/save-success "Sync server URL saved."
+ :settings.sync-server/token-desc "Sign in to your self-hosted sync server with an access token issued for it. No Logseq account is needed."
+ :settings.sync-server/token-invalid-error "The access token is invalid or expired."
+ :settings.sync-server/token-label "Access token"
+ :settings.sync-server/token-login "Sign in with token"
+ :settings.sync-server/token-login-success "Signed in to the self-hosted sync server."
  :settings.sync-server/url "Sync Server URL"
  :settings.sync-server/url-desc "Set a custom HTTPS sync server URL for self-hosted sync. Your Logseq authentication tokens will be sent to this server, so only use a trusted URL. Leave empty to use the official Logseq Sync."
  :settings.sync-server/url-invalid-error "URL must start with https:// or http://"

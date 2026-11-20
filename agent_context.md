@@ -5,7 +5,8 @@
 - Personal use only: fix bugs and add features.
 - Targets, in order: **macOS desktop app + self-hosted sync server** first; iOS and Android later.
 
-## Status (as of 2026-11-18)
+## Status (as of 2026-11-20)
+- Done (2026-11-20): sync without a Logseq account, using self-issued tokens. See "Self-hosted token sign-in" below. Tested end to end as a web app with two devices against a local sync server; LogseqDEV rebuilt and launch-tested (see the 2026-11-20 build section).
 - Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
 - Done: the GitHub fork of `logseq/logseq` (reported by the user).
 - Done: vendored 21 Git repositories into `deps/vendor/`, including development/test tooling, transitive Git dependencies, the OCaml CLI libraries, and iOS Drops. See "Vendored dependencies" below.
@@ -71,7 +72,7 @@
 - npm/Maven packages, toolchains, and runtime binaries still use external sources; this change does not provide a fully offline build or replace account authentication.
 
 ## Auth and external services (important)
-- Sync requires a **Logseq account**. The app's sign-in is hardcoded to Logseq's AWS Cognito via aws-amplify:
+- Official sync requires a **Logseq account**; the self-hosted server no longer does (see "Self-hosted token sign-in"). The app's Cognito sign-in is hardcoded to Logseq's AWS Cognito via aws-amplify:
   - `src/main/frontend/components/user/login.cljs`;
   - `deps/common/src/logseq/common/cognito_config.cljs` (client 69cs1lgme7p8kbgld8n5kseii6, OAuth domain logseq-prod.auth.us-east-1.amazoncognito.com);
   - `src/main/frontend/config.cljs` (pool us-east-1_dtagLnju8).
@@ -87,6 +88,32 @@
   - app.posthog.com (telemetry → turn off "usage diagnostics");
   - electron-updater publishing to GitHub logseq/logseq (`resources/electron-builder.yml` → turn off auto-update or change `publish`).
 
+## Self-hosted token sign-in (2026-11-20)
+- Goal: sync with the self-hosted server without a Logseq/Cognito account. The server code is unchanged: its RS256 JWT check accepts any issuer configured through `COGNITO_ISSUER`, `COGNITO_CLIENT_ID`, `COGNITO_JWKS_URL`.
+- `deps/db-sync/scripts/selfhost-token.mjs` (Node, built-in `crypto` only):
+  - `init <dir> --issuer <url> --username <name> [--email <e>]`: creates `<dir>/private.pem` and `<dir>/settings.json` (issuer, kid, sub), mode 0600, and prints the three `COGNITO_*` lines for the server `.env`. Refuses to overwrite an existing key.
+  - `env <dir>`: prints those lines again. `token <dir> [--days N]` (default 3650): prints a signed JWT.
+  - `COGNITO_CLIENT_ID=logseq-selfhost`. `COGNITO_JWKS_URL` is a `data:application/json,...` URL; the server's Node `fetch` reads it, so no extra host serves the keys.
+  - `sub` is the server user id, fixed in `settings.json`. All tokens for all devices share it, so several devices use the same graphs. Tokens carry `cognito:username` and optional `email`/`email_verified`.
+  - Keep `<dir>` private: whoever has `private.pem` can sign in as you. To revoke tokens, run `init` in a new dir and redeploy the `.env`; the server keeps accepting a cached token for up to 1 hour.
+- Client:
+  - `frontend.handler.user/login-with-self-hosted-token!` checks that the token parses and has `sub` and a future `exp`. It then stores the token as the id, access and refresh token, so `logged-in?` and the restore after restart work unchanged. When the token is within 1 hour of `exp`, the Cognito refresh is expected to fail with `invalid_grant` (not tested) and log the user out: they must paste a new token.
+  - Settings, the Sync Server URL dialog (desktop and mobile): after a URL is saved, an "Access token" field and a "Sign in with token" button appear (`self-hosted-token-form` in `src/main/frontend/components/settings.cljs`).
+  - `:user/fetch-info-and-graphs` (`src/main/frontend/handler/events/ui.cljs`) does not call the Logseq `user_info` API when a custom sync server URL is set; it uses `{}`. Without this, the graph list and sync never started. A Cognito user with a custom server therefore also gets no Logseq user groups/plan info.
+  - i18n keys `:settings.sync-server/token-*` were added in en, zh-cn and ru.
+  - Logout clears all localStorage, including the sync server URL; set it again after logout.
+- Verification:
+  - In Docker (`node:24-bookworm-slim`, the compiled `worker/dist/node-adapter.js` built on 2026-11-18; the auth code is unchanged since October): `/graphs` returns 401 without a token, 200 with a self-issued token, and 401 for a changed signature byte, a token from another key, and a token that reuses the real `kid` with a foreign key. Graph creation returns `missing user rsa key pair` until the client uploads its E2EE keys (expected).
+  - Negative-test lesson: changing the last base64url character of a 2048-bit RS256 signature may not change the signature (that character carries only 2 bits). The first test passed for this reason; change a middle character instead.
+  - i18n lint (hardcoded text, keys), `bb lang:validate-translations`, and `bb lang:format-dicts` pass. clj-kondo on the 3 changed CLJS files: 0 errors, 1 pre-existing warning (`<wrap-ensure-id&access-token` macro).
+  - `bb lang:format-dicts` failed on a tarball made by macOS `tar`; on a read-only mount copy it passed. Use a mount copy or `git archive` for container checks.
+  - CLJS release build (2026-11-20, Docker `logseq-macos-builder:local`, volume `logseq-build-20261120`): all 5 targets compiled; no warnings in the changed files.
+  - Web app end-to-end test (2026-11-20): the release web build in `static/` served by `http-server` on port 18080; the sync server from the compiled node adapter in Docker on `http://127.0.0.1:18787` with self-issued token settings. Two browser origins (`localhost:18080`, `127.0.0.1:18080`) acted as two devices with separate storage and two different tokens for the same `sub`.
+    - An invalid token shows "The access token is invalid or expired."; a valid token signs in, `/graphs` is called on the local server, and no request goes to `logseq.com` or Cognito.
+    - Device A: E2EE password set, RSA keys uploaded, an encrypted synced graph created, presence avatar shown. Device B: the remote graph listed, downloaded after the E2EE password, and showed A's text. B's edit appeared on A. After a reload, A stayed signed in and synced.
+    - Pre-existing UX issue: the "Set password for remote graphs" dialog can open hidden under the "Create a new graph" dialog, which keeps Submit disabled; Escape cancels the password request. The Settings "Sync Server URL" button label does not refresh until Settings is reopened.
+  - Not done: a real Electron GUI run, mobile, HTTPS/Caddy deployment, and token expiry/logout behavior.
+
 ## Custom sync server URL (client)
 - Stored in localStorage key `sync-server-url` (`src/main/frontend/config.cljs`).
 - Where to set it in the UI:
@@ -96,6 +123,7 @@
 - The URL is converted to `wss://<host>/sync/<graph-id>`.
 
 ## macOS desktop build — LogseqDEV ARM64 (2026-11-18)
+- Superseded artifact: see the 2026-11-20 rebuild below. The packaging notes here still apply.
 - Completed: compilation, macOS packaging, and ad-hoc signing inside Linux Docker. No host package installation was performed. Native macOS tools were used only to extract and verify the result; the app binary was exercised in Node mode without opening the GUI or user graphs.
 - User-requested application name: `LogseqDEV`. Desktop package name/productName are `LogseqDEV`; bundle ID is `com.logseq.logseqdev`. This also gives Electron a separate default userData profile (`~/Library/Application Support/LogseqDEV`). Shared graph paths and `~/.logseq` behavior have not been changed.
 - Artifact: `static/dist/LogseqDEV-darwin-arm64-2.0.2.zip`, 182,110,482 bytes; SHA-256 `9782e92edf5c3be38fd4f8f1a9a3efe3ddc40921e198ace1e1bc4cf6966e5361`. `static/dist/verification.json` and `SHA256SUMS` accompany it. It is ad-hoc signed, without an Apple Developer certificate or notarization. No DMG was produced.
@@ -112,6 +140,46 @@
   - The build installs `static/` dependencies itself.
 - Output: **`static/dist/`** (dmg + zip, e.g. `Logseq-darwin-arm64-2.0.2.dmg`). `docs/develop-logseq.md` says `static/out/`, which is outdated.
 - For the delivered app, use the LogseqDEV artifact and identity above; the simple release command does not include the Docker cross-packaging/ad-hoc signing corrections described here.
+
+## macOS desktop build — rebuild with token sign-in (2026-11-20)
+- Current artifact: `static/dist/LogseqDEV-darwin-arm64-2.0.2.zip`, 181,918,528 bytes, SHA-256 `8fff6dcc0ff00dd142377d82e418d6d1d1755be7c8b7d7220d4d07ada7808cbd` (`SHA256SUMS`, `verification.json` updated): the token build below plus the orange icon. The 2026-11-18 artifact and the first 2026-11-20 artifact (`6050fc8c...`) are gone.
+- Built from the working tree with the self-hosted token changes (uncommitted at build time).
+- Verified on the host: `codesign --verify --deep --strict` passes, arm64 Mach-O, bundle ID `com.logseq.logseqdev`, the `:settings.sync-server/token-*` keys are in `app.asar` `js/main.js`. A launch with `--user-data-dir` in a temp folder and `--remote-debugging-port` loaded the renderer page `Logseq`; no errors in the log. Sign-in was not clicked through in Electron: the same release renderer code was tested as a web app (see "Self-hosted token sign-in").
+- Scripts and logs: `.tmp/macos-build-20261120/` (gitignored). Run them in this order:
+  1. On the host, `git ls-files -co --exclude-standard -z > <dir>/files.lst`.
+  2. `run-a.sh <repo> <dir>`: copies the listed files into Docker volume `logseq-build-20261120`, then pnpm install, `gulp:build`, `cljs:release-electron`, `webpack-app-build`.
+  3. `run-b.sh x <dir>`: opam switch 5.3.0 in `/work/opam` on the volume (kept, about 5 GB in the volume in total), CLI deps, `db-worker-node:bundle`, `cli:release`, `desktop:prepare-runtime-js`, version, then the isolated Darwin package tree, keytar prebuild, electron-builder zip, rcodesign 0.29.0 (checksum-verified) ad-hoc signing, re-zip to `<dir>/out`.
+  4. `run-c.sh x <dir>`: only the packaging part of `build-b.sh`.
+  Each run script removes its named container on exit or interrupt.
+- User rule (2026-11-20): after every macOS build, install it into `/Applications/LogseqDEV.app` right away. Procedure: check the app is not running; extract the zip with `ditto -x -k` into a temp folder in `/Applications`; verify `codesign --verify --deep --strict`; move the old app to `~/.Trash`; move the new app into place. The 2026-11-18 app is in `~/.Trash/LogseqDEV-20261118.app`.
+- Orange icon (2026-11-20, user request, so LogseqDEV is not confused with the official app): `resources/icons/logseq_big_sur.icns` (macOS app icon), `logseq_big_sur.png`, `logseq.icns`, `logseq.png` (window icon) recolored: dark teal background becomes orange `#EA6216`, light teal blobs become cream `#FFE4C4`; transparent and grey shadow pixels are kept, anti-aliased pixels are interpolated. Script: `.tmp/icon-recolor-20261120/recolor.py` (Pillow 11.3.0 in a `python:3.12-slim` container); `.icns` files were rebuilt with macOS `iconutil`. Not recolored: Windows `.ico` files, `resources/icons/canary/`, `resources/icon.png`, `icon_monochrome.png`, and the in-app logo. Only the packaging stage (`run-c.sh`) was rerun after copying the icons into `resources/icons` and `static/icons` in the build volume. The installed app's `Contents/Resources/icon.icns` matches the orange file.
+- Installed now: `/Applications/LogseqDEV.app` is the orange build; the teal 2026-11-20 build is in `~/.Trash/LogseqDEV-20261120-teal.app`.
+- Fix found in this build: the isolated package tree also needs `deps/graph-lifecycle`, because `resources/package.json` uses `file:../deps/graph-lifecycle`; without it pnpm fails with `ENOENT ... scandir '/work/package/deps/graph-lifecycle'`.
+- `@zvec/zvec` postinstall in the Darwin tree logs a failed linux-arm64 prebuilt download; harmless, the app bundles `@zvec/bindings-darwin-arm64`.
+- Electron writes tokens to `~/logseq/auth.json` (`persist-auth-file!`, existing behavior for Cognito tokens too), so a self-issued token is also stored there in plain text.
+
+## Missing graph folder on open (fixed 2026-11-20)
+- Problem: a graph deleted outside the app (folder removed from `~/logseq/graphs`) stays in the graph list until the list refreshes. Opening it hung: `:graph/switch` → `restore-and-setup-repo!` sets `db-restoring` to true, the main-process IPC `db-worker-runtime` fails in `graph-lifecycle` `requireAvailable` with `Graph is absent or stopped by deletion`, and the restoring flag is never cleared. The normal "Delete local graph" path also fails for such a graph (`lifecycle/deleteGraph` reports `existed: false`, then `<unlink-graph!` throws `Graph does not exist`).
+- Fix: `:graph/switch` (`src/main/frontend/handler/events.cljs`) first calls `repo-handler/<graph-dir-missing?` (Electron only, the Demo graph excluded): the graph is missing when the main-process `getGraphs` list (folders in the graphs dir) does not contain it. Then it shows a confirm dialog (`:graph/missing-confirm-desc`, button `:graph/remove-missing-action`); OK calls `repo-handler/remove-missing-repo!`, which only removes the entry from the in-memory list (`state/delete-repo!`) and shows `:graph/removed`. Nothing on disk is touched; the stale `.graph-lifecycle/<...>/<graph>/` folder stays.
+- Startup path (added the same day): if the remembered current graph has no folder, `persist-db/<start-runtime!` failed, the whole startup chain in `src/main/frontend/handler.cljs` aborted with `Error while restoring repos: ... Graph is absent or stopped by deletion`, and the graph list stayed empty. This is the most likely cause of the reported first-run empty list. Now `repo-handler/<forget-missing-current-repo!` runs before `<start-runtime!`: it clears the current graph and shows the warning `:graph/missing-startup-warning`. After `resolve-startup-repo`, a chosen graph without a folder (from a tab or URL target) falls back to the first listed graph. `resolve-startup-repo` itself is unchanged (its tests expect URL/tab targets outside the list).
+- Verified 2026-11-20 13:25 in the installed build (SHA-256 `9cfefaf7...` in `static/dist`): with the remembered graph `gmbnaallahglobal` absent from `~/logseq-dev`, LogseqDEV started without `Graph is absent` errors and opened `pharmakey` from `~/logseq-dev/graphs` with its content; the graph list loaded. The user confirmed seeing the warning and dialog messages. The test folder `~/logseq-dev/graphs/zz-missing-test` was created for the dialog test and removed.
+- Not covered: web/mobile.
+- Checks: clj-kondo 0 warnings on the 2 changed files; i18n lint, `bb lang:validate-translations`, `bb lang:format-dicts --check` pass. i18n keys added in en, zh-cn, ru.
+
+## Separate data root for LogseqDEV: ~/logseq-dev (2026-11-20)
+- Why: the official Logseq app and LogseqDEV shared `~/logseq` and fought over the same graph's worker (see Known issues). User decision: LogseqDEV uses its own root `~/logseq-dev`.
+- Code: `deps/common/src/logseq/common/config.cljs` `default-graphs-dir` = `~/logseq-dev/graphs`; `src/main/logseq/cli/root_dir.cljs` `default-root-dir` = `~/logseq-dev` (used by Electron for workers, `.graph-lifecycle`, `server-list`); `src/main/frontend/config.cljs` graphs-dir fallback; `auth.json` paths in `src/main/frontend/handler/user.cljs` and `src/main/frontend/worker/sync/crypt.cljs` (+ 2 assertions in `src/test/frontend/worker/sync/crypt_test.cljs`). `LOGSEQ_GRAPHS_DIR` still overrides the graphs dir.
+- Not changed: `~/.logseq` (global config, plugins) is still shared with the official app; the cli-e2e sync fixtures still copy `~/logseq/auth.json` (explicit paths, official-account tests); LogseqDEV still installs its CLI launcher at `~/.local/bin/logseq`, the same path the official app uses, and that CLI now defaults to `~/logseq-dev`.
+- Data move (user request, both apps quit, no Logseq processes running): `~/logseq/graphs/pharmakey` → `~/logseq-dev/graphs/pharmakey` (13 MB, `mv`; `pragma integrity_check` ok on a copy afterwards). `gmbnaallahglobal` and `main` stay in `~/logseq/graphs` for the official app. The official app keeps a stale `~/logseq/.graph-lifecycle/.../pharmakey/` entry.
+- clj-kondo on the changed files: 0 errors, 1 pre-existing warning.
+
+## Known issues (not fixed)
+- First LogseqDEV launch crash (reported 2026-11-20, user said not to fix now): on the very first run the graph list (top left) was empty; the user chose to point to an existing graph folder (`~/logseq/graphs/gmbnaallahglobal`), and the app showed the "Something went wrong" error screen. The error text was not captured (renderer errors are not written to log files; DevTools or `--remote-debugging-port` is needed). After a restart the same graph opens normally. Related observations from the same day:
+  - The official Logseq app and LogseqDEV share `~/logseq` (graphs, `.graph-lifecycle`, `server-list`, `auth.json`) and `~/.logseq`; both were running at the same time.
+  - After LogseqDEV quits, its `db-worker-node` process for the open graph keeps running detached for several minutes; when it exits, a running LogseqDEV logs `:db-worker-event-stream-error` and `:db-worker-runtime-recovering` and starts a new worker (it recovered without a crash).
+  - LogseqDEV's localStorage still lists `pharmackey backend`, a graph whose folder no longer exists; every start logs `Graph is absent or stopped by deletion` for it.
+- Likely root cause of the empty graph list / first-run crash (found 2026-11-20 12:20): when the official Logseq app and LogseqDEV run at the same time and open the same graph, each app sees the other's `db-worker-node` for that graph with a different build revision (official `533ac43`, LogseqDEV `dev`, because the Docker build has no Git metadata). LogseqDEV logs `:cli-server-restart-version-mismatch` and replaces the worker; the official app does the same, and the race ends in `Error: Worker admission registration changed` (`deps/graph-lifecycle/index.cjs:255`, IPC `db-worker-runtime`). In the renderer this surfaces as `Error while restoring repos: ... Worker admission registration changed` (`src/main/frontend/handler.cljs:200`), and the graph list (switcher and All graphs) stays empty. Possible fixes, not chosen yet: a separate root dir for LogseqDEV (for example `~/logseq-dev`), or never running both apps on the same graph.
+- How to capture renderer errors: quit LogseqDEV (`osascript -e 'quit app "LogseqDEV"'`), start it with `open -a /Applications/LogseqDEV.app --args --remote-debugging-port=19333`, and subscribe to `Runtime.exceptionThrown` / `Runtime.consoleAPICalled` over CDP (a small Node script using the global `WebSocket` is enough).
 
 ## iOS / Android notes (later)
 - iOS: Mac + Xcode + CocoaPods; `pnpm run-ios-release` (see `docs/develop-logseq-on-mobile.md`). Must change:
@@ -133,6 +201,7 @@
   - a full WebSocket session through Caddy works;
   - files in `./data` are owned by PUID:PGID and the process runs as uid 1000.
 - Not tested: a real app login against it; a Let's Encrypt certificate.
+- The compose file and `.env.example` below now require the self-issued token settings (`COGNITO_*`); the Dockerfile defaults to the official Logseq accounts and compose overrides them. These files exist only in this document, not in the repository.
 - Data layout: `./data/index.sqlite`, `./data/graphs/<id>/db.sqlite`, `./data/assets/`. Back up `./data`.
 - Deploy:
   1. `cp .env.example .env`;
@@ -256,6 +325,10 @@ services:
     restart: unless-stopped
     environment:
       DB_SYNC_BASE_URL: https://${DOMAIN:?set DOMAIN in .env}
+      # Self-issued sign-in tokens (deps/db-sync/scripts/selfhost-token.mjs)
+      COGNITO_ISSUER: ${COGNITO_ISSUER:?set COGNITO_ISSUER in .env}
+      COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID:?set COGNITO_CLIENT_ID in .env}
+      COGNITO_JWKS_URL: ${COGNITO_JWKS_URL:?set COGNITO_JWKS_URL in .env}
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
     volumes:
@@ -308,6 +381,14 @@ LOGSEQ_REF=2.0.2
 # Owner of the files in ./data (run `id -u` and `id -g` on the host).
 PUID=1000
 PGID=1000
+
+# Sign-in without a Logseq account. Paste the 3 lines printed by:
+#   node deps/db-sync/scripts/selfhost-token.mjs init ~/logseq-sync-auth --issuer https://sync.example.com/ --username me
+# Then issue a token for the apps with:
+#   node deps/db-sync/scripts/selfhost-token.mjs token ~/logseq-sync-auth
+COGNITO_ISSUER=
+COGNITO_CLIENT_ID=
+COGNITO_JWKS_URL=
 ```
 
 #### .dockerignore

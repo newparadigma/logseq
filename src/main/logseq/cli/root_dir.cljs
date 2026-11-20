@@ -7,7 +7,7 @@
 
 (defn default-root-dir
   []
-  (node-path/join (.homedir os) "logseq"))
+  (node-path/join (.homedir os) "logseq-dev"))
 
 (defn normalize-root-dir
   [path]

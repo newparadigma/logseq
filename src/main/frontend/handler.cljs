@@ -168,6 +168,7 @@
           (p/then
            (fn []
              (p/let [t2 (util/time-ms)
+                     _ (repo-handler/<forget-missing-current-repo!)
                      _ (persist-db/<start-runtime!)
                      _ (log/info ::db-worker-spent-time (- (util/time-ms) t2))
                      repos (repo-handler/get-repos)
@@ -188,6 +189,9 @@
                            url-target
                            (graph-handler/get-tab-graph)
                            (state/get-current-repo))
+                     ;; A tab or URL may still point at a graph whose folder is gone.
+                     repo-missing? (when repo (repo-handler/<graph-dir-missing? repo))
+                     repo (if repo-missing? (:url (first repos)) repo)
                      _ (if (empty? repos)
                          (repo-handler/new-db! config/demo-repo)
                          (restore-and-setup! repo))

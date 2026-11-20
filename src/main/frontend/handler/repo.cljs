@@ -74,6 +74,35 @@
                (state/pub-event! [:graph/switch graph {:persist? false}])))
            (notification/show! (t :graph/removed (text-util/get-graph-name-from-path url)) :success)))))))
 
+(defn <graph-dir-missing?
+  "True when a desktop graph is still listed but its folder is gone from the
+  graphs dir, e.g. it was deleted outside the app."
+  [repo]
+  (if (and (util/electron?) (not (config/demo-graph? repo)))
+    (p/let [graphs (ipc/ipc "getGraphs")]
+      (not (contains? (set graphs) repo)))
+    (p/resolved false)))
+
+(defn <forget-missing-current-repo!
+  "Startup guard: starting the worker for a remembered graph whose folder is
+  gone fails and aborts startup before the graph list loads."
+  []
+  (if-let [repo (state/get-current-repo)]
+    (p/let [missing? (<graph-dir-missing? repo)]
+      (when missing?
+        (log/warn :startup/current-graph-missing {:repo repo})
+        (state/set-current-repo! nil)
+        (notification/show! (t :graph/missing-startup-warning (text-util/get-graph-name-from-path repo))
+                            :warning)))
+    (p/resolved nil)))
+
+(defn remove-missing-repo!
+  "Drops a graph whose folder no longer exists from the graph list. There is
+  nothing on disk to delete."
+  [repo]
+  (state/delete-repo! {:url repo})
+  (notification/show! (t :graph/removed (text-util/get-graph-name-from-path repo)) :success))
+
 (defn <restore-date-formatter!
   "Load the graph's persisted journal title format into UI state.
 

@@ -17,7 +17,7 @@
 (defonce ^:private *graph->aes-key (atom {}))
 (defonce ^:private *user-rsa-key-pair-inflight (atom {}))
 (defonce ^:private *ensure-user-rsa-key-pair-inflight (atom {}))
-(defonce ^:private node-default-auth-file "~/logseq/auth.json")
+(defonce ^:private node-default-auth-file "~/logseq-dev/auth.json")
 (defonce ^:private e2ee-password-secret-key "logseq-encrypted-password")
 (def ^:private invalid-transit ::invalid-transit)
 

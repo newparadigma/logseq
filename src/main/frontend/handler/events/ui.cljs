@@ -500,7 +500,10 @@
   (state/set-state! [:ui/loading? :login] false)
   (async/go
     (let [session (state/get-state :auth/graph-session)
-          result (async/<! (user-handler/<user-info user-handler/remoteapi))]
+          ;; A self-hosted sync server has no Logseq user_info API to ask.
+          result (if (config/get-custom-sync-server-url)
+                   {}
+                   (async/<! (user-handler/<user-info user-handler/remoteapi)))]
       (when (and session (= session (state/get-state :auth/graph-session)) (map? result))
         (state/set-user-info! result)
         (when-let [uid (user-handler/user-uuid)]

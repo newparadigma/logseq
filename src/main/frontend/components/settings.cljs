@@ -660,13 +660,39 @@
                             :ws-url (config/db-sync-ws-url)
                             :http-base (config/db-sync-http-base)}))
 
+(hsx/defc self-hosted-token-form
+  []
+  (let [[token set-token!] (hooks/use-state "")]
+    [:div.p-2
+     [:p.text-sm.opacity-70.mb-4 (t :settings.sync-server/token-desc)]
+     [:p
+      [:label
+       [:strong (t :settings.sync-server/token-label)]
+       [:input.form-input.is-small
+        {:type "password"
+         :value token
+         :style {:width "100%"}
+         :on-change #(set-token! (util/evalue %))}]]]
+     [:p.pt-2
+      (shui/button
+       {:size :sm
+        :on-click (fn []
+                    (if (user-handler/login-with-self-hosted-token! (string/trim token))
+                      (do
+                        (set-token! "")
+                        (notification/show! (t :settings.sync-server/token-login-success) :success))
+                      (notification/show! (t :settings.sync-server/token-invalid-error) :error)))}
+       (t :settings.sync-server/token-login))]]))
+
 (hsx/defc sync-server-url-settings-container
   []
   (let [current-url (config/get-custom-sync-server-url)
         [url set-url!] (hooks/use-state (or current-url ""))
+        [saved-url set-saved-url!] (hooks/use-state current-url)
         reset-url! (fn []
                      (config/set-custom-sync-server-url! nil)
                      (set-url! "")
+                     (set-saved-url! nil)
                      (-> (push-sync-config-to-worker!)
                          (p/then #(notification/show! (t :settings.sync-server/clear-success) :success))
                          (p/catch #(notification/show! (str "Failed to update worker: " %) :error))))]
@@ -693,6 +719,7 @@
                            (notification/show! (t :settings.sync-server/url-invalid-error) :error)
                            (do
                              (config/set-custom-sync-server-url! trimmed)
+                             (set-saved-url! trimmed)
                              (-> (push-sync-config-to-worker!)
                                  (p/then #(notification/show! (t :settings.sync-server/save-success) :success))
                                  (p/catch #(notification/show! (str "Failed to update worker: " %) :error))))))))}
@@ -702,7 +729,9 @@
           {:size :sm
            :variant :outline
            :on-click (fn [] (reset-url!))}
-          (t :settings.sync-server/reset)))]]]))
+          (t :settings.sync-server/reset)))]]
+     (when saved-url
+       (self-hosted-token-form))]))
 
 (hsx/defc sync-server-url-button
   []

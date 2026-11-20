@@ -103,7 +103,7 @@
 (defn- auth-file-path
   []
   (when-let [home-dir (state/get-state [:system/info :home-dir])]
-    (path/path-join home-dir "logseq" "auth.json")))
+    (path/path-join home-dir "logseq-dev" "auth.json")))
 
 (defn- auth-file-payload
   []
@@ -275,6 +275,20 @@
    (:token (:refreshToken session)))
   (auto-fill-refresh-token-from-cognito!)
   (state/pub-event! [:user/fetch-info-and-graphs]))
+
+(defn login-with-self-hosted-token!
+  "Sign in with a token issued for a self-hosted sync server
+  (deps/db-sync/scripts/selfhost-token.mjs). It has no refresh token: it is
+  also stored as the refresh token so the session counts as logged in. When it
+  expires, the Cognito refresh fails and the user is logged out."
+  [token]
+  (let [parsed (parse-jwt-safe token)]
+    (if (and (string? (:sub parsed)) (number? (:exp parsed)) (not (expired? parsed)))
+      (do
+        (set-tokens! token token token)
+        (state/pub-event! [:user/fetch-info-and-graphs])
+        true)
+      false)))
 
 (defn- clear-e2ee-password!
   []
