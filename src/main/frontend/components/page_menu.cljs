@@ -142,7 +142,8 @@
 
             (when-not config/publishing?
               {:title   (t :publish/dialog-title)
-               :options {:on-click #(shui/dialog-open! (fn [] (publish-page-dialog page'))
+               :options {:disabled (not config/publish-enabled?)
+                         :on-click #(shui/dialog-open! (fn [] (publish-page-dialog page'))
                                                        {:class "w-auto max-w-md"})}})
 
             (when (util/electron?)

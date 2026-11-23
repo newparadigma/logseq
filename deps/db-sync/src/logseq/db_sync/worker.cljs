@@ -5,7 +5,6 @@
             [lambdaisland.glogi :as log]
             [logseq.db-sync.common :as common]
             [logseq.db-sync.logging :as logging]
-            [logseq.db-sync.sentry.worker :as sentry]
             [logseq.db-sync.worker.dispatch :as dispatch]
             [logseq.db-sync.worker.handler.sync :as sync-handler]
             [logseq.db-sync.worker.handler.ws :as ws-handler]
@@ -17,9 +16,8 @@
 (logging/install!)
 
 (def worker
-  (sentry/wrap-handler
-   #js {:fetch (fn [request env _ctx]
-                 (dispatch/handle-worker-fetch request env))}))
+  #js {:fetch (fn [request env _ctx]
+                (dispatch/handle-worker-fetch request env))})
 
 (defclass SyncDO
   (extends DurableObject)
@@ -68,7 +66,6 @@
                     (try
                       (ws-handler/handle-ws-message! this ws message)
                       (catch :default e
-                        (sentry/capture-exception! e)
                         (log/error :db-sync/ws-error e)
                         (js/console.error e)
                         (ws/send! ws {:type "error" :message "server error"}))))
@@ -78,5 +75,4 @@
   (webSocketError [this ws error]
                   (presence/remove-presence! this ws)
                   (presence/broadcast-online-users! this)
-                  (sentry/capture-exception! error)
                   (log/error :db-sync/ws-error error)))

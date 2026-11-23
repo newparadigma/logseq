@@ -5,7 +5,11 @@
 - Personal use only: fix bugs and add features.
 - Targets, in order: **macOS desktop app + self-hosted sync server** first; iOS and Android later.
 
-## Status (as of 2026-11-20)
+## Status (as of 2026-11-21)
+- Done (2026-11-21): Logseq account (Cognito) sign-in removed from the app, the CLI and the server; there is no default sync server. See "Logseq account removal (2026-11-21)". LogseqDEV rebuilt with it and installed (2026-11-21, `docker/macos-build/run.sh`, 442 s; `codesign --verify --deep --strict` OK; `app.asar` contains `settings.sync-server/not-set` and `auth-token-expired`, no `aws-amplify`, `logseq-prod.auth`, `cognito-idp`, `api.logseq.io/sync`). Previous app is in `~/.Trash`. Not launched or clicked through yet (open task: GUI check of token login, sync, logout, expiry, blocked publishing).
+- Done (2026-11-21): page publishing blocked (user decision, to be revisited): `frontend.config/publish-enabled?` is `false`; it disables the "Publish" items in the page menu and header menu, the Unpublish button of `:logseq.property.publish/published-url`, and makes the `:publish/open-dialog` event (shortcut `mod+m`) a no-op. Set it to `true` to re-enable. Lint clean; not checked in the GUI.
+- Task list: "Open tasks" below.
+- In progress (2026-11-21): review of external services. Items 1-4 done and built into LogseqDEV (installed 2026-11-21, `docker/macos-build/run.sh`, ~300 s; `codesign --verify --deep --strict` OK; `app.asar` has no `posthog`, `@sentry`, `sentry.io`, `handbooks.pages.dev`, `logseq.com/youtube`, `asset.logseq.com/static/js`; `logseq/marketplace` only as the update manifest URL). User checked in the GUI (2026-11-21): no Marketplace tab on the Plugins page, no Handbook item in the help menu. Not checked yet: YouTube embed (user: later), manual plugin update check, error boundary. See "External services review (2026-11-21)". Items 5-6 still open.
 - Done (2026-11-20): sync without a Logseq account, using self-issued tokens. See "Self-hosted token sign-in" below. Tested end to end as a web app with two devices against a local sync server; LogseqDEV rebuilt and launch-tested (see the 2026-11-20 build section).
 - Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
 - Done: the GitHub fork of `logseq/logseq` (reported by the user).
@@ -71,35 +75,76 @@
 - Tooling: `spec-dev-tool` was not installed. Clojure CLI 1.12.4.1618, Babashka 1.12.215, and pnpm 10.33.0 were downloaded to `/tmp/logseq-vendor-downloads/` for validation. The available Node version was 26.8.1; the server release compiler used installed JDK 25. The normal target toolchain remains Node 24 / Java 21. Installed node_modules and ignored build caches remain local.
 - npm/Maven packages, toolchains, and runtime binaries still use external sources; this change does not provide a fully offline build or replace account authentication.
 
-## Auth and external services (important)
-- Official sync requires a **Logseq account**; the self-hosted server no longer does (see "Self-hosted token sign-in"). The app's Cognito sign-in is hardcoded to Logseq's AWS Cognito via aws-amplify:
-  - `src/main/frontend/components/user/login.cljs`;
-  - `deps/common/src/logseq/common/cognito_config.cljs` (client 69cs1lgme7p8kbgld8n5kseii6, OAuth domain logseq-prod.auth.us-east-1.amazoncognito.com);
-  - `src/main/frontend/config.cljs` (pool us-east-1_dtagLnju8).
-- Token refresh goes to `https://<oauth-domain>/oauth2/token` (`src/main/frontend/worker/sync/auth.cljs`).
-- The server-side check is generic RS256 JWT (`deps/common/src/logseq/common/authorization.cljs`: iss, aud/client_id, exp, kid from JWKS), configured through `COGNITO_ISSUER`, `COGNITO_CLIENT_ID`, `COGNITO_JWKS_URL`. Replacing auth would mainly mean rewriting the client login.
-- ADR `docs/adr/0001-nodejs-db-sync-server-adapter.md` (status Proposed) mentions pluggable auth providers as a goal; not implemented in 2.0.2.
-- Never use `DB_SYNC_ALLOW_UNVERIFIED_JWT_CLAIMS` in production: it accepts forged tokens. It was used only for a local test.
-- Other hosts the client calls:
-  - api.logseq.io (default sync, replaced by the custom URL);
-  - api.logseq.com (avatar upload, old file-sync);
-  - logseq.io (publish; a custom URL setting exists);
-  - plugins.logseq.io (plugin marketplace);
-  - app.posthog.com (telemetry → turn off "usage diagnostics");
-  - electron-updater publishing to GitHub logseq/logseq (`resources/electron-builder.yml` → turn off auto-update or change `publish`).
+## Logseq account removal (2026-11-21)
+- User decision: fully offline / self-hosted. No Logseq account sign-in anywhere; the only sign-in is a self-issued token (see "Self-hosted token sign-in"). No default sync server: the user always sets the server URL.
+- App (frontend):
+  - Deleted `src/main/frontend/components/user/login.cljs` + `login.css` (aws-amplify/Cognito UI), the `/login` route, `setup-configure!`, the Electron `loginCallback` deep link, `aws-amplify` from `package.json`/`pnpm-lock.yaml`, `deps/common/src/logseq/common/cognito_config.cljs` (+ test), `frontend/handler/user.clj` macro.
+  - `frontend.handler.user` keeps only: JWT parsing, `set-token!` (token stored as id/access/refresh token; the refresh-token slot marks "logged in" and is the key that encrypts the locally stored E2EE password, so it must stay), `restore-tokens-from-localstorage` (expired token -> cleared), `login-with-self-hosted-token!`, `logout`, `<ensure-id&access-token!` (no refresh: empty/expired -> tokens cleared, rejected `{:type :expired-token}`), `rtc-group?` (= custom sync URL set), `can-list-remote-graphs?`, `manager?`.
+  - Removed: OAuth refresh (main thread and worker `frontend.worker.sync.auth`; worker `<resolve-ws-token` rejects `{:code :auth-token-expired}`), password e2e login, `api.logseq.com` calls (`user_info`, avatar upload, file-sync RemoteAPI), user groups / `:user/info` state, alpha/beta checks, lemonsqueezy `upgrade`, Settings "Account" tab (plans/billing), plan-limit events, `:auth/oauth-*` state.
+  - `config/db-sync-ws-url` / `db-sync-http-base` return nil without a custom URL (`api.logseq.io` default and `ENABLE_DB_SYNC_LOCAL` removed). Login buttons (header, settings, mobile) open the Sync Server dialog (`:go/sync-server-settings`).
+  - Bug fixed: RTC auto-start on login waited for an `email` claim (`rtc_flows.cljs` `trigger-start-rtc`); now `sub`.
+  - i18n: removed 69 unused keys (`:account/*` except show/hide-email-address, `:settings/account`, `:settings.account/*`, `:settings.features/login-prompt`, `:sync/*-exceed-limit`) from all locales; new `:settings.sync-server/not-set`; changed `url-desc`, `clear-success`, `reset` (en, zh-cn, ru; other locales' old translations removed).
+- CLI (OCaml): `logseq login --token <jwt>` (validates `sub` and future `exp`, writes `auth.json` 0600 with the token in all 3 slots, provider `selfhost`), `logout` deletes the file. Removed browser PKCE/password login, OAuth refresh (expired auth -> `missing-auth` "auth token expired"), login callback server, `Cli_unix.open_url`, `Crypto.random_base64url`, 18 auth error codes, `:login-timeout-ms`/`:logout-timeout-ms` config, default `ws-url`/`http-base` (`api.logseq.io`). Specs in `cli/spec/**` updated. Docs: `docs/cli/logseq-cli.md` Authentication section.
+- Server: env vars renamed `AUTH_ISSUER/CLIENT_ID/CLIENT_IDS/JWKS_URL` -> `AUTH_ISSUER/AUTH_CLIENT_ID/AUTH_CLIENT_IDS/AUTH_JWKS_URL` (authorization lib, node config keys `:auth-*`, `start.sh` now requires them, `wrangler.toml` of db-sync and publish: names renamed, Logseq Cognito values emptied). The JWT claim `cognito:username` is unchanged (tokens still carry it). PAT handler no longer checks Logseq user groups via `api.logseq.com/file-sync/user_info`: any signed-in user can manage own PATs (PATs themselves cannot, verified by existing test).
+- Tests deleted (account-based): cli-e2e sync suite (`spec/sync_*.edn`, `sync_fixture`, sync scripts and their python tests, `test-sync`/`list-sync-cases` tasks), `scripts/cli-concurrent-edit-stress*.mjs`, `scripts/cli-sync-stress-workflow.test.mjs`, `.github/workflows/cli-sync-stress.yml`. Kept clj-e2e RTC tests (local server + fake tokens, no account); `cli-e2e/scripts/db_sync_server.py` now requires `--auth-issuer/--auth-client-id/--auth-jwks-url`.
+- Publishing (not changed, waiting for the user): "Publish page" (`frontend.handler.publish`) uploads one page snapshot + assets to `logseq.io` (Cloudflare Worker `deps/publish/worker`: R2 + Durable Object, no Node adapter) and authenticates with the account token; a custom publish server URL setting exists. Without an account it cannot work. Static HTML export (`deps/publishing`) is separate and offline.
+- Verification (Docker `logseq-macos-builder:local`, cache volume `logseq-macos-build-cache`, scripts in the session scratchpad):
+  - clj-kondo: changed files 0 errors/0 warnings; whole `src` 0 errors. `bb lang:validate-translations`, `bb lang:lint-hardcoded` (no hardcoded strings), `bb lang:format-dicts` (applied) pass.
+  - CLJS tests: full run 2619 tests; remaining failures not caused by this change: tests that expect read-only dirs to be rejected (container runs as root), `apply-remote-txs-rechecks-local-txs-when-local-edit-races-without-local-batch-test` (fails in the full/namespace run, passes alone: timing). `server_test`/`transport_test` failed only in the parallel full run, pass alone. Fixed in this change: `config_test`, `root_dir_test` default paths (`logseq-dev`), `user_test`, `sync_test`, `db_sync_test`, `db_core_test`.
+  - db-sync: 243 tests, 0 failures (in a container copy with its own `pnpm install`; the project's `deps/db-sync/node_modules` has no Linux better-sqlite3 binding).
+  - OCaml CLI `dune runtest`: 404/405; the one failure is the root read-only test (pre-existing).
+  - cli-e2e harness unit tests: 67 tests, 0 failures.
+  - Not done: manual GUI check of login/sync in the rebuilt LogseqDEV, mobile, clj-e2e run.
+- Tooling notes: no `bb` in the builder image: babashka 1.12.215 linux-aarch64 static is in the cache volume at `/work/cache/bb/bb`. `pnpm install --offline` fails (`ERR_PNPM_NO_OFFLINE_META`); lockfile updates need network. `pnpm install` in `deps/db-sync` inside the mounted tree aborts with `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` (it wants to purge the host-made node_modules): use a copy.
+
+## Open tasks (user requests, 2026-11-21)
+1. Fix all failing tests: done 2026-11-23, every suite green (details below). Done:
+   - Read-only root dir tests (CLJS `logseq.cli.root-dir-test/ensure-root-dir-rejects-read-only-dir`, `frontend.worker.db-worker-node-test/db-worker-node-root-dir-permission-error`, OCaml `CLI parity root-dir rejects read-only directories`) now skip when uid is 0 (root ignores directory permissions), like the existing win32 skip. OCaml: `getuid` external added to `cli/test/test_support.ml`.
+   - `db-sync-test/apply-remote-txs-rechecks-local-txs-when-local-edit-races-without-local-batch-test` root cause: many tests call `done` inside the `f` passed to `with-datascript-conns`; `done` synchronously starts the next test, then the old test's `.finally` cleanup reset `worker-state/*client-ops-conns`/`*datascript-conns` under the next test. Fix in the helper only: cleanup restores global state only if it still owns it (`compare-and-set!` on `*datascript-conns`). Namespace now passes 3/3 (was failing deterministically after a timing change). Debug method that found it: report `:begin-test-var` into an atom and log cleanups whose owner differs (console is muted by `test-noise/mute-console-fixture`; write to `js/process.stderr`).
+   - `db-core-test/search-build-blocks-indice-in-worker-completes-before-vector-embedding-test`: race timeout 50 ms -> 2000 ms (embedding never resolves, so a hang still hits the timeout; not proven with a negative test).
+   - `server-test`/`transport-test` flakes did not reproduce in 3 full parallel runs this session; no change.
+   - Results: CLJS full parallel run 2715 tests, 2 runs, 0 failures; OCaml `dune runtest` 405/405; db-sync tests 243/243 (temp copy of `deps/db-sync` in the container with `pnpm install --offline`, because the project's `deps/db-sync/node_modules` has macOS better-sqlite3); `bb dev:lint-and-test`: kondo 0/0; `lint:carve` found vars unused after the handbooks/marketplace/token-refresh removal -> deleted `svg/cloud-down|star|offline`, `i18n/locale-format-number`, `ui/->block-background-color`, `util/find-index|full-path-extname|JS_ROOT|js-load$|css-load$`, npm `@glidejs/glide` (+ gulp copy) and `path-complete-extname`; `frontend.debug/pprint` added to `.carve/ignore` (REPL helper). `bb lint:carve` then passes. Full `bb dev:lint-and-test` not re-run after these deletions.
+   - clj-e2e: deleted `clj-e2e/test/logseq/e2e/plugins_marketplace_test.clj` (feature removed) and its entry in `clj-e2e/dev/user.clj`. clj-e2e result 2026-11-23: 232 tests in 24 `*-basic-test` namespaces, 0 failures (incl. `rtc-basic-test`), log `.tmp/clj-e2e-2026-11-23.log`. The 3 failures of the first run (2026-11-21) were all environment, no code change: `editor-basic-test/consecutive-enter-...` needs the CI e2e build (perf log `:db-worker/outliner-op-perf` is printed only with `OUTLINER-PERF-LOGGING`/DEBUG); `template-test` and `tag-template-dynamic-values-test` failed with `RangeError: Invalid language tag: en-US@posix` because the image has empty `LANG` (Chromium then reports `navigator.language` `en-US@posix`); fixed with `LANG=en_US.UTF-8`. `rtc-basic-test` needed Linux better-sqlite3 for the db-sync server.
+   - cli-e2e 2026-11-23: `bb -f cli-e2e/bb.edn unit-test` 67/67; `build` OK; `test --skip-build --jobs 4` 106/106 (~5 min). Run in the container with `eval "$(opam env --switch=default --set-switch)"` and the db-sync node_modules mount below.
+   - How to run tests in Docker (all offline unless noted): image `logseq-macos-builder:local`, volume `logseq-macos-build-cache` at `/work`, project at `/work/src`. Env: symlink `/root/.m2 .gitlibs .cache .npm` to `/work/cache/{m2,gitlibs,xdg,npm}`; `npm_config_store_dir=/work/cache/pnpm-store`; `PATH=/work/cache/bb:$PATH`; `DEPS_CLJ_TOOLS_DIR=/opt/clojure/libexec DEPS_CLJ_TOOLS_VERSION=1.12.4.1618`; `BABASHKA_PODS_DIR=/work/cache/bbpods` (`lint:carve` needs clj-kondo pod 2023.01.20, now cached). OCaml: `eval "$(opam env --switch=default --set-switch)"; cd cli && dune runtest`.
+   - clj-e2e in Docker (all cached in the volume, user-approved ~500 MB download 2026-11-21): Playwright jars in m2 (202 MB), `PLAYWRIGHT_BROWSERS_PATH=/work/cache/ms-playwright` (chromium_headless_shell-1208 + ffmpeg), `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` (else Playwright Java tries to download full Chromium on start), Chromium system libs as .deb in `/work/cache/apt/archives` (94 files; install each run with `dpkg -i /work/cache/apt/archives/*.deb`; apt config `Dir::Cache::Archives`/`Dir::State::Lists` pointed at `/work/cache/apt`). Run: `cd clj-e2e && bb serve -p 3001 &` then `bb test -p 3001` (serves `../static/` from the last LogseqDEV build). Playwright CLI: `java -cp "$(clojure -Spath)" com.microsoft.playwright.CLI ...` from `clj-e2e` (not `clojure -M -m`). Full basic run takes over 40 minutes. Also needed: (1) build `static/` like CI before e2e: `pnpm gulp:build && clojure -M:cljs release app db-worker --config-merge "{:closure-defines {frontend.config/DEV-RELEASE true frontend.worker.handler.transaction/OUTLINER-PERF-LOGGING true}}" --debug && pnpm webpack-app-build`, then delete `/work/cache/app-bundle.sha` so the next LogseqDEV build rebuilds the bundles instead of packaging the e2e build (already deleted 2026-11-23); (2) `LANG=en_US.UTF-8`; (3) Linux `deps/db-sync/node_modules` for the db-sync server: kept in the volume at `cache/db-sync-node_modules` (installed with `pnpm install --offline --frozen-lockfile --ignore-workspace`) and mounted over the host folder only inside the container: `--mount type=volume,src=logseq-macos-build-cache,dst=/work/src/deps/db-sync/node_modules,volume-subpath=cache/db-sync-node_modules` (node_modules is gitignored; the host folder keeps the macOS install). OrbStack must be running for Docker.
+2. Make the publish server usable self-hosted without a Logseq account, then re-enable publishing (`publish-enabled?`):
+   - Server `deps/publish` (Cloudflare Worker only: R2 for blobs, Durable Object `PublishMetaDO` with SQLite for metadata, `deps/publish/worker/wrangler.toml`). Needs a Node adapter like `deps/db-sync` (SQLite + filesystem) and a Docker setup (`docker/<service>/Dockerfile`).
+   - Auth: it uses `logseq.common.authorization/verify-jwt` with `AUTH_*` env, so the self-issued tokens can work; check `deps/publish/src/logseq/publish/routes.cljs` and `assets.cljs` for other account assumptions.
+   - Client: `frontend.handler.publish` (publish/unpublish, `config/publish-api-base`, custom URL `publish-server-url` in localStorage, settings `publish-server-url-settings-container`); remove the `logseq.io` default like the sync server default. Render assets point at `asset.logseq.com` (`deps/publish/src/logseq/publish/render.cljs`).
+3. Review external services (below).
+
+## External services review (2026-11-21)
+User decisions and what was changed (code only; LogseqDEV not rebuilt yet):
+- Telemetry removed everywhere. App: `frontend.modules.instrumentation.*` deleted, `@sentry/react` and `posthog-js` removed from `package.json`/`pnpm-lock.yaml`, closure defines `LOGSEQ_SENTRY_DSN`/`LOGSEQ_POSTHOG_TOKEN` removed from `shadow-cljs.edn`, the "Send usage data" settings toggle and its `instrument-disabled` storage key removed, unused `:instrument` event removed. The `:capture-error` event stays (many callers, also from the worker) and now only logs with `log/error`. `ui/error-boundary` uses a small own React class `ErrorBoundary` in `frontend.ui` (same props: `fallback` element or fn of `#js {:error}`, `onError` fn of error and component stack) instead of the Sentry one. Server: `logseq.db-sync.sentry*` deleted, `@sentry/*` and the `sentry:sourcemaps` script removed from `deps/db-sync/package.json`/lockfile, official `SENTRY_*` vars removed from `deps/db-sync/worker/wrangler.toml`, README env table updated.
+- Auto-update kept, `resources/electron-builder.yml` `publish` now points to `newparadigma/logseq` (needs GitHub releases with `latest-mac.yml` there to find updates). Release and commit links in Settings (desktop and mobile) and in `electron.release-warning` point to the fork.
+- Handbooks (help panel) removed: `frontend.extensions.handbooks`, `frontend.components.handbooks`, the "Handbook" help menu item, `:ui/handbooks-open?`/`:handbook/route-chan` state, the `logseq://handbook` deeplink (renderer listener and `electron.url`).
+- Plugin marketplace: user chose "tab + auto-check". Removed the Marketplace tab and list (`marketplace-plugins`, `weighted-sort-by`, market card controls, sort menu, stats `load-marketplace-stats`, `pkg-asset`, "Contribute" link) and the automatic update check on start (`auto-check-enabled-for-updates!`, the toggle, `:plugin/updates-auto-checking?`, `:lsp-last-auto-updates`). Kept: manual "Check for updates", install from GitHub release / web URL / file, and `load-marketplace-plugins`: updates still read the marketplace manifest (`raw.githubusercontent.com/logseq/marketplace`) because installed plugins usually have no `repo` in their package.json. The disabled-plugins cleanup warning still shows a few seconds after start (it used to hang off the auto-check timer).
+- logseq.com: YouTube embeds always use `youtube.com/embed` directly (the `logseq.com/youtube.html` wrapper was used only on iOS/Android native; risk: direct embeds may fail there with YouTube error 153, check when mobile builds start). Shortcut help uses the bundled `./img/logo.png`. Web release `asset-path` is `/static/js` (no `asset.logseq.com`). Kept: `lsp://logseq.com` scheme, iframe `referer` attribute, `og:image` meta tags in `index.html` (not fetched by the app).
+- i18n keys that became unused were removed from all dicts; `bb lang:format-dicts` applied.
+- Verification (Docker `logseq-macos-builder:local`, cache volume `logseq-macos-build-cache`, `bb` from `/work/cache/bb`, pods cached in `/work/cache/bbpods` via `BABASHKA_PODS_DIR`, `DEPS_CLJ_TOOLS_DIR=/opt/clojure/libexec DEPS_CLJ_TOOLS_VERSION=1.12.4.1618`; lockfiles via `pnpm install --lockfile-only --offline`): clj-kondo on changed files 0 errors/0 warnings; `bb lang:validate-translations` and `bb lang:lint-hardcoded` pass. (`worker/handler/block.cljs` prints pre-existing parse warnings about `##Inf`.) CLJS: `clojure -M:test compile db-worker-node test` OK; `bb dev:run-test-namespaces` ran 2075 tests in 246 namespaces: only the known root read-only failures plus `db-core-test/search-build-blocks-indice-in-worker-completes-before-vector-embedding-test` (timeout in the parallel run; passes alone and as a namespace). db-sync: `db-sync-node` and `db-sync-test` builds compile; db-sync tests not run (no Linux better-sqlite3 in the project's node_modules). Not done: GUI check (plugins page, help menu, error boundary, YouTube embed). Lesson: the own `ErrorBoundary` needs `^js` hints and `^{:jsdoc ["@constructor"]}`, otherwise the release build warns ("Cannot infer target type", "Receiver reference ... changes meaning when namespace is collapsed") and advanced compilation may rename `render`/`state`.
+
+Remaining items of the review:
+1. Done. Telemetry: PostHog (`frontend.modules.instrumentation.posthog`, `LOGSEQ_POSTHOG_TOKEN`) and Sentry (app `LOGSEQ_SENTRY_DSN`; server `SENTRY_*`, DSNs in `deps/db-sync/worker/wrangler.toml`).
+2. Done. Auto-update: electron-updater publishing to GitHub `logseq/logseq` (`resources/electron-builder.yml`).
+3. Done. Plugin marketplace `plugins.logseq.io` (`frontend.handler.common.plugin`), handbooks (`frontend.extensions.handbooks`).
+4. Done. Release `asset-path` `https://asset.logseq.com/static/js` (`shadow-cljs.edn`), `lsp://logseq.com` / referer in `src/electron/electron/window.cljs` (kept). Not done: publish render assets from `asset.logseq.com` (`deps/publish/src/logseq/publish/render.cljs`), part of open task 2 (publish server).
+5. Publishing to `logseq.io` (pending the user's decision above) and the Cloudflare `wrangler.toml` deploy configs (official infra IDs).
+6. Remaining texts that mention "Logseq Sync" (e.g. `:graph/use-sync-label`), docs that describe the official service.
 
 ## Self-hosted token sign-in (2026-11-20)
-- Goal: sync with the self-hosted server without a Logseq/Cognito account. The server code is unchanged: its RS256 JWT check accepts any issuer configured through `COGNITO_ISSUER`, `COGNITO_CLIENT_ID`, `COGNITO_JWKS_URL`.
+- Goal: sync with the self-hosted server without a Logseq/Cognito account. The server code is unchanged: its RS256 JWT check accepts any issuer configured through `AUTH_ISSUER`, `AUTH_CLIENT_ID`, `AUTH_JWKS_URL`.
+- Since 2026-11-21 this is the only sign-in; env names are `AUTH_*` (were `AUTH_*`); tokens are never refreshed.
 - `deps/db-sync/scripts/selfhost-token.mjs` (Node, built-in `crypto` only):
-  - `init <dir> --issuer <url> --username <name> [--email <e>]`: creates `<dir>/private.pem` and `<dir>/settings.json` (issuer, kid, sub), mode 0600, and prints the three `COGNITO_*` lines for the server `.env`. Refuses to overwrite an existing key.
+  - `init <dir> --issuer <url> --username <name> [--email <e>]`: creates `<dir>/private.pem` and `<dir>/settings.json` (issuer, kid, sub), mode 0600, and prints the three `AUTH_*` lines for the server `.env`. Refuses to overwrite an existing key.
   - `env <dir>`: prints those lines again. `token <dir> [--days N]` (default 3650): prints a signed JWT.
-  - `COGNITO_CLIENT_ID=logseq-selfhost`. `COGNITO_JWKS_URL` is a `data:application/json,...` URL; the server's Node `fetch` reads it, so no extra host serves the keys.
+  - `AUTH_CLIENT_ID=logseq-selfhost`. `AUTH_JWKS_URL` is a `data:application/json,...` URL; the server's Node `fetch` reads it, so no extra host serves the keys.
   - `sub` is the server user id, fixed in `settings.json`. All tokens for all devices share it, so several devices use the same graphs. Tokens carry `cognito:username` and optional `email`/`email_verified`.
   - Keep `<dir>` private: whoever has `private.pem` can sign in as you. To revoke tokens, run `init` in a new dir and redeploy the `.env`; the server keeps accepting a cached token for up to 1 hour.
 - Client:
-  - `frontend.handler.user/login-with-self-hosted-token!` checks that the token parses and has `sub` and a future `exp`. It then stores the token as the id, access and refresh token, so `logged-in?` and the restore after restart work unchanged. When the token is within 1 hour of `exp`, the Cognito refresh is expected to fail with `invalid_grant` (not tested) and log the user out: they must paste a new token.
+  - `frontend.handler.user/login-with-self-hosted-token!` checks that the token parses and has `sub` and a future `exp`. It then stores the token as the id, access and refresh token, so `logged-in?` and the restore after restart work unchanged. Since 2026-11-21 there is no refresh: an expired token is cleared on restore or on the next sync call, and the user must paste a new token.
   - Settings, the Sync Server URL dialog (desktop and mobile): after a URL is saved, an "Access token" field and a "Sign in with token" button appear (`self-hosted-token-form` in `src/main/frontend/components/settings.cljs`).
-  - `:user/fetch-info-and-graphs` (`src/main/frontend/handler/events/ui.cljs`) does not call the Logseq `user_info` API when a custom sync server URL is set; it uses `{}`. Without this, the graph list and sync never started. A Cognito user with a custom server therefore also gets no Logseq user groups/plan info.
+  - `:user/fetch-info-and-graphs` (`src/main/frontend/handler/events/ui.cljs`) never calls the Logseq `user_info` API (removed 2026-11-21).
   - i18n keys `:settings.sync-server/token-*` were added in en, zh-cn and ru.
   - Logout clears all localStorage, including the sync server URL; set it again after logout.
 - Verification:
@@ -173,6 +218,25 @@
 - Data move (user request, both apps quit, no Logseq processes running): `~/logseq/graphs/pharmakey` → `~/logseq-dev/graphs/pharmakey` (13 MB, `mv`; `pragma integrity_check` ok on a copy afterwards). `gmbnaallahglobal` and `main` stay in `~/logseq/graphs` for the official app. The official app keeps a stale `~/logseq/.graph-lifecycle/.../pharmakey/` entry.
 - clj-kondo on the changed files: 0 errors, 1 pre-existing warning.
 
+## LogseqDEV build process (current, 2026-11-20)
+- One command from the project root: `docker/macos-build/run.sh` (build + install into `/Applications`; `--no-install`; `--install-only` installs the last built app). Files: `docker/macos-build/Dockerfile` (image `logseq-macos-builder:local`, rebuilt from the old image's layers; built only if missing), `docker/macos-build/build.sh` (runs in the container), `docker/macos-build/run.sh` (host launcher; named container `logseq-macos-build`, removed on exit/interrupt).
+- The project folder is mounted read-write at `/work/src`; the build writes `node_modules` (Linux binaries), `static/`, `.shadow-cljs`, `cli/_build` into the working tree (all gitignored; files stay owned by the host user). Do not edit the project while a build runs. `git status` after builds showed only intended source changes.
+- Cache volume `logseq-macos-build-cache` at `/work`: `opam` switch (OCaml 5.3.0), `cache/{m2,gitlibs,xdg,npm,pnpm-store,rcodesign}`, `package/` (Darwin-only `static` copy with its own `node_modules`, kept between builds and synced with rsync). The old volume `logseq-build-20261120` had disappeared before this change; its opam switch was rebuilt once.
+- Skips: opam deps when `cli/*.opam` + vendor manifest are unchanged (`cache/opam-deps.sha`); gulp + CLJS + webpack when the hash of all tracked/new files outside docs, docker, cli, e2e, android, ios is unchanged and the bundles exist (`cache/app-bundle.sha`); keytar prebuild when already darwin-arm64 (download retried 3 times; one run failed on a timeout). shadow-cljs reuses `.shadow-cljs` (second run recompiled 7 of 4460 files); Closure advanced optimization still reruns (~4-5 min for all 5 targets).
+- Measured: first run (cold caches, opam rebuild) ~25 min; full run with a code change 380 s; run with no app source change 146 s (bundle steps skipped). Before: ~20 min every time.
+- Artifacts: no zip any more (user decision, 2026-11-20). electron-builder runs with target `dir`; the signed app is copied with rsync to `.tmp/macos-build/LogseqDEV.app` and installed from there with `ditto`. Packaging went from ~115 s (electron-builder zip + re-zip) to ~18 s. Build logs: `.tmp/macos-build/build-*.log`. `static/dist` is no longer used: `gulp build` (`common.clean`) wipes everything in `static/` except a keep-list. The older `.tmp/macos-build-20261120/` scripts are obsolete.
+- `.gitignore` ignored every path named `docker`; `!/docker/` was added so `docker/macos-build/` is versioned.
+- Saved image (user request): `docker/macos-build/image/logseq-macos-builder.tar.gz` (524 MB, `docker save | gzip -1`, gitignored as too large for git; `docker/macos-build/.dockerignore` keeps it out of the build context). `run.sh` loads it with `docker load` when the image is missing and only falls back to `docker build` without it. Restore was tested (`Loaded image`, same image ID `sha256:3b38de14...`). Re-save after changing the Dockerfile.
+- A build during which the Mac sleeps (lid closed) stalls: one run took 1928 s because `publishing` ran across a clamshell sleep (16:13–16:4x); not a build problem.
+- The revision string embedded by the build is now from Git (the project's `.git` is mounted; `safe.directory` is set in the container) instead of `dev`.
+
+## LogseqDEV user folders (2026-11-20)
+- Data root `~/logseq-dev` (graphs, `.graph-lifecycle`, `server-list`, `auth.json`); see "Separate data root".
+- Dot folder `~/.logseqDEV` instead of `~/.logseq` (global config, plugins, `graphs.edn`, `preferences.json`): `src/electron/electron/configs.cljs` `dot-root`, `core.cljs` `PLUGINS_ROOT`, `utils.cljs` `get-ls-dotdir-root` (the renderer gets it via IPC `getLogseqDotDirRoot`). Nothing was copied from `~/.logseq`, so LogseqDEV starts without the official app's plugins and global settings.
+- CLI launcher `~/.local/bin/logseqDEV` (`cli_install.cljs`; Windows `logseqDEV.cmd`; `src/test/electron/cli_install_test.cljs` updated). `~/.local/bin/logseq` belongs to the official app again.
+- OCaml CLI defaults: `cli/lib/cli_config.ml` `default_root_dir` and `cli/lib/auth_state.ml` `default_auth_path` → `~/logseq-dev`; `--root-dir` help text; 4 assertions in `cli/test/cli_parity_test_cases.ml`. Verified: `logseqDEV graph list` shows only `pharmakey`.
+- Tests: `dune runtest` in `cli/` (container): 444/446 pass; the same 2 fail on clean HEAD too (`root-dir rejects read-only directories` fails because the container runs as root; `login generates fresh PKCE challenge across CLI processes`). CLJS unit tests (`crypt_test`, `cli_install_test`) were not run.
+
 ## Known issues (not fixed)
 - First LogseqDEV launch crash (reported 2026-11-20, user said not to fix now): on the very first run the graph list (top left) was empty; the user chose to point to an existing graph folder (`~/logseq/graphs/gmbnaallahglobal`), and the app showed the "Something went wrong" error screen. The error text was not captured (renderer errors are not written to log files; DevTools or `--remote-debugging-port` is needed). After a restart the same graph opens normally. Related observations from the same day:
   - The official Logseq app and LogseqDEV share `~/logseq` (graphs, `.graph-lifecycle`, `server-list`, `auth.json`) and `~/.logseq`; both were running at the same time.
@@ -201,7 +265,7 @@
   - a full WebSocket session through Caddy works;
   - files in `./data` are owned by PUID:PGID and the process runs as uid 1000.
 - Not tested: a real app login against it; a Let's Encrypt certificate.
-- The compose file and `.env.example` below now require the self-issued token settings (`COGNITO_*`); the Dockerfile defaults to the official Logseq accounts and compose overrides them. These files exist only in this document, not in the repository.
+- The compose file and `.env.example` below require the self-issued token settings (`AUTH_*`); the Dockerfile has no auth defaults (server code from 2026-11-21 reads `AUTH_*`, older code read `COGNITO_*`). These files exist only in this document, not in the repository.
 - Data layout: `./data/index.sqlite`, `./data/graphs/<id>/db.sqlite`, `./data/assets/`. Back up `./data`.
 - Deploy:
   1. `cp .env.example .env`;
@@ -273,14 +337,11 @@ LABEL org.opencontainers.image.title="logseq-sync" \
       org.opencontainers.image.source="${LOGSEQ_REPO}" \
       org.opencontainers.image.version="${LOGSEQ_REF}"
 
-# Authentication uses the official Logseq accounts (the same values the
-# Logseq app uses). Graph data is stored only on this server.
+# Sign-in uses self-issued tokens: AUTH_ISSUER, AUTH_CLIENT_ID and
+# AUTH_JWKS_URL come from docker-compose (.env). Graph data stays here.
 ENV NODE_ENV=production \
     DB_SYNC_PORT=8787 \
     DB_SYNC_DATA_DIR=/data \
-    COGNITO_ISSUER=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_dtagLnju8 \
-    COGNITO_CLIENT_ID=69cs1lgme7p8kbgld8n5kseii6 \
-    COGNITO_JWKS_URL=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_dtagLnju8/.well-known/jwks.json \
     PUID=1000 \
     PGID=1000
 
@@ -326,9 +387,9 @@ services:
     environment:
       DB_SYNC_BASE_URL: https://${DOMAIN:?set DOMAIN in .env}
       # Self-issued sign-in tokens (deps/db-sync/scripts/selfhost-token.mjs)
-      COGNITO_ISSUER: ${COGNITO_ISSUER:?set COGNITO_ISSUER in .env}
-      COGNITO_CLIENT_ID: ${COGNITO_CLIENT_ID:?set COGNITO_CLIENT_ID in .env}
-      COGNITO_JWKS_URL: ${COGNITO_JWKS_URL:?set COGNITO_JWKS_URL in .env}
+      AUTH_ISSUER: ${AUTH_ISSUER:?set AUTH_ISSUER in .env}
+      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID:?set AUTH_CLIENT_ID in .env}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:?set AUTH_JWKS_URL in .env}
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
     volumes:
@@ -386,9 +447,9 @@ PGID=1000
 #   node deps/db-sync/scripts/selfhost-token.mjs init ~/logseq-sync-auth --issuer https://sync.example.com/ --username me
 # Then issue a token for the apps with:
 #   node deps/db-sync/scripts/selfhost-token.mjs token ~/logseq-sync-auth
-COGNITO_ISSUER=
-COGNITO_CLIENT_ID=
-COGNITO_JWKS_URL=
+AUTH_ISSUER=
+AUTH_CLIENT_ID=
+AUTH_JWKS_URL=
 ```
 
 #### .dockerignore

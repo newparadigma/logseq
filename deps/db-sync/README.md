@@ -110,13 +110,11 @@ cd deps/db-sync
 pnpm build:node-adapter
 ```
 
-Run the adapter with Cognito auth:
+Run the adapter with self-issued sign-in tokens. `scripts/selfhost-token.mjs init <dir> --issuer <url> --username <name>` prints the three `AUTH_*` values; `token <dir>` prints a token for the apps (`logseq login --token <token>` for the CLI):
 
 ```bash
 DB_SYNC_PORT=8787 \
-COGNITO_ISSUER=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_dtagLnju8 \
-COGNITO_CLIENT_ID=69cs1lgme7p8kbgld8n5kseii6 \
-COGNITO_JWKS_URL=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_dtagLnju8/.well-known/jwks.json \
+AUTH_ISSUER=... AUTH_CLIENT_ID=... AUTH_JWKS_URL=... \
 node worker/dist/node-adapter.js
 ```
 
@@ -139,13 +137,10 @@ pnpm test:node-adapter
 | DB_SYNC_DATA_DIR | Data directory for sqlite + assets |
 | DB_SYNC_STORAGE_DRIVER | Storage backend selection (sqlite) |
 | DB_SYNC_ASSETS_DRIVER | Assets backend selection (filesystem) |
-| SENTRY_DSN | Sentry DSN |
-| SENTRY_RELEASE | Release identifier for Sentry events and sourcemaps |
-| SENTRY_ENVIRONMENT | Sentry environment name (prod, staging, etc.) |
-| SENTRY_TRACES_SAMPLE_RATE | Traces sample rate (0.0 - 1.0) |
-| COGNITO_ISSUER | Cognito issuer URL |
-| COGNITO_CLIENT_ID | Cognito client id |
-| COGNITO_JWKS_URL | Cognito JWKS URL |
+| AUTH_ISSUER | Sign-in token issuer (`iss`) |
+| AUTH_CLIENT_ID | Sign-in token audience (`aud` / `client_id`) |
+| AUTH_CLIENT_IDS | Optional extra accepted client ids, comma separated |
+| AUTH_JWKS_URL | JWKS URL with the token signing keys (a `data:` URL works) |
 
 ## Notes
 - Runtime and db-sync engineering guidance is consolidated in `../../docs/agent-guide/implemented/architecture/2026-08-24-logseq-runtime-and-engineering-guide.md`; current protocol and route definitions live under `src/logseq/db_sync/worker/`.

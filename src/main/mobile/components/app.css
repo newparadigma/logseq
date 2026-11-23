@@ -133,10 +133,6 @@ ul {
   @apply absolute right-0;
 }
 
-.app-login-modal {
-  @apply mx-8 p-0;
-}
-
 .ls-mobile-flashcards {
   @apply h-full flex flex-col px-1 py-2;
 

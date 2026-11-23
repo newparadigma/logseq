@@ -5,7 +5,6 @@
             [frontend.components.block.selection :as block-selection]
             [frontend.components.content :as cp-content]
             [frontend.components.find-in-page :as find-in-page]
-            [frontend.components.handbooks :as handbooks]
             [frontend.components.header :as header]
             [frontend.components.journal :as journal]
             [frontend.components.left-sidebar :as app-left-sidebar]
@@ -256,8 +255,7 @@
                                           :shortcut-id :ui/toggle-document-mode)]])]]]]])))
 
 (def help-menu-items
-  [{:title (t :help/handbook) :icon "book-2" :on-click #(handbooks/toggle-handbooks)}
-   {:title (t :help.shortcuts/label) :icon "command" :on-click #(state/sidebar-add-block! (state/get-current-repo) "shortcut-settings" :shortcut-settings)}
+  [{:title (t :help.shortcuts/label) :icon "command" :on-click #(state/sidebar-add-block! (state/get-current-repo) "shortcut-settings" :shortcut-settings)}
    {:title (t :help/docs) :icon "help" :href "https://docs.logseq.com/"}
    :hr
    {:title (t :help/bug) :icon "bug" :on-click #(rfe/push-state :bug-report)}
@@ -271,11 +269,6 @@
 
 (hsx/defc help-menu-popup
   []
-  (hooks/use-effect!
-   (fn []
-     (state/set-state! :ui/handbooks-open? false))
-   [])
-
   (hooks/use-effect!
    (fn []
      (let [h (fn [^js e]
@@ -311,8 +304,7 @@
 
 (hsx/defc help-button
   []
-  (let [help-open? (rfx/use-sub [:ui/help-open?])
-        handbooks-open? (rfx/use-sub [:ui/handbooks-open?])]
+  (let [help-open? (rfx/use-sub [:ui/help-open?])]
     [:<>
      [:div.cp__sidebar-help-btn
       (ui/tooltip
@@ -328,10 +320,7 @@
        {:root-props {:delay-duration 100}})]
 
      (when help-open?
-       (help-menu-popup))
-
-     (when handbooks-open?
-       (handbooks/handbooks-popup))]))
+       (help-menu-popup))]))
 
 (defn- context-menu-click-should-hide?
   [target]

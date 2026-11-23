@@ -9,16 +9,16 @@
   The server accepts any well-formed, non-expired JWT: the configured JWKS URL
   points back at the local server itself (no /jwks.json route -> 'jwks' error,
   which is non-recoverable), so auth falls back to unverified claims. The
-  token's `iss`/`aud` must still match the server's COGNITO_ISSUER /
-  COGNITO_CLIENT_ID env, which are fixed constants shared with `test-login`."
+  token's `iss`/`aud` must still match the server's AUTH_ISSUER /
+  AUTH_CLIENT_ID env, which are fixed constants shared with `test-login`."
   (:require [jsonista.core :as json])
   (:import [java.net ServerSocket]
            [java.nio.charset StandardCharsets]
            [java.nio.file Files]
            [java.util Base64]))
 
-(def ^:private cognito-issuer "https://e2e-cognito.logseq.local")
-(def ^:private cognito-client-id "e2e-client-id")
+(def ^:private auth-issuer "https://e2e-auth.logseq.local")
+(def ^:private auth-client-id "e2e-client-id")
 
 (def ^:private test-user-sub "e2e00000-0000-4000-8000-000000000001")
 (def ^:private test-username "e2etest")
@@ -79,12 +79,9 @@
                     "--host" "127.0.0.1"
                     "--port" (str port)
                     "--startup-timeout-s" "60"
-                    ;; no auth.json on e2e machines; issuer/client-id/jwks
-                    ;; come from the explicit flags below
-                    "--auth-path" ""
-                    "--cognito-issuer" cognito-issuer
-                    "--cognito-client-id" cognito-client-id
-                    "--cognito-jwks-url" (str "http://127.0.0.1:" port "/jwks.json"))]
+                    "--auth-issuer" auth-issuer
+                    "--auth-client-id" auth-client-id
+                    "--auth-jwks-url" (str "http://127.0.0.1:" port "/jwks.json"))]
           (when-not (zero? exit)
             (throw (ex-info "local db-sync server failed to start"
                             {:exit exit :log-file log-file})))
@@ -113,9 +110,9 @@
                  "name" "E2E Test"
                  "email" test-email
                  "email_verified" true
-                 "iss" cognito-issuer
-                 "aud" cognito-client-id
-                 "client_id" cognito-client-id
+                 "iss" auth-issuer
+                 "aud" auth-client-id
+                 "client_id" auth-client-id
                  "token_use" "id"
                  "iat" now-s
                  "exp" (+ now-s token-ttl-s)}]
@@ -133,7 +130,7 @@
     {:http-base (:http-base server)
      :id-token jwt
      :access-token jwt
-     :refresh-token "e2e-refresh-token"}))
+     :refresh-token jwt}))
 
 (defn- post-json!
   [url token payload]

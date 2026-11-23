@@ -49,7 +49,6 @@ val start_process_capture_session_line :
   string -> string Rrbvec.t -> string array -> process_result
 
 val kill : int -> int -> unit
-val open_url : string -> bool
 val write_stdout : string -> unit
 
 type lifecycle_error = { code : string; message : string }

@@ -342,7 +342,7 @@ let allowed_options_for_path path =
   else if path2 path "debug" "pull" then
     option_names [| "id"; "uuid"; "ident" |]
   else if path1 path "doctor" then option_names [| "dev-script" |]
-  else if path1 path "login" then option_names [| "username"; "password" |]
+  else if path1 path "login" then option_names [| "token" |]
   else if
     path1 path "logout" || path2 path "skill" "show" || path1 path "example"
   then Vec.empty
@@ -1139,26 +1139,11 @@ let parse ?stdin argv =
              (Doctor.Parsed_doctor
                 { dev_script = option_present "dev-script" options }))
     | [| "login" |] ->
-        if
-          Vec.exists
-            (fun (key, value) ->
-              (key = "username" || key = "password")
-              && (value = None || value = Some ""))
-            options
-        then
-          Error
-            (Error.invalid_options
-               "--username and --password require non-empty values")
-        else
-          let parsed =
-            Auth_command.Parsed_login
-              {
-                username = option_value "username" options;
-                password = option_value "password" options;
-              }
-          in
-          Error.bind (Auth_command.validate_parsed parsed) (fun () ->
-              make [| "login" |] (Auth parsed))
+        let parsed =
+          Auth_command.Parsed_login { token = option_value "token" options }
+        in
+        Error.bind (Auth_command.validate_parsed parsed) (fun () ->
+            make [| "login" |] (Auth parsed))
     | [| "logout" |] -> make [| "logout" |] (Auth Auth_command.Parsed_logout)
     | [| "skill"; "show" |] ->
         make [| "skill"; "show" |] (Skill Skill.Parsed_show)

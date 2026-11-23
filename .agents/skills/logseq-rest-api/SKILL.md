@@ -122,7 +122,7 @@ against the spec; the per-op tools map arguments to path params + query + body.
 ```bash
 cd deps/db-sync && pnpm install --ignore-workspace
 DB_SYNC_PORT=8787 DB_SYNC_DATA_DIR=/tmp/dbsync DB_SYNC_ALLOW_UNVERIFIED_JWT_CLAIMS=true \
-  COGNITO_ISSUER=x COGNITO_CLIENT_ID=x COGNITO_JWKS_URL=x \
+  AUTH_ISSUER=x AUTH_CLIENT_ID=x AUTH_JWKS_URL=x \
   node worker/dist/node-adapter.js
 ```
 

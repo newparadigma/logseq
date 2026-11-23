@@ -3,11 +3,8 @@
   (:require-macros [frontend.handler.events.macros :refer [defevent!]])
   (:require [frontend.common.crypt :as crypt]
             [frontend.components.e2ee :as e2ee]
-            [frontend.config :as config]
-            [frontend.context.i18n :refer [t]]
             [frontend.flows :as flows]
             [frontend.handler.events :as events]
-            [frontend.handler.notification :as notification]
             [frontend.state :as state]
             [lambdaisland.glogi :as log]
             [logseq.shui.ui :as shui]
@@ -58,12 +55,6 @@
                   (shui/dialog-close!))})
     password-promise))
 
-(defevent! :rtc/storage-exceed-limit [[_]]
-  (notification/show! (t :sync/storage-exceed-limit) :warning false))
-
-(defevent! :rtc/graph-count-exceed-limit [[_]]
-  (notification/show! (t :sync/graph-count-exceed-limit) :warning false))
-
 (defonce ^:private *sync-app-state-cancel! (atom nil))
 
 (defn- sync-app-state!
@@ -74,20 +65,11 @@
                      :config (flows/sub-atom [:config])
                      :auth/id-token (flows/sub-atom [:auth/id-token])
                      :auth/access-token (flows/sub-atom [:auth/access-token])
-                     :auth/refresh-token (flows/sub-atom [:auth/refresh-token])
-                     :auth/oauth-token-url (flows/sub-atom [:auth/oauth-token-url])
-                     :auth/oauth-domain (flows/sub-atom [:auth/oauth-domain])
-                     :auth/oauth-client-id (flows/sub-atom [:auth/oauth-client-id])
-                     :user/info (flows/sub-atom [:user/info])}
+                     :auth/refresh-token (flows/sub-atom [:auth/refresh-token])}
         <init-sync-done? (p/deferred)
         last-state (atom ::not-set)
         app-state (fn []
-                    (cond-> (update-vals state-atoms deref)
-                      (seq config/OAUTH-DOMAIN)
-                      (assoc :auth/oauth-domain config/OAUTH-DOMAIN)
-
-                      (seq config/COGNITO-CLIENT-ID)
-                      (assoc :auth/oauth-client-id config/COGNITO-CLIENT-ID)))
+                    (update-vals state-atoms deref))
         sync! (fn []
                 (let [m (app-state)]
                   (when-not (= @last-state m)

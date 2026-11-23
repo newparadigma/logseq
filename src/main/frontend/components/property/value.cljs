@@ -2077,6 +2077,7 @@
            {:variant :text
             :size :sm
             :class "text-xs"
+            :disabled (not config/publish-enabled?)
             :on-click (fn [e]
                         (util/stop e)
                         (publish-handler/unpublish-page! block))}

@@ -16,7 +16,6 @@
             [frontend.components.selection :as selection]
             [frontend.components.settings :as settings]
             [frontend.components.shell :as shell]
-            [frontend.components.user.login :as login]
             [frontend.config :as config]
             [frontend.context.i18n :refer [t]]
             [frontend.db.async :as db-async]
@@ -35,8 +34,6 @@
             [frontend.handler.reaction :as reaction-handler]
             [frontend.handler.route :as route-handler]
             [frontend.handler.user :as user-handler]
-            [frontend.mobile.util :as mobile-util]
-            [frontend.modules.instrumentation.sentry :as sentry-event]
             [frontend.state :as state]
             [frontend.util :as util]
             [frontend.util.entity :as entity]
@@ -140,7 +137,7 @@
                              lookup)))
 
 (defevent! :publish/open-dialog [_]
-  (when-not config/publishing?
+  (when (and config/publish-enabled? (not config/publishing?))
     (p/let [page (when-let [page-name (state/get-current-page)]
                    (<page-for-publish-dialog page-name))]
       (when (entity/page? page)
@@ -161,14 +158,13 @@
         :align :end}))))
 
 (defevent! :plugin/consume-updates [[_ id prev-pending? updated?]]
-  (let [downloading?   (:plugin/updates-downloading? (state/get-state))
-        auto-checking? (plugin-handler/get-auto-checking?)]
+  (let [downloading?   (:plugin/updates-downloading? (state/get-state))]
     (when-let [coming (and (not downloading?)
                            (get-in (state/get-state) [:plugin/updates-coming id]))]
       (let [error-code (:error-code coming)
             error-code (if (= error-code (str :no-new-version)) nil error-code)
             title      (:title coming)]
-        (when (and prev-pending? (not auto-checking?))
+        (when prev-pending?
           (if-not error-code
             (plugin/set-updates-sub-content! (str title "...") 0)
             (notification/show!
@@ -188,16 +184,15 @@
           (println "Updates: take next pending - " (:id next-pending))
           (js/setTimeout
            #(plugin-handler/check-or-update-marketplace-plugin!
-             (assoc next-pending :only-check true :auto-check auto-checking? :error-code nil)
+             (assoc next-pending :only-check true :error-code nil)
              (fn [^js e]
                (notification/show! (.toString e) :error)
                (js/console.error "[Check Err]" next-pending e))) 500))
 
         ;; try to open waiting updates list
-        (do (when (and prev-pending? (not auto-checking?)
-                       (seq (state/all-available-coming-updates)))
-              (plugin/open-waiting-updates-modal!))
-            (plugin-handler/set-auto-checking! false))))))
+        (when (and prev-pending?
+                   (seq (state/all-available-coming-updates)))
+          (plugin/open-waiting-updates-modal!))))))
 
 (defevent! :plugin/loader-perf-tip [[_ {:keys [^js o _s _e]}]]
   (when-let [opts (.-options o)]
@@ -414,14 +409,6 @@
   (hide-action-bar!)
   (state/set-state! :mobile/show-action-bar? false))
 
-(defevent! :user/logout [[_]]
-  (login/sign-out!))
-
-(defevent! :user/login [[_]]
-  (if (mobile-util/native-platform?)
-    (route-handler/redirect! {:to :user-login})
-    (login/open-login-modal!)))
-
 (defevent! :asset/dialog-edit-external-url [[_ asset-block pdf-current]]
   (shui/dialog-open!
    (assets/edit-external-url-content asset-block pdf-current)
@@ -499,15 +486,9 @@
 (defevent! :user/fetch-info-and-graphs [[_]]
   (state/set-state! [:ui/loading? :login] false)
   (async/go
-    (let [session (state/get-state :auth/graph-session)
-          ;; A self-hosted sync server has no Logseq user_info API to ask.
-          result (if (config/get-custom-sync-server-url)
-                   {}
-                   (async/<! (user-handler/<user-info user-handler/remoteapi)))]
-      (when (and session (= session (state/get-state :auth/graph-session)) (map? result))
-        (state/set-user-info! result)
-        (when-let [uid (user-handler/user-uuid)]
-          (sentry-event/set-user! uid)
+    (let [session (state/get-state :auth/graph-session)]
+      (when session
+        (when (user-handler/user-uuid)
           (ensure-user-rsa-keys-if-possible!))
         (when (user-handler/can-list-remote-graphs?)
           (async/<! (p->c (rtc-handler/<get-remote-graphs)))

@@ -3,7 +3,6 @@
   (:require [clojure.string :as string]
             [frontend.components.dnd :as dnd]
             [frontend.components.email :as email-component]
-            [frontend.components.user.login :as login]
             [frontend.config :as config]
             [frontend.context.i18n :refer [t]]
             [frontend.dicts :as dicts]
@@ -34,12 +33,7 @@
        (shui/button
         {:variant :default
          :class "text-1xl flex flex-1 w-full my-8"
-         :on-click #(shui/popup-show!
-                     nil
-                     (fn []
-                       [:div.w-full.h-full
-                        (login/page-impl)])
-                     {:id :login})}
+         :on-click #(state/pub-event! [:go/sync-server-settings])}
         (t :ui/login))
        ;; Logged in: account cell
        [:div.mobile-setting-item
@@ -264,7 +258,7 @@
       (let [revision (string/replace (build-version/revision) "-dirty" "")]
         [:div.mobile-setting-item
          {:on-click (fn []
-                      (js/window.open (str "https://github.com/logseq/logseq/commit/" revision)))}
+                      (js/window.open (str "https://github.com/newparadigma/logseq/commit/" revision)))}
          [:span.text-base (t :mobile.settings/revision)]
          [:span.text-sm revision]])
 
@@ -282,9 +276,8 @@
        {:on-click #(state/pub-event! [:go/sync-server-settings])}
        [:span.text-base (t :settings.sync-server/url)]
        [:span.text-sm.opacity-70
-        (if-let [custom (config/get-custom-sync-server-url)]
-          custom
-          "Logseq Sync")]]
+        (or (config/get-custom-sync-server-url)
+            (t :settings.sync-server/not-set))]]
 
       (when login?
         [:div.mobile-setting-item

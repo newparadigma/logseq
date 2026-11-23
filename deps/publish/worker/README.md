@@ -11,9 +11,9 @@ metadata in a Durable Object backed by SQLite.
 - `R2_BUCKET`: R2 bucket name for signing
 - `R2_ACCESS_KEY_ID`: R2 access key for signing
 - `R2_SECRET_ACCESS_KEY`: R2 secret key for signing
-- `COGNITO_JWKS_URL`: JWKS URL for Cognito user pool
-- `COGNITO_ISSUER`: Cognito issuer URL
-- `COGNITO_CLIENT_ID`: Cognito client ID
+- `AUTH_JWKS_URL`: JWKS URL for Cognito user pool
+- `AUTH_ISSUER`: Cognito issuer URL
+- `AUTH_CLIENT_ID`: Cognito client ID
 - `DEV_SKIP_AUTH`: set to `true` to bypass JWT verification in local dev
 
 ### Routes

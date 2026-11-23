@@ -6,8 +6,7 @@
             [logseq.cli.e2e.preflight :as preflight]
             [logseq.cli.e2e.report :as report]
             [logseq.cli.e2e.runner :as runner]
-            [logseq.cli.e2e.shell :as shell]
-            [logseq.cli.e2e.sync-fixture :as sync-fixture])
+            [logseq.cli.e2e.shell :as shell])
   (:import (java.util.concurrent Executors LinkedBlockingQueue TimeUnit)))
 
 (defn select-cases
@@ -147,7 +146,6 @@
   (let [run-command (or run-command shell/run!)
         run-case (or (:run-case opts) runner/run-case!)
         suite (suite-from-opts opts)
-        sync-suite? (= suite :sync)
         jobs (positive-jobs jobs)
         targeted-run? (or (:case opts) (seq (:include opts)))
         on-preflight-start (:on-preflight-start opts)
@@ -172,30 +170,16 @@
         (when on-cases-ready
           (on-cases-ready {:total (count selected-cases)
                            :targeted-run? targeted-run?}))
-        (let [suite-context (when sync-suite?
-                              (sync-fixture/before-suite! {:run-command run-command}))
-              sync-context (if suite-context
-                             (assoc suite-context :e2ee-password (:e2ee-password opts))
-                             suite-context)
-              run-case* (if sync-suite?
-                          (fn [case case-opts]
-                            (run-case (sync-fixture/prepare-case case sync-context)
-                                      case-opts))
-                          run-case)]
-          (try
-            {:status :ok
-             :cases selected-cases
-             :coverage coverage-result
-             :results ((if (> jobs 1)
-                         run-selected-cases-in-parallel!
-                         run-selected-cases!)
-                       selected-cases
-                       run-case*
-                       run-command
-                       (assoc opts :jobs jobs))}
-            (finally
-              (when suite-context
-                (sync-fixture/after-suite! suite-context {:run-command run-command})))))))))
+        {:status :ok
+         :cases selected-cases
+         :coverage coverage-result
+         :results ((if (> jobs 1)
+                     run-selected-cases-in-parallel!
+                     run-selected-cases!)
+                   selected-cases
+                   run-case
+                   run-command
+                   (assoc opts :jobs jobs))}))))
 (defn build!
   [opts]
   (preflight/run! opts))
@@ -204,10 +188,6 @@
   [opts]
   (doseq [{:keys [id]} (manifests/load-cases (suite-from-opts opts))]
     (println id)))
-
-(defn list-sync-cases!
-  [opts]
-  (list-cases! (assoc opts :suite :sync)))
 
 (defn- print-cleanup-help!
   []
@@ -318,40 +298,25 @@
     (format "[%d/%d] %s " index total symbol)))
 
 (defn- print-test-help!
-  [command-name suite]
-  (let [sync-suite? (= suite :sync)]
-    (println (str "Usage: bb -f cli-e2e/bb.edn " command-name " [options]"))
-    (println)
-    (println "Options:")
-    (println "  -h, --help           Show this help and exit")
-    (println "      --skip-build     Skip build preflight steps")
-    (println "  -i, --include TAG    Run only cases with matching tag (repeatable)")
-    (println "      --case ID        Run a single case by id")
-    (println (format "      --jobs N         %s (Default: %d)"
-                     (if sync-suite?
-                       "Run up to N sync cases in parallel"
-                       "Run up to N non-sync cases in parallel")
-                     default-cli-jobs))
-    (when sync-suite?
-      (println "      --e2ee-password VALUE  E2EE password for sync commands (Default: 11111)"))
-    (println "      --verbose        Enable verbose output")
-    (println "      --timings        Print per-step timings and slow-step summary")
-    (println)
-    (println "Examples:")
-    (if sync-suite?
-      (println (str "  bb -f cli-e2e/bb.edn " command-name))
-      (println (str "  bb -f cli-e2e/bb.edn " command-name " --skip-build")))
-    (println (str "  bb -f cli-e2e/bb.edn " command-name
-                  (if sync-suite?
-                    " --jobs 4"
-                    " --skip-build --jobs 4")))
-    (println (str "  bb -f cli-e2e/bb.edn " command-name " -i smoke"))
-    (if sync-suite?
-      (println (str "  bb -f cli-e2e/bb.edn " command-name " --case sync-upload-download-mvp"))
-      (println (str "  bb -f cli-e2e/bb.edn " command-name " --skip-build --case global-help")))
-    (when sync-suite?
-      (println (str "  bb -f cli-e2e/bb.edn " command-name " --e2ee-password 'my-secret'")))
-    (flush)))
+  [command-name]
+  (println (str "Usage: bb -f cli-e2e/bb.edn " command-name " [options]"))
+  (println)
+  (println "Options:")
+  (println "  -h, --help           Show this help and exit")
+  (println "      --skip-build     Skip build preflight steps")
+  (println "  -i, --include TAG    Run only cases with matching tag (repeatable)")
+  (println "      --case ID        Run a single case by id")
+  (println (format "      --jobs N         Run up to N non-sync cases in parallel (Default: %d)"
+                   default-cli-jobs))
+  (println "      --verbose        Enable verbose output")
+  (println "      --timings        Print per-step timings and slow-step summary")
+  (println)
+  (println "Examples:")
+  (println (str "  bb -f cli-e2e/bb.edn " command-name " --skip-build"))
+  (println (str "  bb -f cli-e2e/bb.edn " command-name " --skip-build --jobs 4"))
+  (println (str "  bb -f cli-e2e/bb.edn " command-name " -i smoke"))
+  (println (str "  bb -f cli-e2e/bb.edn " command-name " --skip-build --case global-help"))
+  (flush))
 
 (defn- test-suite!
   [opts {:keys [suite command-name]
@@ -361,7 +326,7 @@
         opts (assoc opts :suite suite)]
     (if (:help opts)
       (do
-        (print-test-help! command-name suite)
+        (print-test-help! command-name)
         {:status :help})
       (let [started-at (System/nanoTime)
             passed (atom 0)
@@ -461,8 +426,3 @@
   [opts]
   (test-suite! opts {:suite :non-sync
                      :command-name "test"}))
-
-(defn test-sync!
-  [opts]
-  (test-suite! opts {:suite :sync
-                     :command-name "test-sync"}))

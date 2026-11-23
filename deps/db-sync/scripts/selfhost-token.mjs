@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Issues sign-in tokens for a self-hosted db-sync server, so the apps can
 // sync without a Logseq account. The server checks the tokens with its
-// existing JWT verification (COGNITO_* settings), no server code is involved.
+// existing JWT verification (AUTH_* settings), no server code is involved.
 //
 //   node selfhost-token.mjs init <dir> --issuer https://sync.example.com/ --username me [--email me@example.com]
-//   node selfhost-token.mjs env <dir>      # COGNITO_* lines for the server .env
+//   node selfhost-token.mjs env <dir>      # AUTH_* lines for the server .env
 //   node selfhost-token.mjs token <dir> [--days 3650]
 //
 // <dir> holds the private signing key: anyone who has it can sign in as you.
@@ -59,9 +59,9 @@ function printEnv(dir) {
   const jwk = createPublicKey(privateKey).export({ format: "jwk" });
   const jwks = { keys: [{ ...jwk, kid: settings.kid, alg: "RS256", use: "sig" }] };
   // Node's fetch reads data: URLs, so the server needs no extra host for its keys.
-  console.log(`COGNITO_ISSUER=${settings.issuer}`);
-  console.log(`COGNITO_CLIENT_ID=${CLIENT_ID}`);
-  console.log(`COGNITO_JWKS_URL=data:application/json,${encodeURIComponent(JSON.stringify(jwks))}`);
+  console.log(`AUTH_ISSUER=${settings.issuer}`);
+  console.log(`AUTH_CLIENT_ID=${CLIENT_ID}`);
+  console.log(`AUTH_JWKS_URL=data:application/json,${encodeURIComponent(JSON.stringify(jwks))}`);
 }
 
 function token(dir, { days = "3650" }) {

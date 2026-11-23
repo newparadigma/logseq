@@ -4,9 +4,7 @@
 
 (def suite->manifest-files
   {:non-sync {:inventory "non_sync_inventory.edn"
-              :cases "non_sync_cases.edn"}
-   :sync {:inventory "sync_inventory.edn"
-          :cases "sync_cases.edn"}})
+              :cases "non_sync_cases.edn"}})
 
 (def default-suite :non-sync)
 

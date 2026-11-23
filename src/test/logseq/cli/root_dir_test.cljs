@@ -31,7 +31,8 @@
 
 (deftest ensure-root-dir-rejects-read-only-dir
   (testing "rejects directories without write permission"
-    (when-not (= "win32" (.-platform js/process))
+    ;; root ignores directory permissions
+    (when-not (or (= "win32" (.-platform js/process)) (zero? (.getuid js/process)))
       (let [target (node-helper/create-tmp-dir "root-dir-readonly")]
         (fs/chmodSync target 365)
         (try
@@ -43,8 +44,8 @@
               (is (= (node-path/resolve target) (:path data))))))))))
 
 (deftest normalize-root-dir-default
-  (testing "defaults to ~/logseq"
-    (let [expected (node-path/resolve (node-path/join (.homedir os) "logseq"))
+  (testing "defaults to ~/logseq-dev"
+    (let [expected (node-path/resolve (node-path/join (.homedir os) "logseq-dev"))
           resolved (root-dir/normalize-root-dir nil)]
       (is (= expected resolved)))))
 

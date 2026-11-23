@@ -503,27 +503,10 @@
                            body (assoc :body (js/JSON.stringify (clj->js body))))))))
 
 (defn- rtc-claims []
-  #js {"sub" "user-1"
-       "cognito:groups" #js ["rtc_2025_07_10"]})
+  #js {"sub" "user-1"})
 
 (defn- d1-results [rows]
   #js {:results (clj->js rows)})
-
-(deftest pat-management-requires-rtc-group-login-jwt-test
-  (async done
-         (let [request (pat-management-request "GET" "/api/v1/personal-access-tokens")]
-           (-> (p/with-redefs [auth/auth-claims
-                               (fn [_ _]
-                                 (p/resolved #js {"sub" "user-1"
-                                                  "cognito:groups" #js ["beta-tester"]}))]
-                 (p/let [response (dispatch/handle-worker-fetch request #js {"DB" #js {}})
-                         body (json-body response)]
-                   (is (= 403 (.-status response)))
-                   (is (= "forbidden" (:error body)))))
-               (p/then (fn [] (done)))
-               (p/catch (fn [error]
-                          (is false (str error))
-                          (done)))))))
 
 (deftest pat-management-does-not-accept-a-pat-as-login-test
   (async done

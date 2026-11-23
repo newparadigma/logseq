@@ -243,7 +243,8 @@
 
 (deftest db-worker-node-root-dir-permission-error
   (async done
-         (if (= "win32" (.-platform js/process))
+         ;; root ignores directory permissions
+         (if (or (= "win32" (.-platform js/process)) (zero? (.getuid js/process)))
            (done)
            (let [data-dir (node-helper/create-tmp-dir "db-worker-readonly")
                  repo (str "logseq_db_perm_" (subs (str (random-uuid)) 0 8))]

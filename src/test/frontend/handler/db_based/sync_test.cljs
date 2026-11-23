@@ -1,7 +1,6 @@
 (ns frontend.handler.db-based.sync-test
   (:require [cljs.test :refer [deftest is async]]
             [clojure.string :as string]
-            [frontend.config :as config]
             [frontend.handler.db-based.sync :as db-sync]
             [frontend.persist-db :as persist-db]
             [frontend.handler.repo :as repo-handler]
@@ -135,6 +134,7 @@
   (async done
          (let [worker-calls (atom [])]
            (-> (p/with-redefs [db-sync/http-base (fn [] "http://base")
+                               user-handler/<ensure-id&access-token! (fn [] (p/resolved true))
                                state/<invoke-db-worker (fn [& args]
                                                          (swap! worker-calls conj args)
                                                          (p/resolved {:graph-id "graph-1"
@@ -229,8 +229,6 @@
            (state/set-auth-id-token "id-token-1")
            (state/set-auth-access-token "access-token-1")
            (state/set-auth-refresh-token "refresh-token-1")
-           (state/set-state! :auth/oauth-token-url "http://oauth/token")
-           (state/set-state! :auth/oauth-client-id "client-1")
            (-> (p/with-redefs [db-sync/http-base (fn [] "http://base")
                                user-handler/<ensure-id&access-token! (fn [] (p/resolved true))
                                state/<invoke-db-worker (fn [& args]
@@ -457,7 +455,6 @@
                                       :auth/id-token "id-token"
                                       :auth/access-token "access-token"
                                       :auth/refresh-token "refresh-token"
-                                      :user/info {:sub "user-1"}
                                       :config {:a 1}
                                       :rtc/uploading? false
                                       :rtc/loading-graphs? false))
@@ -470,18 +467,11 @@
                  (db-sync/<rtc-start! "demo-graph"))
                (p/then (fn [_]
                          (is (= :thread-api/sync-app-state (ffirst @calls)))
-                         (is (= (cond-> {:git/current-repo "demo-graph"
-                                          :config {:a 1}
-                                          :auth/id-token "id-token"
-                                          :auth/access-token "access-token"
-                                          :auth/refresh-token "refresh-token"
-                                          :auth/oauth-token-url nil
-                                          :user/info {:sub "user-1"}}
-                                   (seq config/OAUTH-DOMAIN)
-                                   (assoc :auth/oauth-domain config/OAUTH-DOMAIN)
-
-                                   (seq config/COGNITO-CLIENT-ID)
-                                   (assoc :auth/oauth-client-id config/COGNITO-CLIENT-ID))
+                         (is (= {:git/current-repo "demo-graph"
+                                 :config {:a 1}
+                                 :auth/id-token "id-token"
+                                 :auth/access-token "access-token"
+                                 :auth/refresh-token "refresh-token"}
                                 (second (first @calls))))
                          (is (= [:thread-api/db-sync-start "demo-graph"]
                                 (second @calls)))
@@ -604,9 +594,7 @@
            (reset! state/*db-worker :worker)
            (state/swap-state! assoc
                   :auth/access-token "access-token-1"
-                  :auth/refresh-token "refresh-token-1"
-                  :auth/oauth-token-url "http://oauth/token"
-                  :auth/oauth-client-id "client-1")
+                  :auth/refresh-token "refresh-token-1")
            (-> (p/with-redefs [db-sync/http-base (fn [] "http://base")
                                user-handler/<ensure-id&access-token! (fn []
                                                                        (p/resolved true))

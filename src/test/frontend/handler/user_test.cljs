@@ -1,6 +1,5 @@
 (ns frontend.handler.user-test
-  (:require [cljs.core.async :as a]
-            [cljs.test :refer [async deftest is testing]]
+  (:require [cljs.test :refer [deftest is testing]]
             [electron.ipc :as ipc]
             [frontend.config :as config]
             [frontend.handler.user :as user-handler]
@@ -43,9 +42,12 @@
        (js/btoa (js/JSON.stringify (clj->js (merge {:cognito:username ""} payload))))
        ".sig"))
 
-(deftest set-tokens-persists-auth-json-with-latest-token-values-test
+(def ^:private far-future-exp 4102444800)
+
+(deftest set-token-persists-auth-json-with-token-in-all-slots-test
   (let [writes* (atom [])
-        old-state (state/get-state)]
+        old-state (state/get-state)
+        token (jwt {:sub "user-1" :exp far-future-exp})]
     (state/replace-state! (assoc-in old-state [:system/info :home-dir] "/tmp/home"))
     (try
       (with-mocked-local-storage
@@ -56,81 +58,68 @@
                                   (swap! writes* conj {:path path
                                                        :content content})
                                   (p/resolved nil))]
-            (#'user-handler/set-tokens! "id-token-v1" "access-token-v1" "refresh-token-v1")
+            (#'user-handler/set-token! token)
             (is (= 1 (count @writes*)))
-            (is (= "/tmp/home/logseq/auth.json" (:path (first @writes*))))
-            (is (= {:id-token "id-token-v1"
-                    :access-token "access-token-v1"
-                    :refresh-token "refresh-token-v1"}
+            (is (= "/tmp/home/logseq-dev/auth.json" (:path (first @writes*))))
+            (is (= {:id-token token
+                    :access-token token
+                    :refresh-token token}
                    (select-keys (js->clj (js/JSON.parse (:content (first @writes*))) :keywordize-keys true)
                                 [:id-token :access-token :refresh-token]))))))
       (finally
         (state/replace-state! old-state)))))
 
-(deftest set-tokens-without-refresh-token-persists-existing-refresh-token-test
-  (let [writes* (atom [])
-        old-state (state/get-state)]
-    (state/replace-state! (-> old-state
-                              (assoc :auth/refresh-token "refresh-token-existing")
-                              (assoc-in [:system/info :home-dir] "/tmp/home")))
+(deftest login-with-self-hosted-token-rejects-invalid-tokens-test
+  (let [old-state (state/get-state)]
     (try
       (with-mocked-local-storage
         (fn []
-          (with-redefs [util/electron? (constantly true)
-                        ipc/ipc (fn [op _repo path content]
-                                  (is (= "writeFile" op))
-                                  (swap! writes* conj {:path path
-                                                       :content content})
-                                  (p/resolved nil))]
-            (#'user-handler/set-tokens! "id-token-v2" "access-token-v2")
-            (is (= 1 (count @writes*)))
-            (is (= "/tmp/home/logseq/auth.json" (:path (first @writes*))))
-            (is (= {:id-token "id-token-v2"
-                    :access-token "access-token-v2"
-                    :refresh-token "refresh-token-existing"}
-                   (select-keys (js->clj (js/JSON.parse (:content (first @writes*))) :keywordize-keys true)
-                                [:id-token :access-token :refresh-token]))))))
+          (with-redefs [util/electron? (constantly false)
+                        state/pub-event! (fn [& _] (is false "no login event expected"))]
+            (is (false? (user-handler/login-with-self-hosted-token! "not-a-jwt")))
+            (is (false? (user-handler/login-with-self-hosted-token! (jwt {:sub "user-1" :exp 1}))))
+            (is (false? (user-handler/login-with-self-hosted-token! (jwt {:exp far-future-exp}))))
+            (is (nil? (state/get-auth-id-token))))))
       (finally
         (state/replace-state! old-state)))))
 
-(deftest restore-tokens-preserves-refresh-token-before-refreshing-expired-id-token-test
-  (async done
-    (let [old-state (state/get-state)
-          old-refresh user-handler/<refresh-id-token&access-token
-          old-pub-event! state/pub-event!
-          refresh-called (a/chan)
-          expired-id-token (jwt {:exp 0})
-          refresh-token "refresh-token-from-local-storage"
-          restore! (fn []
-                     (state/replace-state! old-state)
-                     (set! user-handler/<refresh-id-token&access-token old-refresh)
-                     (set! state/pub-event! old-pub-event!))]
-      (state/replace-state! (assoc old-state
+(deftest restore-tokens-restores-valid-token-test
+  (let [old-state (state/get-state)
+        events* (atom [])
+        token (jwt {:sub "user-1" :exp far-future-exp})]
+    (state/replace-state! (assoc old-state
                                  :auth/id-token nil
                                  :auth/access-token nil
                                  :auth/refresh-token nil))
-      (set! user-handler/<refresh-id-token&access-token
-            (fn []
-              (a/put! refresh-called :called)
-              (a/go nil)))
-      (set! state/pub-event! (fn [& _] nil))
-      (try
-        (with-mocked-local-storage
-          {"id-token" expired-id-token
-           "access-token" "access-token-from-local-storage"
-           "refresh-token" refresh-token}
-          (fn []
+    (try
+      (with-mocked-local-storage
+        {"id-token" token "access-token" token "refresh-token" token}
+        (fn []
+          (with-redefs [util/electron? (constantly false)
+                        state/pub-event! (fn [event] (swap! events* conj event))]
             (user-handler/restore-tokens-from-localstorage)
-            (is (= refresh-token (state/get-auth-refresh-token)))))
-        (a/go
-          (let [[value] (a/alts! [refresh-called (a/timeout 1000)])]
-            (is (= :called value))
-            (restore!)
-            (done)))
-        (catch :default e
-          (is false (str "unexpected error: " e))
-          (restore!)
-          (done))))))
+            (is (= token (state/get-auth-id-token)))
+            (is (= token (state/get-auth-refresh-token)))
+            (is (= [[:user/fetch-info-and-graphs]] @events*)))))
+      (finally
+        (state/replace-state! old-state)))))
+
+(deftest restore-tokens-clears-expired-token-test
+  (let [old-state (state/get-state)
+        expired (jwt {:sub "user-1" :exp 0})]
+    (state/replace-state! (assoc old-state :auth/refresh-token expired))
+    (try
+      (with-mocked-local-storage
+        {"id-token" expired "access-token" expired "refresh-token" expired}
+        (fn []
+          (with-redefs [util/electron? (constantly false)
+                        state/pub-event! (fn [& _] (is false "no login event expected"))]
+            (user-handler/restore-tokens-from-localstorage)
+            (is (nil? (state/get-auth-id-token)))
+            (is (nil? (state/get-auth-refresh-token)))
+            (is (not (user-handler/logged-in?))))))
+      (finally
+        (state/replace-state! old-state)))))
 
 (deftest logout-clears-e2ee-password-when-db-worker-ready-test
   (testing "logout should request db-worker to clear persisted e2ee password"
@@ -144,7 +133,6 @@
             (with-redefs [state/<invoke-db-worker (fn [op & _]
                                                     (swap! ops* conj op)
                                                     (p/resolved nil))
-                          state/clear-user-info! (fn [] nil)
                           state/pub-event! (fn [& _] nil)
                           user-handler/clear-tokens (fn [] nil)]
               (user-handler/logout)
@@ -154,12 +142,14 @@
           (state/set-state! :auth/current-login-user old-login-user)
           (reset! state/*db-worker old-worker))))))
 
-(deftest can-list-remote-graphs-uses-default-server-test
-  (with-redefs [config/dev? false
-                config/get-custom-sync-server-url (constantly nil)
-                state/user-groups (constantly #{})
+(deftest can-list-remote-graphs-requires-sync-server-url-test
+  (with-redefs [config/get-custom-sync-server-url (constantly nil)
                 user-handler/logged-in? (constantly true)]
     (is (false? (user-handler/rtc-group?)))
+    (is (false? (user-handler/can-list-remote-graphs?))))
+  (with-redefs [config/get-custom-sync-server-url (constantly "https://sync.example.com")
+                user-handler/logged-in? (constantly true)]
+    (is (true? (user-handler/rtc-group?)))
     (is (true? (user-handler/can-list-remote-graphs?)))))
 
 (deftest logout-skips-e2ee-password-clear-when-db-worker-missing-test
@@ -174,7 +164,6 @@
             (with-redefs [state/<invoke-db-worker (fn [& _]
                                                     (swap! invoke-calls* inc)
                                                     (p/resolved nil))
-                          state/clear-user-info! (fn [] nil)
                           state/pub-event! (fn [& _] nil)
                           user-handler/clear-tokens (fn [] nil)]
               (user-handler/logout)

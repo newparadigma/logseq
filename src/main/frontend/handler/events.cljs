@@ -3,8 +3,7 @@
   system can dispatch one of these events using state/pub-event!"
   (:refer-clojure :exclude [run!])
   (:require-macros [frontend.handler.events.macros :refer [defevent!]])
-  (:require ["@sentry/react" :as Sentry]
-            [cljs-bean.core :as bean]
+  (:require [cljs-bean.core :as bean]
             [cljs-time.core :as t]
             [clojure.string :as string]
             [frontend.commands :as commands]
@@ -35,7 +34,6 @@
             [frontend.handler.ui :as ui-handler]
             [frontend.handler.user :as user-handler]
             [frontend.mobile.util :as mobile-util]
-            [frontend.modules.instrumentation.posthog :as posthog]
             [frontend.modules.outliner.pipeline :as pipeline]
             [frontend.modules.shortcut.core :as st]
             [frontend.persist-db :as persist-db]
@@ -212,32 +210,8 @@
   ;; FIXME: an ugly implementation for redirecting to page on new window is restored
   (repo-handler/graph-ready! repo))
 
-(defevent! :instrument [[_ {:keys [type payload] :as opts}]]
-  (when-not (empty? (dissoc opts :type :payload))
-    (log/error :event :invalid-instrument-payload-keys
-               :message "instrument data-map should only contain [:type :payload]"
-               :payload opts))
-  (posthog/capture type payload))
-
-(defn- <current-graph-schema-version
-  []
-  (if @state/db-worker-ready?
-    (p/let [version (state/<invoke-db-worker :thread-api/get-key-value
-                                             (state/get-current-repo)
-                                             :logseq.kv/schema-version)]
-      (some-> version str))
-    (p/resolved nil)))
-
 (defevent! :capture-error [[_ {:keys [error payload extra]}]]
-  (p/let [db-schema-version (<current-graph-schema-version)
-          payload (merge
-                   {:schema-version (str db-schema/version)
-                    :db-schema-version db-schema-version
-                    :db-based true}
-                   payload)]
-    (Sentry/captureException error
-                             (bean/->js {:tags payload
-                                         :extra extra}))))
+  (log/error :capture-error error :payload payload :extra extra))
 
 (defevent! :exec-plugin-cmd [[_ {:keys [pid cmd action]}]]
   (commands/exec-plugin-simple-command! pid cmd action))

@@ -24,7 +24,7 @@ function protectedResourceMetadata(request, env) {
   const url = new URL(request.url);
   return Response.json({
     resource: `${url.origin}/mcp`,
-    authorization_servers: [env.COGNITO_ISSUER],
+    authorization_servers: [env.AUTH_ISSUER],
     scopes_supported: ["logseq/read", "logseq/write"],
     bearer_methods_supported: ["header"],
   });

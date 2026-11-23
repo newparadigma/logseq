@@ -7,7 +7,7 @@
             [frontend.components.plugin-logs :as plugin-logs]
             [frontend.components.svg :as svg]
             [frontend.config :as config]
-            [frontend.context.i18n :refer [interpolate-rich-text interpolate-rich-text-node t]]
+            [frontend.context.i18n :refer [interpolate-rich-text-node t]]
             [frontend.handler.common.plugin :as plugin-common-handler]
             [frontend.handler.editor :as editor-handler]
             [frontend.handler.notification :as notification]
@@ -224,38 +224,6 @@
    [:p.text-sm
     (t :plugin/security-warning)]))
 
-(defn format-number [num & {:keys [precision] :or {precision 2}}]
-  (cond
-    (< num 1000) (str num)
-    (>= num 1000) (str (.toFixed (/ num 1000) precision) "k")))
-
-(hsx/defc card-ctls-of-market
-  [item stat installed? installing-or-updating?]
-  [:div.ctl
-   [:ul.l.flex.items-center
-    ;; stars
-    [:li.flex.text-sm.items-center.pr-3
-     (svg/star 16) [:span.pl-1 (:stargazers_count stat)]]
-
-    ;; downloads
-    (when-let [downloads (and stat (:total_downloads stat))]
-      (when (and downloads (> downloads 0))
-        [:li.flex.text-sm.items-center.pr-3
-         (svg/cloud-down 16) [:span.pl-1 (format-number downloads)]]))]
-
-   [:div.r.flex.items-center
-
-    [:a.btn
-     {:class    (util/classnames [{:disabled   (or installed? installing-or-updating?)
-                                   :installing installing-or-updating?}])
-      :on-click #(plugin-common-handler/install-marketplace-plugin! item)}
-     (if installed?
-       (t :plugin/installed)
-       (if installing-or-updating?
-         [:span.flex.items-center [:small svg/loading]
-          (t :plugin/installing)]
-         (t :plugin/install)))]]])
-
 (defn- set-plugin-disabled!
   [id disabled?]
   (-> (js-invoke js/LSPluginCore (if disabled? "disable" "enable") id)
@@ -333,12 +301,6 @@
   #(plugin-handler/open-readme!
     url item (if (or repo webPkg) remote-readme-display local-markdown-display)))
 
-(defn- plugin-thumb-icon-src
-  [id icon market?]
-  (when-not (string/blank? icon)
-    (if market?
-      (plugin-handler/pkg-asset id icon)
-      icon)))
 
 (defn- plugin-thumb-icon-view
   [src load-failed? on-error]
@@ -348,17 +310,17 @@
     svg/folder))
 
 (hsx/defc plugin-thumb-icon
-  [id icon market?]
+  [icon]
   (let [[load-failed? set-load-failed!] (hooks/use-state false)
-        src (plugin-thumb-icon-src id icon market?)]
+        src (when-not (string/blank? icon) icon)]
     (plugin-thumb-icon-view src load-failed?
                             (fn [_]
                               (set-load-failed! true)))))
 
 (hsx/defc plugin-item-card
   [t {:keys [id name title version url description author icon iir repo sponsors webPkg] :as item}
-   disabled? market? *search-key has-other-pending?
-   installing-or-updating? installed? stat coming-update]
+   disabled? *search-key has-other-pending?
+   installing-or-updating? coming-update]
 
   (let [name (or title name (t :ui/untitled))
         web? (not (nil? webPkg))
@@ -367,16 +329,15 @@
     [:div.cp__plugins-item-card
      {:key   (str "lsp-card-" id)
       :class (util/classnames
-              [{:market          market?
-                :installed       installed?
+              [{:installed       true
                 :updating        installing-or-updating?
                 :has-new-version new-version}])}
 
      [:div.l.link-block.cursor-pointer
       {:on-click (get-open-plugin-readme-handler url item repo)}
-      (plugin-thumb-icon id icon market?)
+      (plugin-thumb-icon icon)
 
-      (when (and (not market?) unpacked?)
+      (when unpacked?
         [:span.flex.justify-center.text-xs.text-error.pt-2 (t :plugin/unpacked)])]
 
      [:div.r
@@ -385,7 +346,7 @@
        [:span.l.link-block.cursor-pointer
         {:on-click (get-open-plugin-readme-handler url item repo)}
         name]
-       (when (not market?) [:sup.inline-block.px-1.text-xs.opacity-50 version])]
+       [:sup.inline-block.px-1.text-xs.opacity-50 version]]
 
       [:div.desc.text-xs.opacity-70
        [:p description]
@@ -417,14 +378,9 @@
                    :href   (plugin-handler/gh-repo-url repo)}
           (svg/github {:width 16 :height 16})])]
 
-      (if market?
-     ;; market ctls
-        (card-ctls-of-market item stat installed? installing-or-updating?)
-
-     ;; installed ctls
-        (card-ctls-of-installed
-         id name url sponsors unpacked? disabled?
-         installing-or-updating? has-other-pending? new-version item))]]))
+      (card-ctls-of-installed
+       id name url sponsors unpacked? disabled?
+       installing-or-updating? has-other-pending? new-version item)]]))
 
 (hsx/defc panel-tab-search
   [search-key *search-key *search-ref]
@@ -449,15 +405,6 @@
      :on-change #(let [^js target (.-target %)]
                    (reset! *search-key (some-> (.-value target) (string/triml))))
      :value (or search-key "")})])
-
-(hsx/defc panel-tab-developer
-  []
-  (ui/button
-   (t :plugin/contribute)
-   :href "https://github.com/logseq/marketplace"
-   :class "contribute"
-   :intent "link"
-   :target "_blank"))
 
 (hsx/defc ^:large-vars/cleanup-todo user-proxy-settings-container
   [{:keys [protocol type] :as agent-opts}]
@@ -634,25 +581,6 @@
         :disabled pending}
         (if pending (ui/loading (t :plugin/installing)) (t :plugin/install)))]]))
 
-(hsx/defc auto-check-for-updates-control
-  []
-  (let [[enabled, set-enabled!] (hooks/use-state (plugin-handler/get-enabled-auto-check-for-updates?))
-        text (t :plugin/auto-update-check)]
-
-    [:div.flex.items-center.justify-between.px-3.py-2
-     {:on-click (fn []
-                  (let [next-enabled (not enabled)]
-                    (set-enabled! next-enabled)
-                    (plugin-handler/set-enabled-auto-check-for-updates next-enabled)
-                    (notification/show!
-                     (into [:span]
-                           (interpolate-rich-text
-                            (t :plugin/auto-update-check-feedback)
-                            [[:strong.pl-1 (t (if next-enabled :ui/on :ui/off))]]))
-                     (if next-enabled :success :info))))}
-     [:span.pr-3.opacity-80 text]
-     (ui/toggle enabled #() true)]))
-
 (defn- disabled-plugin-sort-key
   [{:keys [id name title settings]}]
   (let [disabled-since (:disabled-since settings)
@@ -817,16 +745,15 @@
 
 (hsx/defc ^:large-vars/cleanup-todo panel-control-tabs
   [search-key *search-key category *category
-   sort-by *sort-by filter-by *filter-by total-nums
-   selected-unpacked-pkg market? develop-mode?
-   reload-market-fn agent-opts]
+   filter-by *filter-by total-nums
+   selected-unpacked-pkg develop-mode? agent-opts]
 
   (let [*search-ref (hooks/create-ref)]
     [:div.pb-3.flex.justify-between.control-tabs.relative
      [:div.flex.items-center.l
       (category-tabs t total-nums category #(reset! *category %))
 
-      (when (and develop-mode? (util/electron?) (not market?))
+      (when (and develop-mode? (util/electron?))
         [:div
          (ui/tooltip
           (ui/button
@@ -855,20 +782,7 @@
 
       ;; sorter & filter
       (let [aim-icon #(if (= filter-by %) "check" "circle")
-            items (if market?
-                    [{:title   (t :plugin/all)
-                      :options {:on-click #(reset! *filter-by :default)}
-                      :icon    (ui/icon (aim-icon :default))}
-
-                     {:title   (t :plugin/installed)
-                      :options {:on-click #(reset! *filter-by :installed)}
-                      :icon    (ui/icon (aim-icon :installed))}
-
-                     {:title   (t :plugin/not-installed)
-                      :options {:on-click #(reset! *filter-by :not-installed)}
-                      :icon    (ui/icon (aim-icon :not-installed))}]
-
-                    [{:title   (t :plugin/all)
+            items [{:title   (t :plugin/all)
                       :options {:on-click #(reset! *filter-by :default)}
                       :icon    (ui/icon (aim-icon :default))}
 
@@ -886,7 +800,7 @@
 
                      {:title   (t :plugin/update-available)
                       :options {:on-click #(reset! *filter-by :update-available)}
-                      :icon    (ui/icon (aim-icon :update-available))}])]
+                      :icon    (ui/icon (aim-icon :update-available))}]]
         (ui/button
          (ui/icon "filter")
          :class (str (when-not (contains? #{:default} filter-by) "picked ") "sort-or-filter-by")
@@ -896,51 +810,12 @@
                                       {:as-dropdown? true})
          :variant :ghost))
 
-      (when market?
-        (let [aim-icon #(if (= sort-by %) "check" "circle")
-              items [{:title (t :plugin/popular)
-                      :options {:on-click #(reset! *sort-by :default)}
-                      :icon (ui/icon (aim-icon :default))}
-
-                     {:title (t :plugin/downloads)
-                      :options {:on-click #(reset! *sort-by :downloads)}
-                      :icon (ui/icon (aim-icon :downloads))}
-
-                     {:title (t :plugin/stars)
-                      :options {:on-click #(reset! *sort-by :stars)}
-                      :icon (ui/icon (aim-icon :stars))}
-
-                     {:title (t :plugin/title "A - Z")
-                      :options {:on-click #(reset! *sort-by :letters)}
-                      :icon (ui/icon (aim-icon :letters))}
-
-                     {:title   (t :plugin/supports-db)
-                      :options {:on-click #(reset! *sort-by :supportsDB)}
-                      :icon    (ui/icon (aim-icon :supportsDB))}
-
-                     {:title   (t :plugin/date-added)
-                      :options {:on-click #(reset! *sort-by :addedAt)}
-                      :icon    (ui/icon (aim-icon :addedAt))}]]
-
-          (ui/button
-           (ui/icon "arrows-sort")
-           :class (str (when-not (contains? #{:default :popular} sort-by) "picked ") "sort-or-filter-by")
-           :on-click #(shui/popup-show! (.-target %)
-                                        (fn [{:keys [id]}]
-                                          (render-classic-dropdown-items id items))
-                                        {:as-dropdown? true})
-           :variant :ghost)))
-
       ;; more - updater
-      (let [items (concat (if market?
-                            [{:title [:span.flex.items-center.gap-1 (ui/icon "rotate-clockwise") (t :plugin/refresh-lists)]
-                              :options {:on-click #(reload-market-fn)}}]
-                             (concat
-                              [{:title [:span.flex.items-center.gap-1 (ui/icon "rotate-clockwise") (t :plugin/check-all-updates)]
-                                :options {:on-click #(plugin-handler/user-check-enabled-for-updates! (not= :plugins category))}}]
-                              (when (contains? #{:plugins :themes} category)
-                                [{:title [:span.flex.items-center.gap-1 (ui/icon "trash") (t :plugin/bulk-remove-disabled)]
-                                  :options {:on-click #(open-bulk-remove-disabled-plugins-dialog! category)}}])))
+      (let [items (concat [{:title [:span.flex.items-center.gap-1 (ui/icon "rotate-clockwise") (t :plugin/check-all-updates)]
+                            :options {:on-click #(plugin-handler/user-check-enabled-for-updates! (not= :plugins category))}}]
+                          (when (contains? #{:plugins :themes} category)
+                            [{:title [:span.flex.items-center.gap-1 (ui/icon "trash") (t :plugin/bulk-remove-disabled)]
+                              :options {:on-click #(open-bulk-remove-disabled-plugins-dialog! category)}}])
 
                           (when (util/electron?)
                             [{:title   [:span.flex.items-center.gap-1 (ui/icon "world") (t :settings.advanced/network-proxy)]
@@ -968,10 +843,7 @@
                                           #(shui/dialog-open! load-from-web-url-container)}}]))
 
                           [{:title [:span.flex.items-center.gap-1 (ui/icon "alert-triangle") (t :plugin/report-security)]
-                            :options {:on-click #(plugin-handler/open-report-modal!)}}]
-
-                          [{:hr true :key "dropdown-more"}
-                           {:title (auto-check-for-updates-control)}])]
+                            :options {:on-click #(plugin-handler/open-report-modal!)}}])]
 
         (ui/button
          (ui/icon "dots-vertical")
@@ -982,10 +854,7 @@
                                       {:as-dropdown? true
                                        :align "center"
                                        :content-props {:side-offset 10}})
-         :variant :ghost))
-
-      ;; developer
-      (panel-tab-developer)]]))
+         :variant :ghost))]]))
 
 (defn- use-plugin-items-list-scroll!
   [root-ref]
@@ -1014,194 +883,6 @@
     [:div {:ref (.-ref inViewState)}
      [:p.py-1.text-center.opacity-0 (when (.-inView inViewState) "·")]]))
 
-(defn weighted-sort-by
-  [key pkgs]
-  (let [default? (or (nil? key) (= key :default))
-        grouped-pkgs (if default?
-                       (some->> pkgs
-                                (group-by (fn [{:keys [addedAt]}]
-                                            (and (number? addedAt)
-                                                 (< (- (js/Date.now) addedAt)
-                                         ;; under 6 days
-                                                    (* 1000 60 60 24 6)))))
-                                (into {}))
-                       {false pkgs})
-        pinned-pkgs (get grouped-pkgs true)
-        pkgs (get grouped-pkgs false)
-        ;; calculate weight
-        [key pkgs] (if default?
-                     (let [decay-factor 0.001
-                           download-weight 0.8
-                           star-weight 0.2]
-                       (letfn [(normalize [vals val]
-                                 (let [min-val (apply min vals)
-                                       max-val (apply max vals)]
-                                   (if (= max-val min-val) 0
-                                       (/ (- val min-val) (- max-val min-val)))))
-                               (time-diff-in-days [ts]
-                                 (when-let [time-diff (and (number? ts) (- (js/Date.now) ts))]
-                                   (/ time-diff (* 1000 60 60 24))))]
-                         [:weight
-                          (let [all-downloads (->> (map :downloads pkgs) (remove #(not (number? %))))
-                                all-stars (->> (map :stars pkgs) (remove #(not (number? %))))]
-                            (->> pkgs
-                                 (map (fn [{:keys [downloads stars latestAt] :as pkg}]
-                                        (let [downloads (if (number? downloads) downloads 1)
-                                              stars (if (number? stars) stars 1)
-                                              days-since-latest (time-diff-in-days latestAt)
-                                              decay (js/Math.exp (* -1 decay-factor days-since-latest))
-                                              normalized-downloads (normalize all-downloads downloads)
-                                              normalize-stars (normalize all-stars stars)
-                                              download-score (* normalized-downloads download-weight)
-                                              star-score (* normalize-stars star-weight)]
-                                          (assoc pkg :weight (+ download-score star-score decay)))))))]))
-                     [key pkgs])]
-    (->> (apply sort-by
-                (conj
-                 (case key
-                   :letters [#(util/safe-lower-case (or (:title %) (:name %)))]
-                   [key #(compare %2 %1)])
-                 pkgs))
-         (concat pinned-pkgs))))
-
-(hsx/defc ^:large-vars/data-var marketplace-plugins
-  []
-  (let [*root-ref          (hooks/use-ref nil)
-        *list-node-ref     (hooks/use-ref nil)
-        pkgs               (rfx/use-sub [:plugin/marketplace-pkgs])
-        stats              (rfx/use-sub [:plugin/marketplace-stats])
-        installed-plugins  (rfx/use-sub [:plugin/installed-plugins])
-        installing         (rfx/use-sub [:plugin/installing])
-        online?            (rfx/use-sub [:network/online?])
-        develop-mode?      (rfx/use-sub [:ui/developer-mode?])
-        agent-opts         (rfx/use-sub [:electron/user-cfgs :settings/agent])
-        *search-key        (hooks/use-memo #(atom "") [])
-        *category          (hooks/use-memo #(atom :plugins) [])
-        *sort-by           (hooks/use-memo #(atom :default) []) ;; default (weighted) / downloads / stars / letters / updates / date-added
-        *filter-by         (hooks/use-memo #(atom :default) [])
-        *cached-query-flag (hooks/use-memo #(atom nil) [])
-        *current-page      (hooks/use-memo #(atom 1) [])
-        *fetching          (hooks/use-memo #(atom false) [])
-        *error             (hooks/use-memo #(atom nil) [])
-        [search-key]       (hooks/use-atom *search-key)
-        [category]         (hooks/use-atom *category)
-        [sort-by]          (hooks/use-atom *sort-by)
-        [filter-by]        (hooks/use-atom *filter-by)
-        [cached-query-flag] (hooks/use-atom *cached-query-flag)
-        [current-page]     (hooks/use-atom *current-page)
-        [fetching]         (hooks/use-atom *fetching)
-        [error]            (hooks/use-atom *error)
-        reload-fn          (hooks/use-callback
-                            (fn [force-refresh?]
-                              (when-not @*fetching
-                                (reset! *fetching true)
-                                (reset! *error nil)
-                                (-> (plugin-handler/load-marketplace-plugins force-refresh?)
-                                    (p/then #(plugin-handler/load-marketplace-stats false))
-                                    (p/catch #(do (js/console.error %) (reset! *error %)))
-                                    (p/finally #(reset! *fetching false)))))
-                            [])
-        _                  (use-plugin-items-list-scroll! *root-ref)
-        _                  (hooks/use-effect! #(reload-fn false) [])
-        theme-plugins      (filter #(:theme %) pkgs)
-        normal-plugins     (filter #(not (:theme %)) pkgs)
-        filtered-pkgs      (when (seq pkgs)
-                             (if (= category :themes) theme-plugins normal-plugins))
-        total-nums         [(count normal-plugins) (count theme-plugins)]
-        filtered-pkgs      (if (and (seq filtered-pkgs) (not= :default filter-by))
-                             (filter #(apply
-                                       (if (= :installed filter-by) identity not)
-                                       [(contains? installed-plugins (keyword (:id %)))])
-                                     filtered-pkgs)
-                             filtered-pkgs)
-        filtered-pkgs      (if-not (string/blank? search-key)
-                             (if-let [author (and (string/starts-with? search-key "@")
-                                                  (subs search-key 1))]
-                               (filter #(= author (:author %)) filtered-pkgs)
-                               (let [low-case-search (string/lower-case search-key)
-                                     min-description-search-length 3
-                                     max-description-matches 30
-                                     fuzzy-title-matches (search/fuzzy-search
-                                                    filtered-pkgs search-key
-                                                    :limit 30
-                                                    :extract-fn :title)
-                                     precise-description-matches (if (>= (count low-case-search) min-description-search-length)
-                                                                   (->> filtered-pkgs
-                                                                        (filter #(some-> (:description %)
-                                                                                         string/lower-case
-                                                                                         (string/includes? low-case-search)))
-                                                                        (take max-description-matches))
-                                                                   [])]
-                                 (-> (concat fuzzy-title-matches precise-description-matches)
-                                     (distinct))))
-                             filtered-pkgs)
-        filtered-pkgs      (map #(if-let [stat (get stats (keyword (:id %)))]
-                                   (let [downloads (:total_downloads stat)
-                                         stars     (:stargazers_count stat)
-                                         latest-at (some-> (:updated_at stat) (js/Date.) (.getTime))]
-                                     (assoc %
-                                            :stat stat
-                                            :stars stars
-                                            :latestAt latest-at
-                                            :downloads downloads))
-                                   %) filtered-pkgs)
-        sorted-plugins     (weighted-sort-by sort-by filtered-pkgs)
-
-        fn-query-flag      (fn [] (string/join "_" [filter-by sort-by search-key category]))
-        str-query-flag     (fn-query-flag)
-        _                  (when (not= str-query-flag cached-query-flag)
-                             (when-let [^js list-cnt (hooks/deref *list-node-ref)]
-                               (set! (.-scrollTop list-cnt) 0))
-                             (reset! *current-page 1))
-        _                  (reset! *cached-query-flag str-query-flag)
-
-        page-total-items   (count sorted-plugins)
-        sorted-plugins     (if-not (> page-total-items PER-PAGE-SIZE)
-                             sorted-plugins (take (* current-page PER-PAGE-SIZE) sorted-plugins))
-        load-more-pages!   #(when (> page-total-items PER-PAGE-SIZE)
-                              (when (< (* PER-PAGE-SIZE @*current-page) page-total-items)
-                                (reset! *current-page (inc @*current-page))))]
-
-    [:div.cp__plugins-marketplace
-     {:ref *root-ref}
-
-     (panel-control-tabs
-      search-key *search-key
-      category *category
-      sort-by *sort-by filter-by *filter-by
-      total-nums nil true develop-mode? reload-fn
-      agent-opts)
-
-     (cond
-       (not online?)
-       [:p.flex.justify-center.pt-20.opacity-50 (svg/offline 30)]
-
-       fetching
-       [:p.flex.justify-center.py-20 svg/loading]
-
-       error
-       [:p.flex.justify-center.pt-20.opacity-50 (t :plugin/remote-error (.-message error))]
-
-       :else
-       [:div.cp__plugins-marketplace-cnt
-        {:class (util/classnames [{:has-installing (boolean installing)}])}
-        [:div.cp__plugins-item-lists
-         {:ref *list-node-ref}
-         [:div.cp__plugins-item-lists-inner
-          ;; items list
-          (for [item sorted-plugins]
-            (let [pid  (keyword (:id item))
-                  stat (:stat item)]
-              ^{:key (:id item)}
-              [plugin-item-card t item
-               (get-in item [:settings :disabled]) true *search-key installing
-               (and installing (= (keyword (:id installing)) pid))
-               (contains? installed-plugins pid) stat nil]))]
-
-         ;; items loader
-         (when (seq sorted-plugins)
-           (lazy-items-loader load-more-pages!))]])]))
-
 (hsx/defc ^:large-vars/data-var installed-plugins
   []
   (let [*root-ref             (hooks/use-ref nil)
@@ -1213,13 +894,11 @@
         coming-updates        (rfx/use-sub [:plugin/updates-coming])
         agent-opts            (rfx/use-sub [:electron/user-cfgs :settings/agent])
         *filter-by            (hooks/use-memo #(atom :default) [])
-        *sort-by              (hooks/use-memo #(atom :default) [])
         *search-key           (hooks/use-memo #(atom "") [])
         *category             (hooks/use-memo #(atom :plugins) [])
         *cached-query-flag    (hooks/use-memo #(atom nil) [])
         *current-page         (hooks/use-memo #(atom 1) [])
         [filter-by]           (hooks/use-atom *filter-by)
-        [sort-by]             (hooks/use-atom *sort-by)
         [search-key]          (hooks/use-atom *search-key)
         [category]            (hooks/use-atom *category)
         [cached-query-flag]   (hooks/use-atom *cached-query-flag)
@@ -1256,13 +935,12 @@
                                                     old-dirty (get @*dirties-toggle-items (keyword (:id %2)))
                                                     k         (if (if (boolean? old-dirty) (not old-dirty) disabled?) 1 0)]
                                                 (update %1 k conj %2)) [[] []])
-                                     (#(update % 0 (fn [coll] (sort-by :iir coll))))
                                      (flatten))
                                 (do
                                   (clear-dirties-states!)
                                   filtered-plugins))
 
-        fn-query-flag         (fn [] (string/join "_" [filter-by sort-by search-key category]))
+        fn-query-flag         (fn [] (string/join "_" [filter-by search-key category]))
         str-query-flag        (fn-query-flag)
         _                     (when (not= str-query-flag cached-query-flag)
                                 (when-let [^js list-cnt (hooks/deref *list-node-ref)]
@@ -1282,11 +960,9 @@
      (panel-control-tabs
       search-key *search-key
       category *category
-      sort-by *sort-by
       filter-by *filter-by
       total-nums selected-unpacked-pkg
-      false develop-mode? nil
-      agent-opts)
+      develop-mode? agent-opts)
 
      [:div.cp__plugins-item-lists.pb-6
       {:ref *list-node-ref}
@@ -1295,9 +971,9 @@
          (let [pid (keyword (:id item))]
            ^{:key (:id item)}
            [plugin-item-card t item
-            (get-in item [:settings :disabled]) false *search-key updating
+            (get-in item [:settings :disabled]) *search-key updating
             (and updating (= (keyword (:id updating)) pid))
-            true nil (get coming-updates pid)]))]
+            (get coming-updates pid)]))]
 
       (if (seq sorted-plugins)
         (lazy-items-loader load-more-pages!)
@@ -1453,8 +1129,7 @@
 
 (hsx/defc toolbar-plugins-manager-list
   [updates-coming items]
-  (let [badge-updates? (and (not (plugin-handler/get-auto-checking?))
-                            (seq (state/all-available-coming-updates updates-coming)))
+  (let [badge-updates? (seq (state/all-available-coming-updates updates-coming))
         items (fn []
                 (->> (concat
                       (for [[_ {:keys [key pinned?] :as opts} pid] items
@@ -1493,10 +1168,7 @@
                                   [:span (t :plugin/found-updates)] (ui/point "bg-red-700" 5 {:style {:margin-top 2}})]
                           :options {:on-click #(open-waiting-updates-modal!)
                                     :class "extra-item"}
-                          :icon (ui/icon "download")})]
-
-                      [{:hr true :key "dropdown-more"}
-                       {:title [auto-check-for-updates-control]}])
+                          :icon (ui/icon "download")})])
                      (remove nil?)))]
 
     [:div.toolbar-plugins-manager.flex.items-center
@@ -1613,19 +1285,13 @@
 (hsx/defc plugins-page
   []
 
-  (let [[active set-active!] (hooks/use-state :installed)
-        market? (= active :marketplace)
-        *el-ref (hooks/create-ref)]
+  (let [*el-ref (hooks/create-ref)]
 
     (hooks/use-effect!
      (fn []
        (state/load-app-user-cfgs)
        #(clear-dirties-states!))
      [])
-
-    (hooks/use-effect!
-     #(clear-dirties-states!)
-     [market?])
 
     [:div.cp__plugins-page
      {:ref *el-ref
@@ -1639,25 +1305,8 @@
         (security-warning)
         [:hr.my-4]])
 
-     [:div.tabs.flex.items-center.justify-center
-      [:div.tabs-inner.flex.items-center
-       (shui/button {:on-click #(set-active! :installed)
-                     :class (when (not market?) "active")
-                     :size :sm
-                     :variant :text}
-                    (t :plugin/installed))
-
-       (shui/button {:on-click #(set-active! :marketplace)
-                     :class (when market? "active")
-                     :size :sm
-                     :variant :text}
-                    (shui/tabler-icon "apps")
-                    (t :plugin/marketplace))]]
-
      [:div.panels
-      (if market?
-        (marketplace-plugins)
-        (installed-plugins))]]))
+      (installed-plugins)]]))
 
 (def *updates-sub-content-timer (atom nil))
 (def *updates-sub-content (atom nil))
@@ -1672,18 +1321,15 @@
          (reset! *updates-sub-content-timer))))
 
 (hsx/defc updates-notifications-impl
-  [check-pending? auto-checking? online?]
+  [check-pending?]
   (let [[uid, set-uid] (hooks/use-state nil)
-        [cleanup-warning-pending? set-cleanup-warning-pending?!] (hooks/use-state false)
         [sub-content, _set-sub-content!] (hooks/use-atom *updates-sub-content)
         notify! (fn [content status]
-                  (if auto-checking?
-                    (println (t :plugin/list-of-updates) content)
-                    (let [cb #(plugin-handler/cancel-user-checking!)]
-                      (try
-                        (set-uid (notification/show! content status false uid nil cb))
-                        (catch js/Error _
-                          (set-uid (notification/show! content status false nil nil cb)))))))]
+                  (let [cb #(plugin-handler/cancel-user-checking!)]
+                    (try
+                      (set-uid (notification/show! content status false uid nil cb))
+                      (catch js/Error _
+                        (set-uid (notification/show! content status false nil nil cb))))))]
 
     (hooks/use-effect!
      (fn []
@@ -1698,47 +1344,17 @@
 
     (hooks/use-effect!
      (fn []
-       (when (and cleanup-warning-pending?
-                  (not auto-checking?))
-         (set-cleanup-warning-pending?! false)
-         (show-disabled-plugins-cleanup-warning!)))
-     [cleanup-warning-pending? auto-checking?])
-
-    (hooks/use-effect!
-      ;; scheduler for auto updates
-     (fn []
-       (when online?
-         (let [auto-update-delay (if (util/electron?) 3000 (* 60 1000))
-               last-updates (storage/get :lsp-last-auto-updates)
-               should-auto-update? (and (not (false? last-updates))
-                                        (or (true? last-updates)
-                                            (not (number? last-updates))
-                                             ;; interval 12 hours
-                                            (> (- (js/Date.now) last-updates) (* 60 60 12 1000))))
-               cleanup-warning-timer (when-not should-auto-update?
-                                       (js/setTimeout #(set-cleanup-warning-pending?! true)
-                                                      (+ auto-update-delay 1000)))
-               update-timer (when should-auto-update?
-                              (js/setTimeout
-                               (fn []
-                                 (plugin-handler/auto-check-enabled-for-updates!)
-                                 (storage/set :lsp-last-auto-updates (js/Date.now))
-                                 (set-cleanup-warning-pending?! true))
-                               auto-update-delay))]
-           #(do
-              (some-> update-timer (js/clearTimeout))
-              (some-> cleanup-warning-timer (js/clearTimeout))))))
-     [online?])
+       (let [timer (js/setTimeout show-disabled-plugins-cleanup-warning!
+                                  (if (util/electron?) 4000 (* 61 1000)))]
+         #(js/clearTimeout timer)))
+     [])
 
     [:<>]))
 
 (hsx/defc updates-notifications
   []
-  (let [updates-pending (rfx/use-sub [:plugin/updates-pending])
-        online?         (rfx/use-sub [:network/online?])
-        auto-checking?  (rfx/use-sub [:plugin/updates-auto-checking?])
-        check-pending?  (boolean (seq updates-pending))]
-    (updates-notifications-impl check-pending? auto-checking? online?)))
+  (let [updates-pending (rfx/use-sub [:plugin/updates-pending])]
+    (updates-notifications-impl (boolean (seq updates-pending)))))
 
 (hsx/defc focused-settings-content
   [title]

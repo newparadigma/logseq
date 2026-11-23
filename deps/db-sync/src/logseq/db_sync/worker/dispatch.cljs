@@ -202,7 +202,7 @@
          (http/json-response :worker/health {:ok true})
 
          (= path "/openapi.json")
-         (http/json-response nil (semantic-routes/openapi-document (or (aget env "COGNITO_ISSUER") "")))
+         (http/json-response nil (semantic-routes/openapi-document (or (aget env "AUTH_ISSUER") "")))
 
          (pat-handler/route? path)
          (pat-handler/handle request env)

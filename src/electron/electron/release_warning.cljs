@@ -1,10 +1,10 @@
 (ns electron.release-warning)
 
 (def stable-release-url
-  "https://github.com/logseq/logseq/releases/latest")
+  "https://github.com/newparadigma/logseq/releases/latest")
 
 (def nightly-release-url
-  "https://github.com/logseq/logseq/releases/tag/nightly")
+  "https://github.com/newparadigma/logseq/releases/tag/nightly")
 
 (defn x64-on-apple-silicon?
   [{:keys [platform arch running-under-arm64-translation?]}]

@@ -4,8 +4,7 @@
             [clojure.test :refer [deftest is]]
             [logseq.cli.e2e.cleanup :as cleanup]
             [logseq.cli.e2e.main :as main]
-            [logseq.cli.e2e.manifests :as manifests]
-            [logseq.cli.e2e.sync-fixture :as sync-fixture]))
+            [logseq.cli.e2e.manifests :as manifests]))
 
 (def sample-cases
   [{:id "global-help"
@@ -99,47 +98,6 @@
         (is (= :ok (:status result)))
         (is (= ["global-help" "graph-list"] (:case-ids @parallel-call)))
         (is (= 2 (:jobs @parallel-call)))
-        (is (false? @serial-called?))))))
-
-(deftest run-sync-suite-uses-parallel-runner-when-jobs-greater-than-one
-  (let [parallel-call (atom nil)
-        serial-called? (atom false)
-        sync-inventory {:excluded-command-prefixes ["login" "logout"]
-                        :scopes {:sync {:commands ["sync upload" "sync status"]
-                                        :options []}}}
-        sync-cases [{:id "sync-upload"
-                     :cmds ["node static/logseq-cli.js sync upload"]
-                     :covers {:commands ["sync upload"]}}
-                    {:id "sync-status"
-                     :cmds ["node static/logseq-cli.js sync status"]
-                     :covers {:commands ["sync status"]}}]]
-    (with-redefs [main/run-selected-cases-in-parallel! (fn [selected-cases run-case run-command opts]
-                                                         (reset! parallel-call {:case-ids (mapv :id selected-cases)
-                                                                                :run-case run-case
-                                                                                :run-command run-command
-                                                                                :jobs (:jobs opts)})
-                                                         (mapv (fn [case]
-                                                                 {:id (:id case)
-                                                                  :status :ok})
-                                                               selected-cases))
-                  main/run-selected-cases! (fn [& _]
-                                             (reset! serial-called? true)
-                                             (throw (ex-info "serial runner should not be used" {})))]
-      (let [result (main/run! {:suite :sync
-                               :inventory sync-inventory
-                               :cases sync-cases
-                               :skip-build true
-                               :jobs 4
-                               :run-command (fn [_]
-                                              {:exit 0
-                                               :out ""
-                                               :err ""})
-                               :run-case (fn [case _opts]
-                                           {:id (:id case)
-                                            :status :ok})})]
-        (is (= :ok (:status result)))
-        (is (= ["sync-upload" "sync-status"] (:case-ids @parallel-call)))
-        (is (= 4 (:jobs @parallel-call)))
         (is (false? @serial-called?))))))
 
 (deftest run-jobs-one-keeps-serial-runner
@@ -366,86 +324,6 @@
               [:cases :non-sync]]
              @suite-calls)))))
 
-(deftest run-loads-sync-suite-when-explicit
-  (let [suite-calls (atom [])
-        sync-inventory {:excluded-command-prefixes ["login" "logout"]
-                        :scopes {:sync {:commands ["sync upload"]
-                                        :options []}}}
-        sync-cases [{:id "sync-upload"
-                     :cmds ["node static/logseq-cli.js sync upload"]
-                     :covers {:commands ["sync upload"]}}]]
-    (with-redefs [manifests/load-inventory (fn [suite]
-                                             (swap! suite-calls conj [:inventory suite])
-                                             sync-inventory)
-                  manifests/load-cases (fn [suite]
-                                         (swap! suite-calls conj [:cases suite])
-                                         sync-cases)]
-      (let [result (main/run! {:suite :sync
-                               :skip-build true
-                               :run-command (fn [_]
-                                              {:exit 0
-                                               :out ""
-                                               :err ""})
-                               :run-case (fn [case _opts]
-                                           {:id (:id case)
-                                            :status :ok})})]
-        (is (= :ok (:status result))))
-      (is (= [[:inventory :sync]
-              [:cases :sync]]
-             @suite-calls)))))
-
-(deftest run-sync-suite-uses-suite-fixture-once-with-parallel-runner
-  (let [before-called (atom 0)
-        after-called (atom 0)
-        prepared-case-ids (atom [])
-        run-case-seen (atom [])
-        parallel-call (atom nil)
-        sync-inventory {:excluded-command-prefixes ["login" "logout"]
-                        :scopes {:sync {:commands ["sync upload" "sync status"]
-                                        :options []}}}
-        sync-cases [{:id "sync-upload"
-                     :cmds ["node static/logseq-cli.js sync upload"]
-                     :covers {:commands ["sync upload"]}}
-                    {:id "sync-status"
-                     :cmds ["node static/logseq-cli.js sync status"]
-                     :covers {:commands ["sync status"]}}]]
-    (with-redefs [sync-fixture/before-suite! (fn [_]
-                                               (swap! before-called inc)
-                                               {:suite :sync})
-                  sync-fixture/prepare-case (fn [case _suite-context]
-                                              (swap! prepared-case-ids conj (:id case))
-                                              (assoc case :prepared? true))
-                  sync-fixture/after-suite! (fn [_ _]
-                                              (swap! after-called inc))
-                  main/run-selected-cases-in-parallel! (fn [selected-cases run-case run-command opts]
-                                                         (reset! parallel-call {:case-ids (mapv :id selected-cases)
-                                                                                :jobs (:jobs opts)})
-                                                         (mapv (fn [case]
-                                                                 (run-case case {:run-command run-command}))
-                                                               selected-cases))]
-      (let [result (main/run! {:suite :sync
-                               :inventory sync-inventory
-                               :cases sync-cases
-                               :skip-build true
-                               :jobs 2
-                               :run-command (fn [_]
-                                              {:exit 0
-                                               :out ""
-                                               :err ""})
-                               :run-case (fn [case _opts]
-                                           (swap! run-case-seen conj [(:id case) (:prepared? case)])
-                                           {:id (:id case)
-                                            :status :ok})})]
-        (is (= :ok (:status result)))))
-    (is (= 1 @before-called))
-    (is (= 1 @after-called))
-    (is (= ["sync-upload" "sync-status"] (:case-ids @parallel-call)))
-    (is (= 2 (:jobs @parallel-call)))
-    (is (= ["sync-upload" "sync-status"] @prepared-case-ids))
-    (is (= [["sync-upload" true]
-            ["sync-status" true]]
-           @run-case-seen))))
-
 (deftest list-cases-defaults-to-non-sync
   (let [selected-suite (atom nil)
         output (with-out-str
@@ -455,16 +333,6 @@
                    (main/list-cases! {})))]
     (is (= :non-sync @selected-suite))
     (is (string/includes? output "non-sync-case"))))
-
-(deftest list-sync-cases-uses-sync-suite
-  (let [selected-suite (atom nil)
-        output (with-out-str
-                 (with-redefs [manifests/load-cases (fn [suite]
-                                                      (reset! selected-suite suite)
-                                                      [{:id "sync-case"}])]
-                   (main/list-sync-cases! {})))]
-    (is (= :sync @selected-suite))
-    (is (string/includes? output "sync-case"))))
 
 (deftest test-prints-progress-and-summary
   (let [output (with-out-str
@@ -574,49 +442,6 @@
     (is (not (string/includes? output "step timings:")))
     (is (not (string/includes? output "Slow steps (top 10):")))))
 
-(deftest test-sync-timings-prints-step-details-and-slow-summary
-  (let [sync-inventory {:excluded-command-prefixes ["login" "logout"]
-                        :scopes {:sync {:commands ["sync status"]
-                                        :options []}}}
-        sync-cases [{:id "sync-status-case"
-                     :cmds ["node static/logseq-cli.js sync status"]
-                     :covers {:commands ["sync status"]}}]
-        output (with-out-str
-                 (main/test-sync! {:inventory sync-inventory
-                                   :cases sync-cases
-                                   :skip-build true
-                                   :timings true
-                                   :run-command (fn [_]
-                                                  {:exit 0
-                                                   :out ""
-                                                   :err ""})
-                                   :run-case (fn [case _opts]
-                                               {:id (:id case)
-                                                :status :ok
-                                                :timings [{:phase :setup
-                                                           :step-index 1
-                                                           :step-total 1
-                                                           :elapsed-ms 10
-                                                           :status :ok
-                                                           :cmd "sync-setup"}
-                                                          {:phase :main
-                                                           :step-index 1
-                                                           :step-total 1
-                                                           :elapsed-ms 150
-                                                           :status :ok
-                                                           :cmd "sync-main"}
-                                                          {:phase :cleanup
-                                                           :step-index 1
-                                                           :step-total 1
-                                                           :elapsed-ms 20
-                                                           :status :ok
-                                                           :cmd "sync-cleanup"}]})}))]
-    (is (string/includes? output "==> Running cli-e2e cases"))
-    (is (string/includes? output "==> Step timing enabled (--timings)"))
-    (is (string/includes? output "step timings:"))
-    (is (string/includes? output "Slow steps (top 10):"))
-    (is (string/includes? output "sync-main"))))
-
 (deftest test-help-prints-usage-and-skips-execution
   (let [ran? (atom false)
         result (atom nil)
@@ -645,39 +470,6 @@
     (is (string/includes? output "Default: 4"))
     (is (string/includes? output "--timings"))
     (is (not (string/includes? output "--e2ee-password")))))
-
-(deftest test-sync-help-prints-usage-and-skips-execution
-  (let [ran? (atom false)
-        result (atom nil)
-        output (with-out-str
-                 (reset! result
-                         (main/test-sync! {:help true
-                                           :run-command (fn [_]
-                                                          (reset! ran? true)
-                                                          {:exit 0
-                                                           :out ""
-                                                           :err ""})
-                                           :run-case (fn [_ _]
-                                                       (reset! ran? true)
-                                                       {:id "unexpected"
-                                                        :status :ok})})))]
-    (is (= :help (:status @result)))
-    (is (false? @ran?))
-    (is (string/includes? output "Usage: bb -f cli-e2e/bb.edn test-sync [options]"))
-    (is (string/includes? output "--skip-build"))
-    (is (not (string/includes? output "--force-build")))
-    (is (string/includes? output "--include TAG"))
-    (is (string/includes? output "--case ID"))
-    (is (string/includes? output "--jobs N"))
-    (is (string/includes? output "Run up to N sync cases in parallel"))
-    (is (string/includes? output "--jobs 4"))
-    (is (string/includes? output "bb -f cli-e2e/bb.edn test-sync"))
-    (is (string/includes? output "--case sync-upload-download-mvp"))
-    (is (not (string/includes? output "--skip-build --case sync-upload-download-mvp")))
-    (is (string/includes? output "Default: 4"))
-    (is (string/includes? output "--timings"))
-    (is (string/includes? output "--e2ee-password VALUE"))
-    (is (string/includes? output "Default: 11111"))))
 
 (deftest run-does-not-pass-force-build-to-preflight
   (let [preflight-call (atom nil)]

@@ -4,7 +4,6 @@
             ["emoji-mart" :as emoji-mart]
             ["react-intersection-observer" :as react-intersection-observer]
             ["react" :as react]
-            ["@sentry/react" :refer [ErrorBoundary]]
             ["react-textarea-autosize" :as TextareaAutosize]
             ["react-transition-group" :refer [CSSTransition]]
             ["react-virtuoso" :refer [Virtuoso VirtuosoGrid]]
@@ -114,6 +113,33 @@
 (hsx/defc virtualized-grid [opts & children]
   (into [:> VirtuosoGrid opts] children))
 
+(defn- ^{:jsdoc ["@constructor"]} ErrorBoundary
+  "React error boundary. Props: `fallback` (element, or fn of #js {:error}) and
+  optional `onError` (fn of error and component stack)."
+  [props]
+  (this-as ^js this
+    (.call react/Component this props)
+    (set! (.-state this) #js {:error nil})
+    this))
+
+(let [^js boundary ErrorBoundary
+      ^js proto (js/Object.create (.-prototype react/Component))]
+  (set! (.-constructor proto) ErrorBoundary)
+  (set! (.-getDerivedStateFromError boundary) (fn [error] #js {:error error}))
+  (set! (.-componentDidCatch proto)
+        (fn [error ^js info]
+          (this-as ^js this
+            (when-let [on-error (.. this -props -onError)]
+              (on-error error (.-componentStack info))))))
+  (set! (.-render proto)
+        (fn []
+          (this-as ^js this
+            (if-let [error (.. this -state -error)]
+              (let [fallback (.. this -props -fallback)]
+                (if (fn? fallback) (fallback #js {:error error}) fallback))
+              (.. this -props -children)))))
+  (set! (.-prototype boundary) proto))
+
 (hsx/defc error-boundary [opts & children]
   (into [:> ErrorBoundary opts] children))
 
@@ -149,12 +175,6 @@
    "blue"
    "purple"
    "gray"])
-
-(defn ->block-background-color
-  [color]
-  (if (some #{color} built-in-colors)
-    (str "var(--ls-highlight-color-" color ")")
-    color))
 
 (defn built-in-color?
   [color]
@@ -670,7 +690,7 @@
    {:fallback (fn [^js props]
                 (let [error (.-error props)]
                   (if (fn? error-view) (error-view error) error-view)))
-    :onError (fn [error _component-stack _event-id]
+    :onError (fn [error _component-stack]
                (log/error :exception error))}
    view))
 
@@ -678,7 +698,7 @@
   [error-view view]
   (error-boundary
    {:fallback (constantly error-view)
-    :onError (fn [error _component-stack _event-id]
+    :onError (fn [error _component-stack]
                (log/error :exception error)
                (notification/show!
                 [:div.flex.flex-col.gap-2

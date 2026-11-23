@@ -10,7 +10,6 @@
             [frontend.components.editor :as editor]
             [frontend.components.page :as page]
             [frontend.components.reference :as reference]
-            [frontend.components.user.login :as user.login]
             [frontend.config :as config]
             [frontend.context.i18n :as i18n]
             [frontend.db.restore :as db-restore]
@@ -33,7 +32,6 @@
             [frontend.handler.user :as user-handler]
             [frontend.common.idb :as idb]
             [frontend.mobile.util :as mobile-util]
-            [frontend.modules.instrumentation.core :as instrument]
             [frontend.modules.shortcut.core :as shortcut]
             [frontend.persist-db :as persist-db]
             [frontend.state :as state]
@@ -153,13 +151,10 @@
 
       (register-components-fns!)
       (user-handler/restore-tokens-from-localstorage)
-      (user.login/setup-configure!)
       (when (util/electron?)
         (el/listen!))
 
       (i18n/start)
-      (instrument/init)
-
       (events/run!)
 
       (log/info ::start-web-worker {})

@@ -68,7 +68,7 @@
                      :expect {:exit 1
                               :stdout-json-paths {[:error :code] "boom"}}
                      :graph "negative-graph"}]})]
-    (let [[single-parent multi-parent negative-case] (manifests/load-cases :sync)]
+    (let [[single-parent multi-parent negative-case] (manifests/load-cases :non-sync)]
       (testing "supports :extends keyword"
         (is (= "single-parent" (:id single-parent)))
         (is (= ["cmd-a" "cmd-case"] (:cmds single-parent)))
@@ -112,7 +112,7 @@
                                                 :setup ["b"]}}
                                            :cases [{:id "cycle" :extends :a}]})]
     (let [error (try
-                  (manifests/load-cases :sync)
+                  (manifests/load-cases :non-sync)
                   nil
                   (catch clojure.lang.ExceptionInfo error
                     error))]
@@ -143,7 +143,7 @@
                                            :cases [{:id "valid" :extends :base :cmds ["case"]}
                                                    {:id "invalid" :extends :also-missing :cmds ["case"]}]})]
     (let [error (try
-                  (manifests/load-cases :sync)
+                  (manifests/load-cases :non-sync)
                   nil
                   (catch clojure.lang.ExceptionInfo error
                     error))
@@ -175,7 +175,7 @@
                                                        :unused {:cmds ["unused"]}}
                                            :cases [{:id "only" :extends :base :cmds ["case"]}]})]
     (let [error (try
-                  (manifests/load-cases :sync)
+                  (manifests/load-cases :non-sync)
                   nil
                   (catch clojure.lang.ExceptionInfo error
                     error))
@@ -184,42 +184,3 @@
       (is (some? error))
       (is (= [{:type :unused-template :template :unused}]
              (vec unused-issues))))))
-
-(deftest sync-multi-batch-operations-uses-state-driven-waits-instead-of-fixed-sleeps
-  (let [cases (manifests/load-cases :sync)
-        multi-batch (some #(when (= "sync-multi-batch-operations" (:id %)) %) cases)
-        commands (:cmds multi-batch)
-        upload-commands (filter #(re-find #"sync upload --graph" %) commands)
-        wait-commands (filter #(re-find #"wait_sync_status\.py" %) commands)]
-    (is (some? multi-batch))
-    (is (not-any? #(= "sleep 1" %) commands))
-    (is (= 1 (count upload-commands)))
-    (is (= 5 (count wait-commands)))
-    (is (= 3 (count (filter #(re-find #"--root-dir '\{\{tmp-dir\}\}/graphs-b'.+--timeout-s 30 --interval-s 1" %) wait-commands))))))
-
-(deftest sync-manifest-includes-duplicate-upload-negative-case
-  (let [cases (manifests/load-cases :sync)
-        duplicate-upload (some #(when (= "sync-upload-rejects-duplicate-remote-graph" (:id %)) %) cases)
-        json-paths (get-in duplicate-upload [:expect :stdout-json-paths])
-        setup-commands (:setup duplicate-upload)
-        main-commands (:cmds duplicate-upload)]
-    (is (some? duplicate-upload))
-    (is (= 1 (get-in duplicate-upload [:expect :exit])))
-    (is (= "graph-already-exists"
-           (get-in duplicate-upload [:expect :stdout-json-paths [:error :code]])))
-    (is (= ["delete it before uploading again"]
-           (get-in duplicate-upload [:expect :stdout-contains])))
-    (is (= 1 (count (filter #(re-find #"sync upload --graph" %) setup-commands))))
-    (is (= 1 (count (filter #(re-find #"sync upload --graph" %) main-commands))))
-    (is (false? (contains? json-paths [:data :pending-local])))
-    (is (false? (contains? json-paths [:data :pending-asset])))
-    (is (false? (contains? json-paths [:data :pending-server])))
-    (is (false? (contains? json-paths [:data :last-error])))))
-
-(deftest sync-status-steady-state-does-not-repeat-identical-b-side-steady-state-waits
-  (let [cases (manifests/load-cases :sync)
-        steady-state (some #(when (= "sync-status-steady-state" (:id %)) %) cases)
-        steady-waits (filter #(re-find #"wait_sync_status\.py.+--root-dir '\{\{tmp-dir\}\}/graphs-b'.+--timeout-s 30 --interval-s 1" %) (:cmds steady-state))]
-    (is (some? steady-state))
-    (is (= 1 (count steady-waits)))
-    (is (= 1 (count (filter #(re-find #"sync status --graph" %) (:cmds steady-state)))))))

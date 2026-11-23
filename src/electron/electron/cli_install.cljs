@@ -84,7 +84,7 @@
                   "No CLI install directory found. Expected to install the launcher in ~/.local/bin, but that directory could not be created or is not writable.")))
 
         :else
-        (let [target-path (path-join cli-dir (if windows? "logseq.cmd" "logseq"))
+        (let [target-path (path-join cli-dir (if windows? "logseqDEV.cmd" "logseqDEV"))
               exe-path (launcher-exe-path deps)
               bootstrap (cli-bootstrap packaged? cli-path)
               content (if windows?

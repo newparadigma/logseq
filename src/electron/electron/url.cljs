@@ -1,6 +1,5 @@
 (ns electron.url
-  (:require [clojure.string :as string]
-            [electron.deeplink :as deeplink]
+  (:require [electron.deeplink :as deeplink]
             [electron.handler :as handler]
             [electron.utils :refer [send-to-renderer] :as utils]
             [electron.window :as win]))
@@ -27,7 +26,7 @@
       (if-let [graph-name (handler/get-graph-name graph-identifier)]
         (assoc target :graph-name graph-name)
         {:i18n-key :electron/link-open-failed-no-graph :i18n-args [graph-identifier]})
-      (contains? #{"x-callback-url" "handbook"} (.-host parsed-url)) target
+      (= "x-callback-url" (.-host parsed-url)) target
       :else {:i18n-key :electron/link-open-failed-no-target :i18n-args [(.-host parsed-url)]})))
 
 (defn- send-when-loaded!
@@ -97,7 +96,4 @@
     (case (.-host parsed-url)
       "graph" (local-url-handler window target false)
       "new-window" (local-url-handler window target true)
-      "x-callback-url" (x-callback-url-handler window parsed-url)
-      "handbook" (send-when-loaded! window :handbook
-                                      {:key (some-> (.-pathname parsed-url) (string/replace-first #"^[\/]+" ""))
-                                       :args (some-> (.-searchParams parsed-url) (js/Object.fromEntries))}))))
+      "x-callback-url" (x-callback-url-handler window parsed-url))))

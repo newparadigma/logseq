@@ -4122,7 +4122,7 @@
   [{:keys [on-error fallback-view]} view]
   (ui/error-boundary
    {:fallback (constantly fallback-view)
-    :onError (fn [error _component-stack _event-id]
+    :onError (fn [error _component-stack]
                (when on-error
                  (on-error error)))}
    view))

@@ -7,13 +7,11 @@
                      ["@capacitor/clipboard" :as CapacitorClipboard]
                      ["@capacitor/core" :refer [Capacitor]]
                      ["@capacitor/status-bar" :refer [^js StatusBar Style]]
-                     ["path-complete-extname" :as pathCompleteExtname]
                      ["semver" :as semver]
                      [cljs-bean.core :as bean]
                      [cljs-time.core :as t]
                      [clojure.pprint]
                      [dommy.core :as d]
-                     [frontend.loader :refer [load]]
                      [frontend.mobile.util :as mobile-util]
                      [goog.dom :as gdom]
                      [goog.functions :as gfun]
@@ -83,7 +81,6 @@
 
 #?(:cljs (defonce ^js node-path utils/nodePath))
 #?(:cljs (defonce ^js sem-ver semver))
-#?(:cljs (defonce ^js full-path-extname pathCompleteExtname))
 
 #?(:cljs (defn app-scroll-container-node
            ([]
@@ -187,13 +184,6 @@
      []
      (p/do!
       (.setStyle StatusBar (clj->js {:style (.-Dark Style)})))))
-
-(defn find-index
-  "Find first index of an element in list"
-  [pred-or-val coll]
-  (let [pred (if (fn? pred-or-val) pred-or-val #(= pred-or-val %))]
-    (reduce-kv #(if (pred %3) (reduced %2) %1) -1
-               (cond-> coll (list? coll) (vec)))))
 
 ;; ".lg:absolute.lg:inset-y-0.lg:right-0.lg:w-1/2"
 (defn hiccup->class
@@ -1228,35 +1218,6 @@
                (#(str % " " (:name unit) (when (> % 1) "s")
                       (when ago? " ago")
                       (when after? " later")))))))))
-
-#?(:cljs
-   (def JS_ROOT
-     (when-not node-test?
-       "./js")))
-
-#?(:cljs
-   (defn js-load$
-     [url]
-     (p/create
-      (fn [resolve]
-        (load url resolve)))))
-
-#?(:cljs
-   (defn css-load$
-     ([url] (css-load$ url nil))
-     ([url id]
-      (p/create
-       (fn [resolve reject]
-         (let [id (str "css-load-" (or id url))]
-           (if-not (gdom/getElement id)
-             (let [^js link (js/document.createElement "link")]
-               (set! (.-id link) id)
-               (set! (.-rel link) "stylesheet")
-               (set! (.-href link) url)
-               (set! (.-onload link) resolve)
-               (set! (.-onerror link) reject)
-               (.append (.-head js/document) link))
-             (resolve))))))))
 
 #?(:cljs
    (defn image-blob->png

@@ -43,7 +43,7 @@ protocols:
 
 publish:
   - provider: github
-    owner: logseq
+    owner: newparadigma
     repo: logseq
 
 extraResources:

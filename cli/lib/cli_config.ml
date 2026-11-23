@@ -2,12 +2,8 @@ type env = string -> string option
 
 type defaults = {
   timeout_span : float;
-  login_timeout_span : float;
-  logout_timeout_span : float;
   list_title_max_display_width : int;
   root_dir : Cli_primitive.path;
-  ws_url : Cli_primitive.url;
-  http_base : Cli_primitive.url;
 }
 
 type t = {
@@ -16,8 +12,6 @@ type t = {
   root_dir : Cli_primitive.path;
   config_path : Cli_primitive.path;
   timeout_span : float;
-  login_timeout_span : float;
-  logout_timeout_span : float;
   list_title_max_display_width : int;
   output_format : Output.Mode.packed option;
   verbose : bool;
@@ -40,19 +34,15 @@ type source = Defaults | Env | File of Cli_primitive.path | Argv
 type resolved = { config : t; sources : source Rrbvec.t }
 
 let default_root_dir () =
-  Filename.concat (Sys.getenv_opt "HOME" |> Option.value ~default:".") "logseq"
+  Filename.concat (Sys.getenv_opt "HOME" |> Option.value ~default:".") "logseq-dev"
 
 let default_config_path root_dir = Filename.concat root_dir "cli.edn"
 
 let defaults () =
   {
     timeout_span = Time.span_of_ms 10_000L;
-    login_timeout_span = Time.span_of_ms 300_000L;
-    logout_timeout_span = Time.span_of_ms 120_000L;
     list_title_max_display_width = 40;
     root_dir = default_root_dir ();
-    ws_url = "wss://api.logseq.io/sync/%s";
-    http_base = "https://api.logseq.io";
   }
 
 let db_version_prefix = "logseq_db_"
@@ -125,8 +115,6 @@ let env_config env =
     |> env_string "LOGSEQ_CLI_ROOT_DIR" env "root-dir"
     |> env_string "LOGSEQ_CLI_CONFIG" env "config-path"
     |> env_int "LOGSEQ_CLI_TIMEOUT_MS" env "timeout-ms"
-    |> env_int "LOGSEQ_CLI_LOGIN_TIMEOUT_MS" env "login-timeout-ms"
-    |> env_int "LOGSEQ_CLI_LOGOUT_TIMEOUT_MS" env "logout-timeout-ms"
     |> env_string "LOGSEQ_CLI_OUTPUT" env "output-format"
     |> env_string "LOGSEQ_CLI_WS_URL" env "ws-url"
     |> env_string "LOGSEQ_CLI_HTTP_BASE" env "http-base"
@@ -244,18 +232,12 @@ let validate_output_config_value ~source key value =
 
 let validate_config_values ~source value =
   Error.bind (validate_int64_config_value ~source "timeout-ms" value) (fun () ->
-      Error.bind (validate_int64_config_value ~source "login-timeout-ms" value)
+      Error.bind
+        (validate_int_config_value ~source "list-title-max-display-width" value)
         (fun () ->
           Error.bind
-            (validate_int64_config_value ~source "logout-timeout-ms" value)
-            (fun () ->
-              Error.bind
-                (validate_int_config_value ~source
-                   "list-title-max-display-width" value) (fun () ->
-                  Error.bind
-                    (validate_output_config_value ~source "output-format" value)
-                    (fun () ->
-                      validate_output_config_value ~source "output" value)))))
+            (validate_output_config_value ~source "output-format" value)
+            (fun () -> validate_output_config_value ~source "output" value)))
 
 let first_some values = Vec.find_map (fun value -> value) values
 
@@ -379,32 +361,6 @@ let resolve ~(defaults : defaults) ~env (globals : Global_opts.t) =
                      |])
                 |> Option.value ~default:defaults.timeout_span
               in
-              let login_timeout_span =
-                first_some
-                  (Vec.of_array
-                     [|
-                       span_option_of_ms
-                         (value_int64 "login-timeout-ms" env_config);
-                       span_option_of_ms
-                         (Option.bind raw_file_config
-                            (value_int64 "login-timeout-ms"));
-                       Some defaults.login_timeout_span;
-                     |])
-                |> Option.value ~default:defaults.login_timeout_span
-              in
-              let logout_timeout_span =
-                first_some
-                  (Vec.of_array
-                     [|
-                       span_option_of_ms
-                         (value_int64 "logout-timeout-ms" env_config);
-                       span_option_of_ms
-                         (Option.bind raw_file_config
-                            (value_int64 "logout-timeout-ms"));
-                       Some defaults.logout_timeout_span;
-                     |])
-                |> Option.value ~default:defaults.logout_timeout_span
-              in
               let list_title_max_display_width =
                 positive_or_default
                   (Option.bind raw_file_config
@@ -418,23 +374,16 @@ let resolve ~(defaults : defaults) ~env (globals : Global_opts.t) =
                   root_dir;
                   config_path;
                   timeout_span;
-                  login_timeout_span;
-                  logout_timeout_span;
                   list_title_max_display_width;
                   output_format;
                   verbose = globals.verbose;
                   profile = globals.profile;
+                  (* There is no default sync server: it must be configured. *)
                   ws_url =
-                    Some
-                      (Option.value env_ws_url
-                         ~default:
-                           (Option.value file_ws_url ~default:defaults.ws_url));
+                    first_some (Vec.of_array [| env_ws_url; file_ws_url |]);
                   http_base =
-                    Some
-                      (Option.value env_http_base
-                         ~default:
-                           (Option.value file_http_base
-                              ~default:defaults.http_base));
+                    first_some
+                      (Vec.of_array [| env_http_base; file_http_base |]);
                   auth_path = file_auth_path;
                   id_token = file_id_token;
                   access_token = file_access_token;

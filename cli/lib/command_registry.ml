@@ -167,7 +167,7 @@ let global_options =
         "Graph name";
       option
         (Vec.singleton "--root-dir")
-        (Required_value "path") "Path to CLI root dir (default ~/logseq)";
+        (Required_value "path") "Path to CLI root dir (default ~/logseq-dev)";
       option
         (Vec.singleton "--timeout-ms")
         (Required_value "ms") "Request timeout in ms (default 10000)";
@@ -428,9 +428,8 @@ let options_for_command =
   | Login ->
       Vec.of_array
         [|
-          value "username" "username"
-            "Cognito sign-in identifier (requires --password)";
-          value "password" "password" "Account password (requires --username)";
+          value "token" "token"
+            "Sign-in token issued for the self-hosted sync server";
         |]
   | Server_list | Server_cleanup | Server_start | Server_stop | Server_restart
   | Sync_status | Sync_stop | Sync_remote_graphs | Sync_config_get

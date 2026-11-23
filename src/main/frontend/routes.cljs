@@ -11,7 +11,6 @@
             [frontend.components.plugins :as plugins]
             [frontend.components.repo :as repo]
             [frontend.components.settings :as settings]
-            [frontend.components.user.login :as login]
             [frontend.config :as config]
             [io.factorhouse.hsx.core :as hsx]
             [logseq.shui.demo :as shui]))
@@ -88,10 +87,6 @@
    ["/plugins"
     {:name :plugins
      :view plugins/plugins-page}]
-
-   ["/login"
-    {:name :user-login
-     :view login/page}]
 
    ["/all-files"
     {:name :all-files

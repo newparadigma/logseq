@@ -57,6 +57,8 @@ charlie/
 /.claude/settings.local.json
 /.preprocessor-cljs
 docker
+# Build tooling for LogseqDEV (Dockerfile, scripts) is versioned.
+!/docker/
 android/app/src/main/assets/capacitor.plugin.json
 ios/App/App/capacitor.config.json
 ios/App/App/public
@@ -105,3 +107,6 @@ _build/
 /cli/_opam
 /cli/compile_commands.json
 /cli/.eglot-root
+
+# Saved builder image (docker save), too large for git.
+/docker/macos-build/image/

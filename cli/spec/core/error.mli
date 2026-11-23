@@ -19,16 +19,13 @@ type code =
   | Asset_tag_not_found
   | Asset_type_missing
   | Asset_uuid_missing
-  | Auth_code_exchange_failed
   | Auth_file_delete_failed
   | Auth_file_write_failed
-  | Auth_refresh_failed
   | Backup_create_failed
   | Backup_not_found
   | Block_link_cycle
   | Block_link_target_not_found
   | Block_not_found
-  | Browser_open_failed
   | Codex_not_found
   | Codex_session_id_missing
   | Codex_start_failed
@@ -49,11 +46,8 @@ type code =
   | Graph_not_removed
   | Graph_validation_failed
   | Invalid_auth_file
-  | Invalid_auth_response
   | Invalid_auth_token
   | Invalid_blocks
-  | Invalid_callback_request
-  | Invalid_callback_state
   | Invalid_config
   | Invalid_options
   | Invalid_property_target
@@ -61,20 +55,12 @@ type code =
   | Invalid_source
   | Invalid_tag_target
   | Invalid_target
-  | Login_callback_error
-  | Login_callback_not_found
-  | Login_callback_server_start_failed
-  | Login_not_configured
-  | Login_timeout
-  | Logout_not_configured
   | Missing_asset_selector
   | Missing_auth
-  | Missing_callback_code
   | Missing_content
   | Missing_dst
   | Missing_examples
   | Missing_graph
-  | Missing_id_token
   | Missing_page_name
   | Missing_property_name
   | Missing_query
@@ -88,9 +74,6 @@ type code =
   | Not_implemented
   | Page_hierarchy_parent_cycle
   | Page_not_found
-  | Password_auth_disabled
-  | Password_auth_failed
-  | Password_auth_rejected
   | Property_built_in
   | Property_hidden
   | Property_not_found
@@ -126,7 +109,6 @@ type code =
   | Task_tag_not_found
   | Unknown_command
   | Unknown_query
-  | Unsupported_auth_challenge
   | Unsupported_input_format
   | Unsupported_output_format
   | Upsert_id_not_found

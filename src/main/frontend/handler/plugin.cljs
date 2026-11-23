@@ -18,7 +18,6 @@
             [frontend.modules.shortcut.utils :as shortcut-utils]
             [frontend.rfx :as rfx]
             [frontend.state :as state]
-            [frontend.storage :as storage]
             [frontend.util :as util]
             [lambdaisland.glogi :as log]
             [logseq.graph-parser.mldoc :as gp-mldoc]
@@ -55,7 +54,6 @@
 ;; state handlers
 (defonce central-endpoint "https://raw.githubusercontent.com/logseq/marketplace/master/")
 (defonce plugins-url (str central-endpoint "plugins.json"))
-(defonce stats-url (str central-endpoint "stats.json"))
 (declare select-a-plugin-theme get-ls-dotdir-root)
 
 (def ^:private illegal-plugin-package-error-pattern
@@ -189,11 +187,6 @@
 (defn gh-repo-url [repo]
   (str "https://github.com/" repo))
 
-(defn pkg-asset [id asset]
-  (if (and asset (string/starts-with? asset "http"))
-    asset (when-let [asset (and asset (string/replace asset #"^[./]+" ""))]
-            (str central-endpoint "packages/" id "/" asset))))
-
 (defn load-marketplace-plugins
   [refresh?]
   (if (or refresh? (nil? (:plugin/marketplace-pkgs (state/get-state))))
@@ -213,30 +206,6 @@
               (p/catch reject))
             (util/fetch plugins-url on-ok reject)))))
     (p/resolved (:plugin/marketplace-pkgs (state/get-state)))))
-
-(defn load-marketplace-stats
-  [refresh?]
-  (if (or refresh? (nil? (:plugin/marketplace-stats (state/get-state))))
-    (p/create
-      (fn [resolve reject]
-        (let [on-ok (fn [^js res]
-                      (if-let [res (and res (bean/->clj res))]
-                        (do
-                          (state/set-state!
-                            :plugin/marketplace-stats
-                            (into {} (map (fn [[k stat]]
-                                            [k (assoc stat
-                                                 :total_downloads
-                                                 (reduce (fn [a b] (+ a (get b 2))) 0 (:releases stat)))])
-                                       res)))
-                          (resolve nil))
-                        (reject nil)))]
-          (if (state/http-proxy-enabled-or-val?)
-            (-> (ipc/ipc :httpFetchJSON stats-url)
-              (p/then on-ok)
-              (p/catch reject))
-            (util/fetch stats-url on-ok reject)))))
-    (p/resolved nil)))
 
 (defn check-or-update-marketplace-plugin!
   [{:keys [id] :as pkg} error-handler]
@@ -1050,66 +1019,25 @@
     (p/catch (fn [e]
                (js/console.error "[get-user-default-plugins:error]" e)))))
 
-(defn set-auto-checking!
-  [v]
-  (let [v (boolean v)]
-    (println "Updates: " (if v "start" "finish") " auto-checking...")
-    (state/set-state! :plugin/updates-auto-checking? v)))
-
-(defn get-auto-checking?
-  []
-  (:plugin/updates-auto-checking? (state/get-state)))
-
 (defn get-user-checking?
   []
   (boolean (seq (:plugin/updates-pending (state/get-state)))))
 
-(defn get-updates-downloading?
-  []
-  (boolean (:plugin/updates-downloading? (state/get-state))))
-
 (defn cancel-user-checking!
   []
-  (when (and (get-user-checking?)
-          (not (get-auto-checking?)))
+  (when (get-user-checking?)
     (state/set-state! :plugin/updates-pending {})))
 
 (defn user-check-enabled-for-updates!
   [theme?]
-  (let [user-checking? (get-user-checking?)
-        auto-checking? (get-auto-checking?)]
-    (when auto-checking?
-      (set-auto-checking! false))
-    (when (or auto-checking? (not user-checking?))
-      ;; TODO: too many requests may be limited by GitHub API
-      (when-let [plugins (seq (take 32 (state/get-enabled?-installed-plugins theme?)))]
-        (->> plugins
-          (map (fn [v] [(keyword (:id v)) v]))
-          (into {})
-          (state/set-state! :plugin/updates-pending))
-        (state/pub-event! [:plugin/consume-updates])))))
-
-(defn auto-check-enabled-for-updates!
-  []
-  (when (and (not (get-updates-downloading?))
-          (not (get-auto-checking?))
-          (not (get-user-checking?)))
-    ;; TODO: take some plugins used recently
-    (when-let [plugins (seq (take 16 (shuffle (state/get-enabled?-installed-plugins nil))))]
+  (when-not (get-user-checking?)
+    ;; TODO: too many requests may be limited by GitHub API
+    (when-let [plugins (seq (take 32 (state/get-enabled?-installed-plugins theme?)))]
       (->> plugins
         (map (fn [v] [(keyword (:id v)) v]))
         (into {})
         (state/set-state! :plugin/updates-pending))
-      (state/pub-event! [:plugin/consume-updates])
-      (set-auto-checking! true))))
-
-(defn get-enabled-auto-check-for-updates?
-  []
-  (not (false? (storage/get :lsp-last-auto-updates))))
-
-(defn set-enabled-auto-check-for-updates
-  [v?]
-  (storage/set :lsp-last-auto-updates (boolean v?)))
+      (state/pub-event! [:plugin/consume-updates]))))
 
 (defn call-plugin
   [^js pl type payload]
@@ -1347,7 +1275,6 @@
 
 (comment
   {:pending (count (:plugin/updates-pending (state/get-state)))
-   :auto-checking? (boolean (:plugin/updates-auto-checking? (state/get-state)))
    :coming (count (:plugin/updates-coming (state/get-state)))
    :installing (:plugin/installing (state/get-state))
    :downloading? (boolean (:plugin/updates-downloading? (state/get-state)))})

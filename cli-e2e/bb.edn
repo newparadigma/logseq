@@ -30,17 +30,9 @@
   {:doc "List declared non-sync cli-e2e case ids"
    :task (main/list-cases! cli-opts)}
 
-  list-sync-cases
-  {:doc "List declared sync cli-e2e case ids"
-   :task (main/list-sync-cases! cli-opts)}
-
   test
   {:doc "Run non-sync cli-e2e cases with build preflight unless --skip-build is provided"
    :task (main/test! cli-opts)}
-
-  test-sync
-  {:doc "Run sync cli-e2e cases with build preflight unless --skip-build is provided; use --jobs for case-level parallelism"
-   :task (main/test-sync! cli-opts)}
 
   cleanup
   {:doc "Terminate cli-e2e db-worker-node processes, terminate stale db-sync listeners, and remove cli-e2e temp roots"

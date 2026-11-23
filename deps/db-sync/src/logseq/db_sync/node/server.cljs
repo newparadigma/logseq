@@ -33,9 +33,9 @@
               ;; Node adapter serves snapshot transit stream without gzip to avoid
               ;; browser/adapter content-encoding mismatches during graph download.
               (aset "DB_SYNC_SNAPSHOT_STREAM_GZIP" "false")
-              (aset "COGNITO_ISSUER" (:cognito-issuer cfg))
-              (aset "COGNITO_CLIENT_ID" (:cognito-client-id cfg))
-              (aset "COGNITO_JWKS_URL" (:cognito-jwks-url cfg)))]
+              (aset "AUTH_ISSUER" (:auth-issuer cfg))
+              (aset "AUTH_CLIENT_ID" (:auth-client-id cfg))
+              (aset "AUTH_JWKS_URL" (:auth-jwks-url cfg)))]
     (when (some? allow-unverified-jwt-claims)
       (aset env "DB_SYNC_ALLOW_UNVERIFIED_JWT_CLAIMS" allow-unverified-jwt-claims))
     (when (seq admin-token)

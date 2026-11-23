@@ -6,7 +6,7 @@
 
 (deftest get-local-dir-uses-encoded-directory-name
   (with-redefs [state/get-state (fn [] {:system/info {:home-dir "/tmp/home"}})]
-    (is (= "/tmp/home/logseq/graphs/foo~2Fbar"
+    (is (= "/tmp/home/logseq-dev/graphs/foo~2Fbar"
            (config/get-local-dir (str common-config/db-version-prefix "foo/bar"))))))
 
 (deftest get-local-dir-uses-system-info-graphs-dir
@@ -17,7 +17,7 @@
 
 (deftest get-electron-backup-dir-uses-unified-backup-directory
   (with-redefs [state/get-state (fn [] {:system/info {:home-dir "/tmp/home"}})]
-    (is (= "/tmp/home/logseq/graphs/foo~2Fbar/backup"
+    (is (= "/tmp/home/logseq-dev/graphs/foo~2Fbar/backup"
            (config/get-electron-backup-dir (str common-config/db-version-prefix "foo/bar"))))))
 
 (deftest custom-url->ws-url-test
@@ -63,16 +63,10 @@
     (is (= "https://example.com:3000"
            (config/custom-url->http-base "https://example.com:3000/")))))
 
-(deftest default-urls-are-returned-when-no-custom-url
-  (testing "db-sync-ws-url returns default when no custom URL is set"
-    ;; In test environment, node-test? is true so get-custom-sync-server-url
-    ;; always returns nil, meaning we always get the default
-    (is (string? (config/db-sync-ws-url)))
-    (is (= config/default-db-sync-ws-url (config/db-sync-ws-url))))
-
-  (testing "db-sync-http-base returns default when no custom URL is set"
-    (is (string? (config/db-sync-http-base)))
-    (is (= config/default-db-sync-http-base (config/db-sync-http-base)))))
+(deftest no-sync-urls-without-custom-url
+  ;; In the test environment get-custom-sync-server-url always returns nil.
+  (is (nil? (config/db-sync-ws-url)))
+  (is (nil? (config/db-sync-http-base))))
 
 (deftest valid-sync-server-url?-test
   (testing "accepts http and https URLs"

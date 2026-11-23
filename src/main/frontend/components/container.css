@@ -559,10 +559,6 @@
       }
     }
   }
-
-  &-handbook-btn {
-    @apply bottom-16;
-  }
 }
 
 .cp__right-sidebar {

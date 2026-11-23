@@ -9,6 +9,7 @@ external rm_sync : string -> Js.Json.t Js.Dict.t -> unit = "rmSync"
 [@@mel.module "fs"]
 
 external chmod_sync : string -> int -> unit = "chmodSync" [@@mel.module "fs"]
+external getuid : unit -> int = "getuid" [@@mel.module "process"]
 external process_pid : int = "pid" [@@mel.module "process"]
 
 external promise_error_message : Js.Promise.error -> string option = "message"
@@ -261,25 +262,6 @@ let id_token ?(sub = "user-1") ?(email = "user@example.com") () =
        (Js.Json.stringify (Js.Json.string sub))
        (Js.Json.stringify (Js.Json.string email)))
 
-let token_response ?(sub = "user-1") ?(email = "user@example.com") () =
-  let object_ = Js.Dict.empty () in
-  Js.Dict.set object_ "id_token" (Js.Json.string (id_token ~sub ~email ()));
-  Js.Dict.set object_ "access_token" (Js.Json.string "access-token");
-  Js.Dict.set object_ "refresh_token" (Js.Json.string "refresh-token");
-  Js.Json.stringify (Js.Json.object_ object_)
-
-let query_param url key =
-  let parts = Vec.split_on_char '?' url in
-  if Vec.length parts = 2 then
-    let query = Vec.nth parts 1 in
-    query |> Vec.split_on_char '&'
-    |> Vec.find_map (fun part ->
-        let pair = Vec.split_on_char '=' part in
-        if Vec.length pair = 2 && Vec.nth pair 0 = key then
-          Some (Vec.nth pair 1)
-        else None)
-  else None
-
 let json_data_object stdout =
   match Js.Json.decodeObject (parse_json stdout) with
   | None ->
@@ -339,17 +321,6 @@ let invoke_server response_for_body =
             try write_json res 200 (json_response (response_for_body !body))
             with exn ->
               write_json res 400 (error_response (Printexc.to_string exn))))
-
-let oauth_server () =
-  create_server (fun[@u] req res ->
-      let body = ref "" in
-      req_set_encoding req "utf8";
-      req_on_data req "data" (fun[@u] chunk -> body := !body ^ chunk);
-      req_on_end req "end" (fun[@u] () ->
-          ignore !body;
-          if req_method req <> "POST" || req_url req <> "/oauth2/token" then
-            write_json res 404 (error_response "not found")
-          else write_json res 200 (token_response ())))
 
 let rec fetch_with_retry attempts url =
   let request =

@@ -181,13 +181,6 @@
   [fragments]
   (into [:<>] (locale-join-rich-text fragments)))
 
-(defn locale-format-number
-  "Format a number using Intl.NumberFormat with the application locale."
-  ([n] (locale-format-number n {}))
-  ([n opts]
-   (let [tag (locale-tag (:preferred-language (state/get-state)))]
-     (.format (js/Intl.NumberFormat. tag (clj->js opts)) n))))
-
 (defn locale-format-date
   "Format a js/Date using Intl.DateTimeFormat with the application locale."
   ([d] (locale-format-date d {:year "numeric" :month "short" :day "numeric"}))

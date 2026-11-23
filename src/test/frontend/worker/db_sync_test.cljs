@@ -191,9 +191,10 @@
 (defn- with-datascript-conns
   [db-conn ops-conn f]
   (let [db-prev @worker-state/*datascript-conns
-        ops-prev @worker-state/*client-ops-conns]
+        ops-prev @worker-state/*client-ops-conns
+        db-conns {test-repo db-conn}]
     (swap! client-op/*repo->pending-local-tx-count dissoc test-repo)
-    (reset! worker-state/*datascript-conns {test-repo db-conn})
+    (reset! worker-state/*datascript-conns db-conns)
     (reset! worker-state/*client-ops-conns {test-repo ops-conn})
     (undo-redo/clear-history! test-repo)
     ;; Keep sync-message tests deterministic under strict local-tx validation.
@@ -207,10 +208,12 @@
           cleanup (fn []
                     (when ops-conn
                       (d/unlisten! db-conn ::listen-db))
-                    (undo-redo/clear-history! test-repo)
-                    (swap! client-op/*repo->pending-local-tx-count dissoc test-repo)
-                    (reset! worker-state/*datascript-conns db-prev)
-                    (reset! worker-state/*client-ops-conns ops-prev))]
+                    ;; A test that calls `done` inside `f` starts the next test
+                    ;; before this cleanup runs; leave the next test's state alone.
+                    (when (compare-and-set! worker-state/*datascript-conns db-conns db-prev)
+                      (undo-redo/clear-history! test-repo)
+                      (swap! client-op/*repo->pending-local-tx-count dissoc test-repo)
+                      (reset! worker-state/*client-ops-conns ops-prev)))]
       (if (promise-like? result)
         (.finally (js/Promise.resolve result) cleanup)
         (do
@@ -753,99 +756,31 @@
                {:db/id dead-eid :block/updated-at 1 :block/order "a0"}
                {:db/id dead-eid :block/title "kept — not a pure stamp"}]))))))
 
-(deftest resolve-ws-token-refreshes-when-token-expired-test
-  (async done
-         (let [fetch-calls (atom [])
-               main-thread-calls (atom 0)
-               main-thread-prev @worker-state/*main-thread
-               worker-state-prev @worker-state/*state
-               sync-config-prev @worker-state/*db-sync-config
-               fetch-prev js/fetch]
-           (reset! worker-state/*db-sync-config {:feature-flags {:worker-auth-refresh? true}})
-           (reset! worker-state/*state (assoc worker-state-prev
-                                              :auth/id-token "expired-token"
-                                              :auth/refresh-token "refresh-token"
-                                              :auth/oauth-token-url "https://auth.example.com/oauth2/token"
-                                              :auth/oauth-client-id "worker-client-id"))
-           (reset! worker-state/*main-thread
-                   (fn [qkw & _args]
-                     (when (= qkw :thread-api/ensure-id&access-token)
-                       (swap! main-thread-calls inc))
-                     (p/resolved {:id-token "legacy-token"})))
-           (set! js/fetch
-                 (fn [url opts]
-                   (swap! fetch-calls conj {:url url :opts opts})
-                   (let [resp (js-obj)]
-                     (aset resp "ok" true)
-                     (aset resp "status" 200)
-                     (aset resp "text"
-                           (fn []
-                             (p/resolved "{\"id_token\":\"fresh-worker-token\",\"access_token\":\"fresh-worker-access-token\"}")))
-                     (p/resolved resp))))
-           (with-redefs [sync-util/auth-token (fn [] "expired-token")
-                         sync-auth/id-token-expired? (fn [_token] true)]
-             (-> (#'db-sync/<resolve-ws-token)
-                 (p/then (fn [token]
-                           (is (= 1 (count @fetch-calls)))
-                           (is (= 0 @main-thread-calls))
-                           (is (= "fresh-worker-token" token))
-                           (is (= "fresh-worker-token" (worker-state/get-id-token)))
-                           (is (= "fresh-worker-access-token"
-                                  (:auth/access-token @worker-state/*state)))))
-                 (p/catch (fn [error]
-                            (is nil (str error))))
-                 (p/finally (fn []
-                              (set! js/fetch fetch-prev)
-                              (reset! worker-state/*main-thread main-thread-prev)
-                              (reset! worker-state/*state worker-state-prev)
-                              (reset! worker-state/*db-sync-config sync-config-prev)
-                              (done))))))))
-
-(deftest resolve-ws-token-does-not-fallback-to-main-thread-when-feature-flag-disabled-test
+(deftest resolve-ws-token-rejects-expired-token-without-refresh-test
   (async done
          (let [fetch-calls (atom 0)
-               main-thread-calls (atom 0)
-               main-thread-prev @worker-state/*main-thread
-               worker-state-prev @worker-state/*state
-               sync-config-prev @worker-state/*db-sync-config
                fetch-prev js/fetch]
-           (reset! worker-state/*db-sync-config {:feature-flags {:worker-auth-refresh? false}})
-           (reset! worker-state/*state (assoc worker-state-prev
-                                              :auth/id-token "expired-token"
-                                              :auth/refresh-token "refresh-token"
-                                              :auth/oauth-token-url "https://auth.example.com/oauth2/token"
-                                              :auth/oauth-client-id "worker-client-id"))
-           (reset! worker-state/*main-thread
-                   (fn [qkw & _args]
-                     (when (= qkw :thread-api/ensure-id&access-token)
-                       (swap! main-thread-calls inc))
-                     (p/resolved {:id-token "fresh-legacy-token"})))
-           (set! js/fetch
-                 (fn [_url _opts]
-                   (swap! fetch-calls inc)
-                   (let [resp (js-obj)]
-                     (aset resp "ok" true)
-                     (aset resp "status" 200)
-                     (aset resp "text"
-                           (fn []
-                             (p/resolved "{\"id_token\":\"fresh-worker-token-2\",\"access_token\":\"fresh-worker-access-token-2\"}")))
-                     (p/resolved resp))))
+           (set! js/fetch (fn [& _] (swap! fetch-calls inc) (p/rejected (ex-info "no fetch expected" {}))))
            (with-redefs [sync-util/auth-token (fn [] "expired-token")
+                         sync-util/cli-node-owner? (constantly false)
                          sync-auth/id-token-expired? (fn [_token] true)]
              (-> (#'db-sync/<resolve-ws-token)
-                 (p/then (fn [token]
-                           (is (= 1 @fetch-calls))
-                           (is (= 0 @main-thread-calls))
-                           (is (= "fresh-worker-token-2" token))
-                           (is (= "fresh-worker-token-2" (worker-state/get-id-token)))))
+                 (p/then (fn [_] (is false "expected rejection")))
                  (p/catch (fn [error]
-                            (is nil (str error))))
+                            (is (= :auth-token-expired (:code (ex-data error))))
+                            (is (zero? @fetch-calls))))
                  (p/finally (fn []
                               (set! js/fetch fetch-prev)
-                              (reset! worker-state/*main-thread main-thread-prev)
-                              (reset! worker-state/*state worker-state-prev)
-                              (reset! worker-state/*db-sync-config sync-config-prev)
                               (done))))))))
+
+(deftest resolve-ws-token-returns-valid-token-test
+  (async done
+         (with-redefs [sync-util/auth-token (fn [] "valid-token")
+                       sync-auth/id-token-expired? (fn [_token] false)]
+           (-> (#'db-sync/<resolve-ws-token)
+               (p/then (fn [token] (is (= "valid-token" token))))
+               (p/catch (fn [error] (is nil (str error))))
+               (p/finally done)))))
 
 (deftest update-online-users-dedupes-identical-messages-test
   (let [client {:repo test-repo

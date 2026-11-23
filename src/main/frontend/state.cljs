@@ -1,7 +1,6 @@
 (ns frontend.state
   "Provides main application state and subscriptions."
   (:require [cljs-bean.core :as bean]
-            [cljs.core.async :as async :refer [>!]]
             [clojure.set :as set]
             [clojure.string :as string]
             [dommy.core :as dom]
@@ -111,7 +110,6 @@
     {:client-id                             (str (random-uuid))
       :route-match                           nil
       :today                                 nil
-      :instrument/disabled?                  (storage/get "instrument-disabled")
       ;; TODO: how to detect the network reliably?
       ;; NOTE: prefer to use flows/network-online?
       :network/online?         true
@@ -143,7 +141,6 @@
       :ui/recent-pages                       (or (storage/get :ui/recent-pages) {})
 
       ;; right sidebar
-      :ui/handbooks-open?                    false
       :ui/help-open?                         false
       :ui/fullscreen?                        false
       :ui/settings-open?                     false
@@ -275,10 +272,8 @@
       :plugin/selected-theme                 nil
       :plugin/selected-unpacked-pkg          nil
       :plugin/marketplace-pkgs               nil
-      :plugin/marketplace-stats              nil
       :plugin/installing                     nil
       :plugin/active-readme                  nil
-      :plugin/updates-auto-checking?         false
       :plugin/updates-pending                {}
       :plugin/updates-coming                 {}
       :plugin/updates-downloading?           false
@@ -323,9 +318,6 @@
       :auth/access-token                     nil
       :auth/id-token                         nil
       :auth/graph-session                    nil
-      :auth/oauth-token-url                  nil
-      :auth/oauth-domain                     nil
-      :auth/oauth-client-id                  nil
       :auth/current-login-user               nil
 
       ;; graph-uuid -> ...
@@ -342,7 +334,6 @@
       :rtc/users-info                        {}
       :sync/block-conflicts                  {}
 
-      :user/info                             {:UserGroups (storage/get :user-groups)}
       :encryption/graph-parsing?             false
 
       :ui/loading?                           {}
@@ -357,7 +348,6 @@
       :graph/importing                       nil
       :graph/importing-state                 {}
       :graph/loading?                        nil
-      :handbook/route-chan                   (async/chan (async/sliding-buffer 1))
 
       :system/info                           {}
       ;; Whether block is selected
@@ -744,10 +734,6 @@ should be done through this fn in order to get global config and config defaults
   []
   (and (document-mode?)
        (not (:shortcut/doc-mode-enter-for-new-block? (get-config)))))
-
-(defn user-groups
-  []
-  (set (get-state [:user/info :UserGroups])))
 
 ;; State mutation helpers
 ;; ======================
@@ -1978,7 +1964,6 @@ should be done through this fn in order to get global config and config defaults
 (defn reset-all-updates-state
   []
   (swap-state! assoc
-         :plugin/updates-auto-checking?         false
          :plugin/updates-pending                {}
          :plugin/updates-coming                 {}
          :plugin/updates-downloading?           false))
@@ -2080,18 +2065,6 @@ should be done through this fn in order to get global config and config defaults
         (set-state! :pdf/current nil)
         (js/setTimeout #(settle-file!) 16)))))
 
-(defn set-user-info!
-  [info]
-  (when info
-    (set-state! :user/info info)
-    (let [groups (:UserGroups info)]
-      (when (seq groups)
-        (storage/set :user-groups groups)))))
-
-(defn clear-user-info!
-  []
-  (storage/remove :user-groups))
-
 (defn set-color-accent! [color]
   (swap-state! assoc :ui/radix-color color)
   (storage/set :ui/radix-color color))
@@ -2101,21 +2074,6 @@ should be done through this fn in order to get global config and config defaults
         config (if (map? config') (merge config' config) {})]
     (swap-state! assoc :ui/editor-font config)
     (storage/set :ui/editor-font config)))
-
-(defn handbook-open?
-  []
-  (:ui/handbooks-open? (rfx/snapshot)))
-
-(defn get-handbook-route-chan
-  []
-  (:handbook/route-chan (rfx/snapshot)))
-
-(defn open-handbook-pane!
-  [k]
-  (when-not (handbook-open?)
-    (set-state! :ui/handbooks-open? true))
-  (js/setTimeout #(async/go
-                    (>! (get-handbook-route-chan) k))))
 
 (defn update-favorites-updated!
   []

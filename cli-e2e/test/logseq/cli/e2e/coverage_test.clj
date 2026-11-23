@@ -1,7 +1,6 @@
 (ns logseq.cli.e2e.coverage-test
   (:require [clojure.test :refer [deftest is testing]]
-            [logseq.cli.e2e.coverage :as coverage]
-            [logseq.cli.e2e.manifests :as manifests]))
+            [logseq.cli.e2e.coverage :as coverage]))
 
 (def sample-inventory
   {:excluded-command-prefixes ["sync" "login" "logout"]
@@ -47,12 +46,3 @@
         report (coverage/coverage-report sample-inventory cases)]
     (is (coverage/complete? report))))
 
-(deftest sync-suite-manifests-cover-mvp-commands
-  (let [inventory (manifests/load-inventory :sync)
-        cases (manifests/load-cases :sync)
-        covered-commands (set (mapcat #(get-in % [:covers :commands]) cases))
-        report (coverage/coverage-report inventory cases)]
-    (is (contains? covered-commands "sync upload"))
-    (is (contains? covered-commands "sync download"))
-    (is (contains? covered-commands "sync status"))
-    (is (coverage/complete? report))))

@@ -12,7 +12,6 @@
             [frontend.handler.route :as route-handler]
             [frontend.handler.search :as search-handler]
             [frontend.handler.ui :as ui-handler]
-            [frontend.handler.user :as user]
             [frontend.persist-db :as persist-db]
             [frontend.state :as state]
             [frontend.ui :as ui]
@@ -119,10 +118,6 @@
                      (dom/set-text! (dom/by-id "search-in-page-placeholder") "")
                      (ui/focus-element "search-in-page-input"))))
 
-  (safe-api-call "loginCallback"
-                 (fn [code]
-                   (user/login-callback code)))
-
   (listen-for-deeplink! "quickCapture"
                       (fn [args]
                         (state/pub-event! [:editor/quick-capture args])))
@@ -168,12 +163,7 @@
 
   (safe-api-call "syncAPIServerState"
                  (fn [^js data]
-                   (state/set-state! :electron/server (bean/->clj data))))
-
-  (listen-for-deeplink! "handbook"
-                      (fn [^js data]
-                        (when-let [k (and data (.-key data))]
-                          (state/open-handbook-pane! k)))))
+                   (state/set-state! :electron/server (bean/->clj data)))))
 
 (defn listen!
   []

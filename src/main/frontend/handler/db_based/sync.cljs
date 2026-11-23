@@ -1,7 +1,6 @@
 (ns frontend.handler.db-based.sync
   "DB-sync handler based on Cloudflare Durable Objects."
-  (:require [clojure.string :as string]
-            [frontend.config :as config]
+  (:require [frontend.config :as config]
             [frontend.context.i18n :refer [t]]
             [frontend.handler.notification :as notification]
             [frontend.handler.repo :as repo-handler]
@@ -13,22 +12,8 @@
             [logseq.db-sync.malli-schema :as db-sync-schema]
             [promesa.core :as p]))
 
-(defn- ws->http-base [ws-url]
-  (when (string? ws-url)
-    (let [base (cond
-                 (string/starts-with? ws-url "wss://")
-                 (str "https://" (subs ws-url (count "wss://")))
-
-                 (string/starts-with? ws-url "ws://")
-                 (str "http://" (subs ws-url (count "ws://")))
-
-                 :else ws-url)
-          base (string/replace base #"/sync/%s$" "")]
-      base)))
-
 (defn http-base []
-  (or (config/db-sync-http-base)
-      (ws->http-base (config/db-sync-ws-url))))
+  (config/db-sync-http-base))
 
 (defn- auth-headers []
   (when-let [token (state/get-auth-id-token)]
@@ -207,17 +192,10 @@
 (defn- sync-app-state-payload
   []
   (let [payload (select-keys (state/get-state) [:git/current-repo :config
-                                                 :auth/id-token :auth/access-token :auth/refresh-token
-                                                 :auth/oauth-token-url :auth/oauth-domain :auth/oauth-client-id
-                                                 :user/info])]
-    (cond-> (if (nil? (:git/current-repo payload))
-              (dissoc payload :git/current-repo)
-              payload)
-      (seq config/OAUTH-DOMAIN)
-      (assoc :auth/oauth-domain config/OAUTH-DOMAIN)
-
-      (seq config/COGNITO-CLIENT-ID)
-      (assoc :auth/oauth-client-id config/COGNITO-CLIENT-ID))))
+                                                 :auth/id-token :auth/access-token :auth/refresh-token])]
+    (if (nil? (:git/current-repo payload))
+      (dissoc payload :git/current-repo)
+      payload)))
 
 (defn- <sync-auth-state-to-db-worker!
   []

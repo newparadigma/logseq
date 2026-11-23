@@ -104,13 +104,13 @@ conditions:
   (let [state* (atom nil)
         timeout-id (atom nil)
         emit! (fn [event]
-                (when (:email @flows/current-login-user)
+                (when (:sub @flows/current-login-user)
                   (when-let [id @timeout-id]
                     (js/clearTimeout id))
                   (reset! timeout-id (js/setTimeout #(reset! state* event) 50))))]
     (add-watch flows/current-login-user ::trigger-start-rtc-login
                (fn [_ _ _ user]
-                 (when (:email user)
+                 (when (:sub user)
                    (emit! [:login]))))
     (add-watch flows/current-repo ::trigger-start-rtc-repo
                (fn [_ _ _ repo]

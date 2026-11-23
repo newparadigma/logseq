@@ -40,3 +40,5 @@ frontend.worker.db-worker-node/main
 mobile.components.popup/native-sheet-listener
 mobile.bottom-tabs/add-tab-listeners!
 
+;; Debugging helper for the REPL
+frontend.debug/pprint

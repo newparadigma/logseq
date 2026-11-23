@@ -119,11 +119,6 @@ const common = {
         'node_modules/dompurify/dist/purify.js',
       ]).pipe(gulp.dest(path.join(outputPath, 'js'))),
       () => rawCopySrc([
-        'node_modules/@glidejs/glide/dist/glide.min.js',
-        'node_modules/@glidejs/glide/dist/css/glide.core.min.css',
-        'node_modules/@glidejs/glide/dist/css/glide.theme.min.css',
-      ]).pipe(gulp.dest(path.join(outputPath, 'js', 'glide'))),
-      () => rawCopySrc([
         'node_modules/pdfjs-dist/legacy/build/pdf.mjs',
         'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
         'node_modules/pdfjs-dist/legacy/web/pdf_viewer.mjs',

@@ -68,11 +68,7 @@
         (fn [_]
           (p/let [graph-list (rtc-handler/<get-remote-graphs)]
             (swap! debug-state assoc :remote-graphs graph-list)))}
-       (shui/tabler-icon "download") "graph-list")
-      (shui/button
-       {:size :sm
-        :on-click #(user/<upload-user-avatar "TEST_AVATAR")}
-       (shui/tabler-icon "upload") "upload-test-avatar")]
+       (shui/tabler-icon "download") "graph-list")]
 
      [:div.pb-4
       [:pre.select-text

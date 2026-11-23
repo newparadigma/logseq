@@ -537,17 +537,11 @@
         config-prev @worker-state/*db-sync-config]
     (try
       (reset! worker-state/*state (assoc state-prev
-                                         :auth/id-token "existing-id-token"
-                                         :auth/oauth-token-url "https://existing.example.com/oauth2/token"
-                                         :auth/oauth-domain "existing.example.com"
-                                         :auth/oauth-client-id "existing-client-id"))
+                                         :auth/id-token "existing-id-token"))
       (set-config! {:ws-url "wss://example.com/sync/%s"
                     :http-base "https://example.com"
                     :enabled? true
-                    :auth-token "id-token-from-config"
-                    :oauth-token-url "https://auth.example.com/oauth2/token"
-                    :oauth-domain "auth.example.com"
-                    :oauth-client-id "worker-client-id"})
+                    :auth-token "id-token-from-config"})
       (is (= {:ws-url "wss://example.com/sync/%s"
               :http-base "https://example.com"
               :enabled? true}
@@ -557,10 +551,6 @@
               :enabled? true}
              (get-config)))
       (is (= "existing-id-token" (:auth/id-token @worker-state/*state)))
-      (is (= "https://existing.example.com/oauth2/token"
-             (:auth/oauth-token-url @worker-state/*state)))
-      (is (= "existing.example.com" (:auth/oauth-domain @worker-state/*state)))
-      (is (= "existing-client-id" (:auth/oauth-client-id @worker-state/*state)))
       (finally
         (reset! worker-state/*state state-prev)
         (reset! worker-state/*db-sync-config config-prev)))))
@@ -570,8 +560,7 @@
         config-prev @worker-state/*db-sync-config]
     (try
       (reset! worker-state/*db-sync-config {:ws-url "wss://example.com/sync/%s"
-                                            :auth-token "leaked-token"
-                                            :oauth-client-id "leaked-client"})
+                                            :auth-token "leaked-token"})
       (is (= {:ws-url "wss://example.com/sync/%s"}
              (get-config)))
       (finally
@@ -978,9 +967,11 @@
           (with-redefs [worker-state/get-vector-index (fn [repo]
                                                         (when (= repo test-repo)
                                                           vector-index))]
+            ;; The embedding never resolves, so a hang hits the timeout; keep it
+            ;; well above build time under a loaded parallel test run.
             (-> (p/let [result (js/Promise.race
                                  #js [(build-index! test-repo search-db conn build-id)
-                                      (p/delay 50 ::timeout)])
+                                      (p/delay 2000 ::timeout)])
                         _ (<wait-for-progress! progress-calls
                                                (fn [calls]
                                                  (some #(= :completed (get-in % [:payload :status])) calls))

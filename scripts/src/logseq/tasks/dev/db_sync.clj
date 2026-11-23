@@ -11,7 +11,7 @@
     :cmd "wrangler dev"}
    {:name "pnpm-watch"
     :dir "."
-    :cmd "ENABLE_DB_SYNC_LOCAL=true pnpm watch"}])
+    :cmd "pnpm watch"}])
 
 (defn start
   []

@@ -90,8 +90,8 @@
     (js/JSON.parse (.decode text-decoder data))))
 
 (defn client-id-allowed? [env client-id]
-  (let [primary-client-id (aget env "COGNITO_CLIENT_ID")
-        additional-client-ids (->> (string/split (or (aget env "COGNITO_CLIENT_IDS") "") #",")
+  (let [primary-client-id (aget env "AUTH_CLIENT_ID")
+        additional-client-ids (->> (string/split (or (aget env "AUTH_CLIENT_IDS") "") #",")
                                    (map string/trim)
                                    (remove string/blank?))
         allowed-client-ids (cond-> (set additional-client-ids)
@@ -122,14 +122,14 @@
           (p/resolved cached)
           (p/let [header (decode-jwt-part header-part)
                   payload (decode-jwt-part payload-part)
-                  issuer (aget env "COGNITO_ISSUER")
+                  issuer (aget env "AUTH_ISSUER")
                   client-id-claim (or (aget payload "aud")
                                       (aget payload "client_id"))
                   _ (when (not= (aget payload "iss") issuer) (throw (ex-info "iss not found" {})))
                   _ (when-not (client-id-allowed? env client-id-claim) (throw (ex-info "aud not found" {})))
                   _ (when (and (aget payload "exp") (< (aget payload "exp") now-s))
                       (throw (ex-info "exp" {})))
-                  jwks-url (aget env "COGNITO_JWKS_URL")
+                  jwks-url (aget env "AUTH_JWKS_URL")
                   jwks-keys (get-jwks-keys jwks-url)
                   matching-key (.find jwks-keys (fn [k] (= (aget k "kid") (aget header "kid"))))
                   matching-key (if matching-key

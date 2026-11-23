@@ -28,9 +28,6 @@
         (load-yt-script)))
     c))
 
-(defn- use-youtube-wrapper? []
-  (mobile-util/native-platform?))
-
 (defn register-player [id node]
   (try
     (when node
@@ -65,21 +62,15 @@
                       "?enablejsapi=1"
                       (when origin-valid?
                         (str "&origin=" (js/encodeURIComponent origin))))
-        direct-url (if start
-                     (str base-url "&start=" start)
-                     base-url)
-        wrapper-url (str "https://logseq.com/youtube.html?v=" id "&enablejsapi=1")
-        wrapper-url (if start
-                      (str wrapper-url "&start=" start)
-                      wrapper-url)
-        url (if (use-youtube-wrapper?) wrapper-url direct-url)
+        url (if start
+              (str base-url "&start=" start)
+              base-url)
         *iframe-ref (hooks/use-ref nil)]
     (hooks/use-effect!
      (fn []
-       (when-not (use-youtube-wrapper?)
-         (go
-           (<! (load-youtube-api))
-           (register-player id (hooks/deref *iframe-ref)))))
+       (go
+         (<! (load-youtube-api))
+         (register-player id (hooks/deref *iframe-ref))))
      [id])
     (let [iframe [:iframe
                   {:id                (str "youtube-player-" id)
@@ -118,26 +109,19 @@
          js/Node.DOCUMENT_POSITION_FOLLOWING))))
 
 (defn get-player [target]
-  (when-not (use-youtube-wrapper?)
-    (when-let [iframe (->> (js/document.getElementsByTagName "iframe")
-                           (filter
-                            (fn [node]
-                              (let [src (gobj/get node "src" "")]
-                                (or
-                                 (string/includes? src "youtube-nocookie.com/embed")
-                                 (string/includes? src "youtube.com/embed")
-                                 (string/includes? src "youtube.com")))))
-                           (filter #(dom-after-video-node? % target))
-                           last)]
-      (let [id (gobj/get iframe "id" "")
-            id (string/replace-first id #"youtube-player-" "")]
-        (get (state/get-state :youtube/players) id)))))
-
-(defn- notify-timestamp-unavailable! []
-  (notification/show!
-   (t :youtube/timestamps-not-available-mobile)
-   :warning
-   false))
+  (when-let [iframe (->> (js/document.getElementsByTagName "iframe")
+                         (filter
+                          (fn [node]
+                            (let [src (gobj/get node "src" "")]
+                              (or
+                               (string/includes? src "youtube-nocookie.com/embed")
+                               (string/includes? src "youtube.com/embed")
+                               (string/includes? src "youtube.com")))))
+                         (filter #(dom-after-video-node? % target))
+                         last)]
+    (let [id (gobj/get iframe "id" "")
+          id (string/replace-first id #"youtube-player-" "")]
+      (get (state/get-state :youtube/players) id))))
 
 (defn- player-method [player method]
   (let [f (gobj/get player method)]
@@ -148,39 +132,33 @@
   [:a.youtube-timestamp
    {:on-click (fn [e]
                 (util/stop e)
-                (if (use-youtube-wrapper?)
-                  (notify-timestamp-unavailable!)
-                  (when-let [player (get-player (.-target e))]
-                    (if-let [seek-to (player-method player "seekTo")]
-                      (.call seek-to player seconds true)
-                      (notification/show!
-                       (t :youtube/player-not-ready)
-                       :warning
-                       false)))))}
+                (when-let [player (get-player (.-target e))]
+                  (if-let [seek-to (player-method player "seekTo")]
+                    (.call seek-to player seconds true)
+                    (notification/show!
+                     (t :youtube/player-not-ready)
+                     :warning
+                     false))))}
    [:span.youtube-timestamp-icon svg/clock]
    [:span.youtube-timestamp-label (seconds->display seconds)]])
 
 (defn gen-youtube-ts-macro []
-  (if (use-youtube-wrapper?)
-    (do
-      (notify-timestamp-unavailable!)
-      nil)
-    (if-let [player (get-player (state/get-input))]
-      (if-let [get-current-time (player-method player "getCurrentTime")]
-        (util/format "{{youtube-timestamp %s}}"
-                     (Math/floor (.call get-current-time player)))
-        (do
-          (notification/show!
-           (t :youtube/player-not-ready)
-           :warning
-           false)
-          nil))
-      (when (mobile-util/native-platform?)
+  (if-let [player (get-player (state/get-input))]
+    (if-let [get-current-time (player-method player "getCurrentTime")]
+      (util/format "{{youtube-timestamp %s}}"
+                   (Math/floor (.call get-current-time player)))
+      (do
         (notification/show!
-         (t :youtube/embed-first-reminder-mobile)
+         (t :youtube/player-not-ready)
          :warning
          false)
-        nil))))
+        nil))
+    (when (mobile-util/native-platform?)
+      (notification/show!
+       (t :youtube/embed-first-reminder-mobile)
+       :warning
+       false)
+      nil)))
 
 (defn parse-timestamp [timestamp']
   (let [reg #"^(?:(\d+):)?([0-5]?\d):([0-5]?\d)$"

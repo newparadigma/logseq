@@ -24,17 +24,13 @@
                        :auth/id-token nil
                        :auth/access-token nil
                        :auth/refresh-token nil
-                       :auth/oauth-token-url nil
-                       :auth/oauth-domain nil
-                       :auth/oauth-client-id nil
 
-                       :user/info nil
                        ;; thread atoms, these atoms' value are syncing from ui-thread
                        :thread-atom/online-event (atom nil)
                        :thread-atom/search-input-idle-status (atom {})}))
 
 (def ^:private db-sync-config-auth-keys
-  #{:auth-token :oauth-token-url :oauth-domain :oauth-client-id})
+  #{:auth-token})
 
 (defn non-auth-db-sync-config
   [config]

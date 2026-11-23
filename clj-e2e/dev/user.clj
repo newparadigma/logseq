@@ -21,7 +21,6 @@
             [logseq.e2e.multi-tabs-basic-test]
             [logseq.e2e.outliner-basic-test]
             [logseq.e2e.plugins-basic-test]
-            [logseq.e2e.plugins-marketplace-test]
             [logseq.e2e.property-basic-test]
             [logseq.e2e.property-config-basic-test]
             [logseq.e2e.property-scoped-choices-test]
@@ -99,11 +98,6 @@
   []
   (->> (future (run-tests 'logseq.e2e.plugins-basic-test))
        (swap! *futures assoc :plugins-test)))
-
-(defn run-plugins-marketplace-test
-  []
-  (->> (future (run-tests 'logseq.e2e.plugins-marketplace-test))
-       (swap! *futures assoc :plugins-marketplace-test)))
 
 (defn run-rtc-extra-test
   []

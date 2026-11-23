@@ -200,7 +200,8 @@
                                         (page-handler/<unfavorite-page! block-id-str)
                                      (page-handler/<favorite-page! block-id-str)))}}
                          {:title   (t :publish/dialog-title)
-                          :options {:on-click #(shui/dialog-open! (fn [] (page-menu/publish-page-dialog page))
+                          :options {:disabled (not config/publish-enabled?)
+                                    :on-click #(shui/dialog-open! (fn [] (page-menu/publish-page-dialog page))
                                                                   {:class "w-auto max-w-md"})}}]))))
         page-menu-and-hr (concat page-menu [{:hr true}])
         login? (and (rfx/use-sub [:auth/id-token]) (user-handler/logged-in?))
@@ -242,7 +243,7 @@
 
                   (when-not (or config/publishing? login?)
                     {:title (t :ui/login)
-                     :options {:on-click #(state/pub-event! [:user/login])}
+                     :options {:on-click #(state/pub-event! [:go/sync-server-settings])}
                      :icon (ui/icon "user")})
 
                   (when login? {:hr true})
@@ -630,6 +631,5 @@
 
 (hsx/defc header
   [opts]
-  (let [_user-groups (rfx/use-sub [:user/info :UserGroups])
-        _rtc-running? (rfx/use-sub [:rtc/state :rtc-lock])]
+  (let [_rtc-running? (rfx/use-sub [:rtc/state :rtc-lock])]
     (header-aux opts)))
