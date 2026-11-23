@@ -1,0 +1,12 @@
+# The build context is the repository root. Only the db-sync sources, the
+# local libraries it depends on and the shared resources are sent.
+*
+!deps/
+!resources/
+
+# Build output, caches and local installs (node_modules has host binaries)
+**/node_modules
+**/.shadow-cljs
+**/.cpcache
+**/worker/dist
+**/tmp

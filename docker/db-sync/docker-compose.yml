@@ -1,0 +1,42 @@
+services:
+  logseq-sync:
+    build:
+      # Repository root: the server is built from the checked-out commit
+      context: ../..
+      dockerfile: docker/db-sync/Dockerfile
+    image: logseq-sync:local
+    container_name: logseq-sync
+    restart: unless-stopped
+    environment:
+      DB_SYNC_BASE_URL: https://${DOMAIN:?set DOMAIN in .env}
+      # Self-issued sign-in tokens (deps/db-sync/scripts/selfhost-token.mjs)
+      AUTH_ISSUER: ${AUTH_ISSUER:?set AUTH_ISSUER in .env}
+      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID:?set AUTH_CLIENT_ID in .env}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:?set AUTH_JWKS_URL in .env}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+    volumes:
+      # Graphs (SQLite) and assets
+      - ${DATA_DIR:-./data}:/data
+    # Not published to the host: only reachable through Caddy
+    expose:
+      - "8787"
+
+  caddy:
+    image: caddy:2
+    container_name: logseq-sync-caddy
+    restart: unless-stopped
+    depends_on:
+      logseq-sync:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # TLS certificates and Caddy state
+      - ./caddy/data:/data
+      - ./caddy/config:/config

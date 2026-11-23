@@ -1,0 +1,5 @@
+{$DOMAIN} {
+	# HTTPS certificates are issued automatically (Let's Encrypt).
+	# WebSocket connections (/sync/...) are proxied without extra settings.
+	reverse_proxy logseq-sync:8787
+}

@@ -580,12 +580,13 @@
     (when (seq targets)
       (cond-> (mapv (fn [id] [:db/add id :logseq.property/created-by-ref actor-id]) targets)
         (nil? existing)
-        (conj {:db/id actor-id :block/uuid (:uuid creator)
-               :block/title (:username creator) :block/name (:username creator)
-               :block/tags #{:logseq.class/Page}
-               :block/created-at now :block/updated-at now
-               :logseq.property.user/name (:username creator)
-               :logseq.property.user/email (:email creator)})))))
+        (conj (cond-> {:db/id actor-id :block/uuid (:uuid creator)
+                       :block/title (:username creator) :block/name (:username creator)
+                       :block/tags #{:logseq.class/Page}
+                       :block/created-at now :block/updated-at now
+                       :logseq.property.user/name (:username creator)}
+                ;; email is optional in self-issued sign-in tokens
+                (:email creator) (assoc :logseq.property.user/email (:email creator))))))))
 
 (defn- authored-write! [conn creator mutate & args]
   (if-not creator

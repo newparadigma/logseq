@@ -144,13 +144,14 @@
         ui-ready (p/do!
                   (idb/start)
                   (get-system-info)
+                  ;; after system info: token changes are written to <home>/logseq-dev/auth.json
+                  (user-handler/restore-tokens-from-localstorage)
                   (plugin-handler/setup!)
                   (render))]
 
       (set-global-error-notification!)
 
       (register-components-fns!)
-      (user-handler/restore-tokens-from-localstorage)
       (when (util/electron?)
         (el/listen!))
 

@@ -1639,3 +1639,12 @@
           (is (not (ldb/internal-page? converted)))
           (is (= (:db/id page) (:db/id converted)))
           (is (some? (:block/name converted))))))))
+
+(deftest gen-created-by-block-omits-missing-email-test
+  (let [token {:sub "2f9c1a7e-5b8d-4c3e-9a61-0d4e7b2c8f10" :cognito:username "guitest"}
+        block (#'worker-pipeline/gen-created-by-block token)]
+    (is (= "guitest" (:logseq.property.user/name block)))
+    (is (not (contains? block :logseq.property.user/email)))
+    (is (= "me@example.com"
+           (:logseq.property.user/email
+            (#'worker-pipeline/gen-created-by-block (assoc token :email "me@example.com")))))))

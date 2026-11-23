@@ -429,14 +429,15 @@
         user-name (:cognito:username decoded-id-token)
         email (:email decoded-id-token)
         now (common-util/time-ms)]
-    {:block/uuid (uuid user-uuid)
-     :block/name user-name
-     :block/title user-name
-     :block/tags :logseq.class/Page
-     :block/created-at now
-     :block/updated-at now
-     :logseq.property.user/name user-name
-     :logseq.property.user/email email}))
+    ;; email is optional in self-issued sign-in tokens; nil values cannot be stored
+    (cond-> {:block/uuid (uuid user-uuid)
+             :block/name user-name
+             :block/title user-name
+             :block/tags :logseq.class/Page
+             :block/created-at now
+             :block/updated-at now
+             :logseq.property.user/name user-name}
+      email (assoc :logseq.property.user/email email))))
 
 (defn- add-created-by-ref-hook
   [db-before db-after tx-data tx-meta]

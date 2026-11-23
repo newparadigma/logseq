@@ -8,10 +8,11 @@
 ## Status (as of 2026-11-21)
 - Done (2026-11-21): Logseq account (Cognito) sign-in removed from the app, the CLI and the server; there is no default sync server. See "Logseq account removal (2026-11-21)". LogseqDEV rebuilt with it and installed (2026-11-21, `docker/macos-build/run.sh`, 442 s; `codesign --verify --deep --strict` OK; `app.asar` contains `settings.sync-server/not-set` and `auth-token-expired`, no `aws-amplify`, `logseq-prod.auth`, `cognito-idp`, `api.logseq.io/sync`). Previous app is in `~/.Trash`. Not launched or clicked through yet (open task: GUI check of token login, sync, logout, expiry, blocked publishing).
 - Done (2026-11-21): page publishing blocked (user decision, to be revisited): `frontend.config/publish-enabled?` is `false`; it disables the "Publish" items in the page menu and header menu, the Unpublish button of `:logseq.property.publish/published-url`, and makes the `:publish/open-dialog` event (shortcut `mod+m`) a no-op. Set it to `true` to re-enable. Lint clean; not checked in the GUI.
+- Done (2026-11-24): GUI check of the rebuilt LogseqDEV against a local sync server; one bug found and fixed (see "GUI check (2026-11-24)"). LogseqDEV rebuilt again with the fix and installed.
 - Task list: "Open tasks" below.
 - In progress (2026-11-21): review of external services. Items 1-4 done and built into LogseqDEV (installed 2026-11-21, `docker/macos-build/run.sh`, ~300 s; `codesign --verify --deep --strict` OK; `app.asar` has no `posthog`, `@sentry`, `sentry.io`, `handbooks.pages.dev`, `logseq.com/youtube`, `asset.logseq.com/static/js`; `logseq/marketplace` only as the update manifest URL). User checked in the GUI (2026-11-21): no Marketplace tab on the Plugins page, no Handbook item in the help menu. Not checked yet: YouTube embed (user: later), manual plugin update check, error boundary. See "External services review (2026-11-21)". Items 5-6 still open.
 - Done (2026-11-20): sync without a Logseq account, using self-issued tokens. See "Self-hosted token sign-in" below. Tested end to end as a web app with two devices against a local sync server; LogseqDEV rebuilt and launch-tested (see the 2026-11-20 build section).
-- Done: a Docker setup for the sync server (Dockerfile, docker-compose.yml with Caddy). It was built and smoke-tested in a Linux sandbox (see "Sync server" below).
+- Done (2026-11-24): the sync server Docker setup (Dockerfile, docker-compose.yml with Caddy) is in the repository at `docker/db-sync/` and builds from the checkout. Built and tested locally behind Caddy (HTTPS, token auth, WebSocket); not deployed to a real host yet. See "Sync server (Docker)" below.
 - Done: the GitHub fork of `logseq/logseq` (reported by the user).
 - Done: vendored 21 Git repositories into `deps/vendor/`, including development/test tooling, transitive Git dependencies, the OCaml CLI libraries, and iOS Drops. See "Vendored dependencies" below.
 - Done: the first macOS ARM64 build, named `LogseqDEV`, compiled, packaged, and ad-hoc signed inside Docker. Artifact and verification details are below.
@@ -19,7 +20,7 @@
 - Suggested next steps:
   1. Confirm the fork URL, personal branch, and intended base revision.
   2. Install/test the built LogseqDEV app. Keep future npm/opam/toolchain installations inside Docker.
-  3. Point the server's `.env` at the fork and the personal branch.
+  3. Done 2026-11-24: the server is built from the repository checkout (`docker/db-sync/`), so the fork and branch are chosen by `git clone -b <branch>` on the host, not in `.env`.
 
 ## License and repositories
 - `logseq/logseq` is **AGPL-3.0** (`LICENSE.md`); `libs/cljs-sdk` is MIT. Private modification and use carry no obligations.
@@ -96,6 +97,14 @@
   - cli-e2e harness unit tests: 67 tests, 0 failures.
   - Not done: manual GUI check of login/sync in the rebuilt LogseqDEV, mobile, clj-e2e run.
 - Tooling notes: no `bb` in the builder image: babashka 1.12.215 linux-aarch64 static is in the cache volume at `/work/cache/bb/bb`. `pnpm install --offline` fails (`ERR_PNPM_NO_OFFLINE_META`); lockfile updates need network. `pnpm install` in `deps/db-sync` inside the mounted tree aborts with `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` (it wants to purge the host-made node_modules): use a copy.
+
+## GUI check (2026-11-24)
+- Setup: sync server built from the working tree in Docker (`clojure -M:cljs release db-sync-node` in a container copy, `AUTH_*` from `selfhost-token.mjs`, port `127.0.0.1:18787`); LogseqDEV run as `HOME=<tmp> LogseqDEV --user-data-dir=<tmp> --remote-debugging-port=19333`, driven over CDP (Node script with the global `WebSocket`: `Runtime.evaluate`, `Page.captureScreenshot`, `Input.*`). Window CSS coordinates are half the screenshot pixels.
+- Isolation lesson: `--user-data-dir` + `LOGSEQ_GRAPHS_DIR` are not enough. `auth.json` goes to `$HOME/logseq-dev/auth.json`, and the E2EE password is saved in the macOS keychain under a fixed slot (service `LogseqDEV E2EE`, account `logseq-encrypted-password`) shared by every LogseqDEV profile. Override `HOME` for test runs; the keychain slot cannot be isolated (logout deletes it). The first run wrote and then cleared the real `~/logseq-dev/auth.json` (it did not exist before; removed) and the keychain slot (no entry before or after).
+- Passed: header menu shows "Login" when signed out; "Login" opens the Sync Server dialog with the new texts; save URL; invalid token -> "The access token is invalid or expired."; valid token (no `email` claim) -> "Signed in to the self-hosted sync server.", E2EE password set/enter dialogs, user RSA keys uploaded; RTC UI (cloud icon) appears; remote graph list shows server graphs; create graph with sync -> uploaded (server `graphs/<id>/db.sqlite`), avatar shown, typing a block increases the server `tx_log` (3 -> 5); "Publish page" disabled in the header/page menu (also while signed in); `mod+m` does nothing (positive control: `mod+k` dispatched the same way opens search); logout clears tokens, sync URL and auth file, "Login" returns; token expiring while running -> cleared at the next sync call, remote graphs section hidden; app restarted after expiry -> tokens cleared on restore, "Login" shown.
+- Bug found and fixed: creating/uploading a synced graph failed with `Cannot store nil as a value ... :logseq.property.user/email nil` when the token has no `email` claim (optional for self-issued tokens; Cognito tokens always had it). `gen-created-by-block` (`src/main/frontend/worker/pipeline.cljs`) and the server's semantic API creator page (`deps/db-sync/src/logseq/db_sync/worker/handler/semantic.cljs`) now omit the email when it is missing. Test `gen-created-by-block-omits-missing-email-test` in `src/test/frontend/worker/pipeline_test.cljs`. Checks: clj-kondo 0/0, `frontend.worker.pipeline-test` 47 tests 0 failures, db-sync 243 tests 0 failures. The first failed attempt left an empty remote graph on the test server only.
+- Minor issue found and fixed (2026-11-24): `restore-tokens-from-localstorage` ran in `frontend.handler/start!` before `get-system-info`, so `persist-auth-file!` had no `[:system/info :home-dir]` and skipped writing: an expired token stayed in `~/logseq-dev/auth.json` (a valid one was not re-persisted either). It now runs inside the `ui-ready` chain right after `get-system-info`. Verified in the rebuilt app (isolated `HOME`): expired token -> `auth.json` tokens `null`, "Login" shown; valid token -> survives restart, still in `auth.json`. clj-kondo 0/0, `frontend.handler.user-test` 7 tests 0 failures. LogseqDEV rebuilt and installed with this fix.
+- Not checked: the Unpublish button (needs a page with `published-url`), a second device downloading the graph in Electron (done for the web app on 2026-11-20), mobile.
 
 ## Open tasks (user requests, 2026-11-21)
 1. Fix all failing tests: done 2026-11-23, every suite green (details below). Done:
@@ -253,208 +262,19 @@ Remaining items of the review:
 - A free Apple ID gives 7-day signing and no iCloud/push/associated domains; the paid Apple Developer Program (99 $/year) gives 1-year signing.
 - Android: `applicationId com.logseq.app` (same as official → change it to install alongside the official app); `pnpm run-android-release`, then Build APK.
 
-## Sync server (Docker) — tested
-- Source: `deps/db-sync` (Node adapter, target `db-sync-node` → `worker/dist/node-adapter.js`).
-- Storage: SQLite + filesystem.
-- Endpoints: `/health`, `/graphs`, `/sync/<id>` (WebSocket), `/assets/`, `/e2ee`.
-- Listens on all interfaces; `DB_SYNC_PORT`; data in `DB_SYNC_DATA_DIR`.
-- What was tested in the sandbox:
-  - the image builds (shadow-cljs, 0 warnings, ~480 MB);
-  - a rebuild with no changes is fully cached;
-  - through Caddy: HTTPS works, HTTP→HTTPS redirect, `/health` OK, 401 without login;
-  - a full WebSocket session through Caddy works;
-  - files in `./data` are owned by PUID:PGID and the process runs as uid 1000.
-- Not tested: a real app login against it; a Let's Encrypt certificate.
-- The compose file and `.env.example` below require the self-issued token settings (`AUTH_*`); the Dockerfile has no auth defaults (server code from 2026-11-21 reads `AUTH_*`, older code read `COGNITO_*`). These files exist only in this document, not in the repository.
-- Data layout: `./data/index.sqlite`, `./data/graphs/<id>/db.sqlite`, `./data/assets/`. Back up `./data`.
-- Deploy:
-  1. `cp .env.example .env`;
-  2. set `DOMAIN`, `LOGSEQ_REPO` (fork URL ending in `.git`), `LOGSEQ_REF` (e.g. `personal`), `PUID`/`PGID`;
-  3. run `docker compose up -d --build`.
-- The Clojure compile needs a decent amount of RAM; a 1 GB VPS may fail.
-
-### Files (folder `logseq-sync/`)
-
-#### Dockerfile
-```dockerfile
-# syntax=docker/dockerfile:1
-
-# Self-hosted Logseq DB sync server (Node.js adapter from deps/db-sync).
-# Built from a git repository and ref (branch, tag or commit). Use the same
-# repository and ref as the Logseq apps on your devices.
-ARG LOGSEQ_REPO=https://github.com/logseq/logseq.git
-ARG LOGSEQ_REF=2.0.2
-ARG NODE_IMAGE=node:24-bookworm-slim
-ARG CLOJURE_IMAGE=clojure:temurin-21-tools-deps-bookworm
-
-# ---------------------------------------------------------------------------
-# Node.js runtime, reused by the build stage and the final image
-# ---------------------------------------------------------------------------
-FROM ${NODE_IMAGE} AS node
-
-# ---------------------------------------------------------------------------
-# Build: Java 21 + Clojure CLI (from the base image) + Node.js + pnpm
-# ---------------------------------------------------------------------------
-FROM ${CLOJURE_IMAGE} AS build
-ARG LOGSEQ_REPO
-ARG LOGSEQ_REF
-ARG PNPM_VERSION=10.33.0
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends git ca-certificates python3 make g++ \
- && rm -rf /var/lib/apt/lists/*
-
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=node /usr/local/include/node /usr/local/include/node
-RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
- && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
- && npm install -g "pnpm@${PNPM_VERSION}"
-
-# Sources at the given ref. The ref is resolved to a commit on every build,
-# so new commits on a branch are picked up without --no-cache.
-ADD ${LOGSEQ_REPO}#${LOGSEQ_REF} /src
-
-WORKDIR /src/deps/db-sync
-
-# npm packages (production only: wrangler and other dev tools are not needed)
-RUN pnpm install --prod --frozen-lockfile --ignore-workspace
-
-# Clojure dependencies, then the release build of the Node adapter
-RUN clojure -P -M:cljs
-RUN clojure -M:cljs release db-sync-node \
- && test -s worker/dist/node-adapter.js
-
-# ---------------------------------------------------------------------------
-# Runtime
-# ---------------------------------------------------------------------------
-FROM node AS runtime
-ARG LOGSEQ_REPO
-ARG LOGSEQ_REF
-
-LABEL org.opencontainers.image.title="logseq-sync" \
-      org.opencontainers.image.description="Self-hosted Logseq DB sync server" \
-      org.opencontainers.image.source="${LOGSEQ_REPO}" \
-      org.opencontainers.image.version="${LOGSEQ_REF}"
-
-# Sign-in uses self-issued tokens: AUTH_ISSUER, AUTH_CLIENT_ID and
-# AUTH_JWKS_URL come from docker-compose (.env). Graph data stays here.
-ENV NODE_ENV=production \
-    DB_SYNC_PORT=8787 \
-    DB_SYNC_DATA_DIR=/data \
-    PUID=1000 \
-    PGID=1000
-
-WORKDIR /app
-COPY --from=build /src/deps/db-sync/node_modules ./node_modules
-COPY --from=build /src/deps/db-sync/worker/dist/node-adapter.js ./worker/dist/node-adapter.js
-
-# Starts as root only to prepare the data folder, then drops to PUID:PGID,
-# so files in the bind-mounted folder belong to your user on the host.
-COPY --chmod=755 <<'EOF' /usr/local/bin/logseq-sync-entrypoint
-#!/bin/sh
-set -eu
-mkdir -p "$DB_SYNC_DATA_DIR"
-if [ "$(id -u)" = "0" ]; then
-  if [ "$(stat -c %u:%g "$DB_SYNC_DATA_DIR")" != "$PUID:$PGID" ]; then
-    chown -R "$PUID:$PGID" "$DB_SYNC_DATA_DIR"
-  fi
-  exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups "$@"
-fi
-exec "$@"
-EOF
-
-EXPOSE 8787
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+process.env.DB_SYNC_PORT+'/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
-
-ENTRYPOINT ["logseq-sync-entrypoint"]
-CMD ["node", "/app/worker/dist/node-adapter.js"]
-```
-
-#### docker-compose.yml
-```yaml
-services:
-  logseq-sync:
-    build:
-      context: .
-      args:
-        LOGSEQ_REPO: ${LOGSEQ_REPO:-https://github.com/logseq/logseq.git}
-        LOGSEQ_REF: ${LOGSEQ_REF:-2.0.2}
-    image: logseq-sync:local
-    container_name: logseq-sync
-    restart: unless-stopped
-    environment:
-      DB_SYNC_BASE_URL: https://${DOMAIN:?set DOMAIN in .env}
-      # Self-issued sign-in tokens (deps/db-sync/scripts/selfhost-token.mjs)
-      AUTH_ISSUER: ${AUTH_ISSUER:?set AUTH_ISSUER in .env}
-      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID:?set AUTH_CLIENT_ID in .env}
-      AUTH_JWKS_URL: ${AUTH_JWKS_URL:?set AUTH_JWKS_URL in .env}
-      PUID: ${PUID:-1000}
-      PGID: ${PGID:-1000}
-    volumes:
-      # Graphs (SQLite) and assets are stored next to this file, in ./data
-      - ./data:/data
-    # Not published to the host: only reachable through Caddy
-    expose:
-      - "8787"
-
-  caddy:
-    image: caddy:2
-    container_name: logseq-sync-caddy
-    restart: unless-stopped
-    depends_on:
-      logseq-sync:
-        condition: service_healthy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      # TLS certificates and Caddy state
-      - ./caddy/data:/data
-      - ./caddy/config:/config
-```
-
-#### Caddyfile
-```
-{$DOMAIN} {
-	# HTTPS certificates are issued automatically (Let's Encrypt).
-	# WebSocket connections (/sync/...) are proxied without extra settings.
-	reverse_proxy logseq-sync:8787
-}
-```
-
-#### .env.example
-```bash
-# Domain that points to this server (A/AAAA record). Caddy gets the
-# HTTPS certificate for it automatically; ports 80 and 443 must be open.
-DOMAIN=sync.example.com
-
-# Where the sync server is built from: your fork (URL must end with .git)
-# and your branch, a tag or a commit. Use the same code as your Logseq apps.
-LOGSEQ_REPO=https://github.com/logseq/logseq.git
-LOGSEQ_REF=2.0.2
-
-# Owner of the files in ./data (run `id -u` and `id -g` on the host).
-PUID=1000
-PGID=1000
-
-# Sign-in without a Logseq account. Paste the 3 lines printed by:
-#   node deps/db-sync/scripts/selfhost-token.mjs init ~/logseq-sync-auth --issuer https://sync.example.com/ --username me
-# Then issue a token for the apps with:
-#   node deps/db-sync/scripts/selfhost-token.mjs token ~/logseq-sync-auth
-AUTH_ISSUER=
-AUTH_CLIENT_ID=
-AUTH_JWKS_URL=
-```
-
-#### .dockerignore
-```
-# The image is built from the Logseq sources on GitHub; nothing from this
-# folder is needed (and ./data with your graphs must not be sent to the build).
-*
-```
+## Sync server (Docker)
+- Files in the repository: `docker/db-sync/` (2026-11-24): `Dockerfile`, `Dockerfile.dockerignore`, `docker-compose.yml` (server + Caddy), `Caddyfile`, `.env.example`, `.gitignore` (`.env`, `data/`, `caddy/`), `README.md` (deploy, token, update, data, revoke). Before that the files existed only as text in this document, built from a Git URL (`LOGSEQ_REPO`/`LOGSEQ_REF` + `ADD <repo>#<ref>`).
+- Decision (2026-11-24): build from the repository checkout instead of a Git URL. Compose `context: ../..`, `dockerfile: docker/db-sync/Dockerfile`; the server runs the checked-out commit (also uncommitted changes), works with a private fork, and needs no `LOGSEQ_REPO`/`LOGSEQ_REF`. On the host: `git clone -b <branch> https://github.com/newparadigma/logseq.git`, then `cd docker/db-sync`. Update: `git pull && docker compose up -d --build`.
+- `Dockerfile.dockerignore` is an allowlist (`deps/`, `resources/`) minus `node_modules`, `.shadow-cljs`, `.cpcache`, `worker/dist`, `tmp`: context 31 MB (measured). db-sync deps are all `:local/root` (vendored), so the build needs no git. Build order: `package.json` + lockfile -> `pnpm install --prod`, then sources, then `clojure -M:cljs release db-sync-node` with a BuildKit cache mount for `/root/.m2` (Maven jars ~43 MB, measured with `clojure -Spath`).
+- `DATA_DIR` in `.env` (default `./data`; `.env.example` suggests `/srv/logseq-sync/data`) keeps graph data outside the checkout, so `git clean` cannot delete it.
+- Source: `deps/db-sync` (Node adapter, target `db-sync-node` -> `worker/dist/node-adapter.js`). Storage: SQLite + filesystem. Endpoints: `/health`, `/graphs`, `/sync/<id>` (WebSocket), `/assets/`, `/e2ee`. Env read by the server: `DB_SYNC_PORT`, `DB_SYNC_BASE_URL`, `DB_SYNC_DATA_DIR`, `DB_SYNC_STORAGE_DRIVER`, `DB_SYNC_ASSETS_DRIVER`, `DB_SYNC_LOG_LEVEL`, `AUTH_ISSUER`, `AUTH_CLIENT_ID`, `AUTH_JWKS_URL` (`deps/db-sync/src/logseq/db_sync/node/config.cljs`).
+- Data layout: `DATA_DIR/index.sqlite`, `DATA_DIR/graphs/<id>/db.sqlite`, `DATA_DIR/assets/`.
+- Client URLs: app takes the HTTPS base URL; CLI needs `sync config set http-base https://<domain>` and `ws-url 'wss://<domain>/sync/%s'` (the worker replaces `%s` with the graph id).
+- Earlier sandbox test of the Git-URL version (before 2026-11-21, with `COGNITO_*` env): image built (~480 MB), rebuild cached, Caddy HTTPS + HTTP->HTTPS redirect, `/health`, 401 without login, a WebSocket session through Caddy, files in data owned by PUID:PGID.
+- Verified 2026-11-24 on this Mac (OrbStack, user approved the ~430 MB download: `clojure:temurin-21-tools-deps-bookworm`, `caddy:2` 89 MB, apt toolchain, Maven, npm; the images and BuildKit cache `logseq-sync-m2` are kept for later builds):
+  - `docker compose config` resolves context/dockerfile and fails with "required variable DOMAIN is missing a value" without `.env`; build context 31 MB.
+  - Full build with `docker compose build`: 196 s, image `logseq-sync:local` 437 MB. 24 `:infer-warning`s, all in vendored libraries (`deps/vendor/datascript`, `deps/vendor/cljs-time`), none in project code. better-sqlite3 used its prebuilt binary.
+  - Test stack: project `logseq-sync-test`, `DOMAIN=localhost` (Caddy internal CA), port override file with `ports: !override` to 18080/18443, `DATA_DIR` in the scratchpad, fresh `selfhost-token.mjs` key. Results: HTTP->HTTPS 308; `/health` 200; `/graphs` 401 without token, 401 for a token signed by another key (same issuer/aud/exp; body `{"error":"unauthorized"}`), 200 with own token; unencrypted graph created and listed; WebSocket `wss://.../sync/<id>?token=` through Caddy opened and got `online-users`; WebSocket without token rejected. Server process runs as PUID:PGID (501:20).
+  - On macOS bind mounts the data files show `0:0` inside the container and the host group of the parent dir, so the entrypoint `chown` has no visible effect there (it runs on each start, harmless). Ownership by PUID:PGID was verified earlier on Linux only.
+  - Cleaned up: `docker compose down`, test data, keys and `docker/db-sync/caddy/` removed.
+- Not verified yet: a real app login against the Docker server over HTTPS (Electron rejects Caddy's local CA; the app was tested against a plain HTTP server on 2026-11-24), a Let's Encrypt certificate on a real host with a domain.
