@@ -65,22 +65,6 @@ contextBridge.exposeInMainWorld('apis', {
     ipcRenderer.on(channel, callback)
   },
 
-  checkForUpdates: async (...args) => {
-    await ipcRenderer.invoke('check-for-updates', ...args)
-  },
-
-  setUpdatesCallback (cb) {
-    if (typeof cb !== 'function') return
-
-    const channel = 'updates-callback'
-    ipcRenderer.removeAllListeners(channel)
-    ipcRenderer.on(channel, cb)
-  },
-
-  installUpdatesAndQuitApp () {
-    ipcRenderer.invoke('install-updates', true)
-  },
-
   async openExternal (url, options) {
     const protocol = new URL(url).protocol
     if (!ALLOWED_EXTERNAL_PROTOCOLS.includes(protocol)) {

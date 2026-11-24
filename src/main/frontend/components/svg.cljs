@@ -41,14 +41,6 @@
 
 (def folder (hero-icon "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"))
 
-(def external-link
-  [:svg {:fill   "none", :view-box "0 0 24 24", :height "21", :width "21"
-         :stroke "currentColor"}
-   [:path
-    {:stroke-linejoin "round"
-     :stroke-linecap  "round"
-     :stroke-width    "2"
-     :d               "M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"}]])
 (hsx/defc note
   []
   [:svg.h-8.w-8.note
@@ -248,13 +240,6 @@
   ([size]
    [:svg.icon {:fill "none" :width size :height size :viewBox "0 0 24 24" :stroke "currentColor"}
     [:path {:stroke-linecap "round" :stroke-linejoin "round" :stroke-width "2" :d "M5 13l4 4L19 7"}]]))
-
-(defn reload
-  ([] (reload 16))
-  ([size]
-   [:svg.icon-reload {:width size :height size :viewBox "0 0 24 24" :stroke-width "2" :stroke "currentColor" :fill "none" :stroke-linecap "round" :stroke-linejoin "round"}
-    [:path {:stroke "none" :d "M0 0h24v24H0z" :fill "none"}]
-    [:path {:d "M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5"}]]))
 
 (defn annotations
   ([] (annotations 16))

@@ -41,10 +41,6 @@ protocols:
     schemes:
       - logseq
 
-publish:
-  - provider: github
-    owner: newparadigma
-    repo: logseq
 
 extraResources:
   - from: .agents/skills/logseq-cli/SKILL.md

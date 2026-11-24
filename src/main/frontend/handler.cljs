@@ -203,7 +203,3 @@
                        (p/resolve! state/app-ready-promise true)
                        (log/info ::app-init-spent-time (- (util/time-ms) t1)))))))
 
-(defn quit-and-install-new-version!
-  []
-  (p/let [_ (ipc/invoke "set-quit-dirty-state" false)]
-    (ipc/ipc :quitAndInstall)))

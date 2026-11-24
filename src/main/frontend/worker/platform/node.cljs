@@ -473,12 +473,23 @@
                  (.closeSync ^js @collection*)
                  nil)})))
 
+(defn- temp-pool-name?
+  "Pools named by `worker-util/get-pool-name` (sync upload/download temp dbs);
+  graph pools use the graph dir key."
+  [pool-name]
+  (string/starts-with? pool-name "logseq-pool-"))
+
 (defn- install-opfs-pool
-  [data-dir _sqlite pool-name]
-  (p/let [repo-dir-path (repo-dir data-dir pool-name)
+  [data-dir temp-dir _sqlite pool-name]
+  ;; Temp pools stay outside the graphs dir, which lists every folder as a graph
+  (p/let [temp? (temp-pool-name? pool-name)
+          repo-dir-path (if temp?
+                          (node-path/join temp-dir pool-name)
+                          (repo-dir data-dir pool-name))
           _ (ensure-dir! repo-dir-path)
           ^js pool (js-obj)]
     (set! (.-repoDir pool) repo-dir-path)
+    (set! (.-temp pool) temp?)
     (set! (.-getCapacity pool) (fn [] 1))
     (set! (.-pauseVfs pool) (fn [] nil))
     (set! (.-unpauseVfs pool) (fn [] nil))
@@ -501,11 +512,13 @@
   [write-guard-fn ^js pool]
   (when pool
     (p/let [_ (when write-guard-fn (write-guard-fn))
-            directory (.-repoDir pool)
-            entries (fs/readdir directory)]
-      (p/all (map (fn [entry]
-                    (fs/rm (node-path/join directory entry) #js {:recursive true :force true}))
-                  (array-seq entries))))))
+            directory (.-repoDir pool)]
+      (if (.-temp pool)
+        (fs/rm directory #js {:recursive true :force true})
+        (p/let [entries (fs/readdir directory)]
+          (p/all (map (fn [entry]
+                        (fs/rm (node-path/join directory entry) #js {:recursive true :force true}))
+                      (array-seq entries))))))))
 
 (defn- read-text!
   [data-dir path]
@@ -759,7 +772,8 @@
              :root-dir root-dir
              :owner-source owner-source}
        :storage {:install-opfs-pool (fn [sqlite-module pool-name]
-                                      (install-opfs-pool data-dir sqlite-module pool-name))
+                                      (install-opfs-pool data-dir (node-path/join root-dir ".temp-pools")
+                                                         sqlite-module pool-name))
                  :list-graphs (fn [] (list-graphs data-dir))
                  :db-exists? (fn [graph] (db-exists? data-dir graph))
                  :resolve-db-path (fn [_repo pool path]

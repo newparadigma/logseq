@@ -453,6 +453,25 @@
                      (is false (str "unexpected error: " e))))
           (p/finally done)))))
 
+(deftest temp-pools-live-outside-the-graphs-dir-and-are-removed-whole
+  (async done
+    (let [root-dir (node-helper/create-tmp-dir "platform-node-temp-pool")]
+      (-> (p/let [platform (platform-node/node-platform {:root-dir root-dir})
+                  storage (:storage platform)
+                  pool ((:install-opfs-pool storage) nil "logseq-pool-upload-temp")
+                  repo-dir (gobj/get pool "repoDir")
+                  _ (fs/writeFileSync (node-path/join repo-dir "upload.sqlite") "db-bytes" "utf8")
+                  graphs-during ((:list-graphs storage))
+                  _ ((:remove-vfs! storage) pool)
+                  graphs-after ((:list-graphs storage))]
+            (is (string/ends-with? repo-dir (node-path/join ".temp-pools" "logseq-pool-upload-temp")))
+            (is (= [] graphs-during) "a temp pool is never listed as a graph")
+            (is (= [] graphs-after))
+            (is (not (fs/existsSync repo-dir)) "the temp pool folder itself is removed"))
+          (p/catch (fn [e]
+                     (is false (str "unexpected error: " e))))
+          (p/finally done)))))
+
 (deftest draining-platform-waits-for-file-writes-and-rejects-late-background-work
   (async done
     (let [root-dir (node-helper/create-tmp-dir "platform-node-drain")

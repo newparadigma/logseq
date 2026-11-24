@@ -20,12 +20,12 @@
             [electron.logger :as logger]
             [electron.release-warning :as release-warning]
             [electron.server :as server]
-            [electron.updater :refer [init-updater] :as updater]
             [electron.url :as url]
             [electron.utils :refer [*win mac? dev? get-win-from-sender
                                     decode-protected-assets-schema-path send-to-renderer]
              :as utils]
             [electron.window :as win]
+            [frontend.version :refer [version]]
             [lambdaisland.glogi :as log]
             [logseq.publishing.export :as publish-export]
             [promesa.core :as p]))
@@ -47,11 +47,6 @@
 (defonce *lifecycle-op (volatile! (p/resolved nil)))
 (defonce *quit-dirty? (volatile! true))
 (defonce *pending-open-urls (atom []))
-
-(defn setup-updater! [^js win]
-  ;; manual/auto updater
-  (init-updater {:repo   "logseq/logseq"
-                 :win    win}))
 
 (defn open-url-handler
   "Resolve and open a protocol URL in the appropriate window."
@@ -211,7 +206,7 @@
   (let [about-fn (fn []
                    (.showMessageBox dialog (clj->js {:title "Logseq"
                                                      :icon (node-path/join js/__dirname "icons/logseq.png")
-                                                     :message (t :electron/version updater/electron-version)})))
+                                                     :message (t :electron/version version)})))
         template (if mac?
                    [{:label (.-name app)
                      :submenu [{:role "about"}
@@ -430,8 +425,7 @@
 
                   (vreset! *setup-fn
                            (fn []
-                             (let [t1 (setup-updater! win)
-                                   t2 (setup-app-manager! win)
+                             (let [t2 (setup-app-manager! win)
                                    t3 (handler/set-ipc-handler! win)
                                    t4 (server/setup! win)
                                    t5 (when (cfgs/semantic-search-enabled?)
@@ -442,7 +436,7 @@
                                         #(-> (handler/stop-all-db-workers!)
                                              (p/finally
                                                (fn []
-                                                 (doseq [f [t0 t1 t2 t3 t4 t5 tt]]
+                                                 (doseq [f [t0 t2 t3 t4 t5 tt]]
                                                    (and f (f))))))))))
 
                   ;; setup effects

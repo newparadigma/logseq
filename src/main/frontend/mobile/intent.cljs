@@ -149,7 +149,7 @@
                       (interpolate-rich-text-node
                        (t :mobile.share/unsupported-import-type)
                        [application-type
-                        [:a {:href "https://github.com/logseq/db-test/issues"
+                        [:a {:href "https://github.com/newparadigma/logseq/issues"
                              :target "_blank"} "GitHub"]])]
                      :warning false))]
     (when content
@@ -200,7 +200,7 @@
        [:div
         (interpolate-rich-text-node
          (t :mobile.share/unsupported-content-warning)
-         [[:a {:href "https://github.com/logseq/db-test/issues/new?labels=from:in-app&template=bug_report.yaml"
+         [[:a {:href "https://github.com/newparadigma/logseq/issues/new?labels=from:in-app&template=bug_report.yaml"
                :target "_blank"} "GitHub"]])
         [:pre.code (with-out-str (pprint/pprint resource))]] :warning false))
 
@@ -213,7 +213,7 @@
        [:div
         (interpolate-rich-text-node
          (t :mobile.share/unsupported-content-warning)
-         [[:a {:href "https://github.com/logseq/db-test/issues/new?labels=from:in-app&template=bug_report.yaml"
+         [[:a {:href "https://github.com/newparadigma/logseq/issues/new?labels=from:in-app&template=bug_report.yaml"
                :target "_blank"} "GitHub"]])
         [:pre.code (with-out-str (pprint/pprint resource))]] :warning false))))
 
@@ -287,7 +287,7 @@
          [:div
           (interpolate-rich-text-node
            (t :mobile.share/unsupported-content-warning)
-           [[:a {:href "https://github.com/logseq/db-test/issues/new?labels=from:in-app&template=bug_report.yaml"
+           [[:a {:href "https://github.com/newparadigma/logseq/issues/new?labels=from:in-app&template=bug_report.yaml"
                  :target "_blank"} "GitHub"]])
           [:pre.code (with-out-str (pprint/pprint result))]] :warning false)))))
 

@@ -9,7 +9,7 @@
             [frontend.components.shortcut :as shortcut]
             [frontend.components.svg :as svg]
             [frontend.config :as config]
-            [frontend.context.i18n :refer [interpolate-rich-text-node locale-format-date t]]
+            [frontend.context.i18n :refer [locale-format-date t]]
             [frontend.date :as date]
             [frontend.dicts :as dicts]
             [frontend.handler.config :as config-handler]
@@ -53,100 +53,43 @@
 
 (hsx/defc app-updater
   [version]
-  (let [update-pending? (rfx/use-sub [:electron/updater-pending?])
-        {:keys [type payload]} (rfx/use-sub [:electron/updater])]
-    [:span.cp__settings-app-updater
-     [:div.ctls.flex.items-center
-      [:div.mt-1.sm:mt-0.sm:col-span-2.flex.gap-4.items-center.flex-wrap
-       [:div (cond
-               (mobile-util/native-android?)
-               (ui/button
-                (t :settings.general/check-for-updates)
-                :class "text-sm mr-1"
-                :href "https://github.com/newparadigma/logseq/releases")
+  [:span.cp__settings-app-updater
+   [:div.ctls.flex.items-center
+    [:div.mt-1.sm:mt-0.sm:col-span-2.flex.gap-4.items-center.flex-wrap
+     [:div (cond
+             (mobile-util/native-android?)
+             (ui/button
+              (t :settings.general/check-for-updates)
+              :class "text-sm mr-1"
+              :href "https://github.com/newparadigma/logseq/releases")
 
-               (mobile-util/native-ios?)
-               (ui/button
-                (t :settings.general/check-for-updates)
-                :class "text-sm mr-1"
-                :href "https://apps.apple.com/app/logseq/id1601013908")
+             (mobile-util/native-ios?)
+             (ui/button
+              (t :settings.general/check-for-updates)
+              :class "text-sm mr-1"
+              :href "https://apps.apple.com/app/logseq/id1601013908")
 
-               (util/electron?)
-               (ui/button
-                (if update-pending? (t :updater/checking-for-updates) (t :settings.general/check-for-updates))
-                :class "text-sm mr-1"
-                :disabled update-pending?
-                :on-click #(js/window.apis.checkForUpdates true))
+             :else
+             nil)]
 
-               :else
-               nil)]
+     (let [revision (build-version/revision)]
+       [:div.text-sm.cursor
+        {:title (t :settings.general/revision revision)
+         :on-click (fn []
+                     (notification/show! [:div
+                                          [:span (t :settings.general/current-revision-label)]
+                                          [:a {:target "_blank"
+                                               :style {:margin-inline-start "0.25rem"}
+                                               :href (str "https://github.com/newparadigma/logseq/commit/" revision)}
+                                           revision]]
+                                         :info
+                                         false))}
+        version])
 
-       (let [revision (build-version/revision)]
-         [:div.text-sm.cursor
-          {:title (t :settings.general/revision revision)
-           :on-click (fn []
-                       (notification/show! [:div
-                                            [:span (t :settings.general/current-revision-label)]
-                                            [:a {:target "_blank"
-                                                 :style {:margin-inline-start "0.25rem"}
-                                                 :href (str "https://github.com/newparadigma/logseq/commit/" revision)}
-                                             revision]]
-                                           :info
-                                           false))}
-          version])
-
-       [:a.text-sm.fade-link.underline.inline
-        {:target "_blank"
-         :href "https://docs.logseq.com/#/page/changelog"}
-        (t :settings.general/changelog)]]]
-
-     (when-not (string/blank? type)
-       [:div.update-state.text-sm
-        (case type
-          "checking-for-update"
-          [:p (t :updater/checking-for-updates)]
-
-          "update-not-available"
-          [:p (t :updater/up-to-date)]
-
-          "update-available"
-          (let [{:keys [name url]} payload]
-            [:p
-             [:span (t :updater/update-available)]
-             [:a.link
-              {:on-click
-               (fn [e]
-                 (js/window.apis.openExternal url)
-                 (util/stop e))
-               :style {:margin-inline-start "0.25rem"}}
-              svg/external-link name " 🎉"]])
-
-          "download-progress"
-          (let [percent (some-> payload :percent js/Math.round)]
-            [:p (t :updater/downloading-progress (or percent 0))])
-
-          "update-downloaded"
-          [:div.flex.items-center.gap-2.flex-wrap
-           [:p (t :updater/update-ready-to-install)]
-           (ui/button
-            (t :updater/quit-and-install)
-            :class "text-sm"
-            :on-click #(ipc/ipc :quitAndInstall))]
-
-          "error"
-          (let [release-channel-link
-                [:a.link.inline-flex.items-center.gap-1
-                 {:on-click
-                  (fn [e]
-                    (js/window.apis.openExternal "https://github.com/newparadigma/logseq/releases")
-                    (util/stop e))}
-                 svg/external-link
-                 (t :settings.general/release-channel)]]
-            [:p
-             (interpolate-rich-text-node
-              (t :updater/update-error)
-              [release-channel-link]
-              true)]))])]))
+     [:a.text-sm.fade-link.underline.inline
+      {:target "_blank"
+       :href "https://docs.logseq.com/#/page/changelog"}
+      (t :settings.general/changelog)]]]])
 
 (hsx/defc outdenting-hint
   []
@@ -304,15 +247,6 @@
                   #(when (js/confirm (t :ui/relaunch-confirm))
                      (js/logseq.api.relaunch))))
         true)]]]))
-
-(hsx/defc app-auto-update-row [t]
-  (let [enabled? (rfx/use-sub [:electron/user-cfgs :auto-update])
-        enabled? (if (nil? enabled?) true enabled?)]
-    (toggle "usage-diagnostics"
-            (t :settings.advanced/auto-updater)
-            enabled?
-            #((state/set-state! [:electron/user-cfgs :auto-update] (not enabled?))
-              (ipc/ipc :userAppCfgs :auto-update (not enabled?))))))
 
 (defn language-select-content-props
   "Keep the language popup clickable over Electron's custom title-bar drag region."
@@ -954,7 +888,6 @@
   (let [developer-mode? (rfx/use-sub [:ui/developer-mode?])
         https-agent-opts (rfx/use-sub [:electron/user-cfgs :settings/agent])]
     [:div.panel-wrap.is-advanced
-     (when (and (or util/mac? util/win32?) (util/electron?)) (app-auto-update-row t))
      (when-not (mobile-util/native-platform?) (developer-mode-row t developer-mode?))
      (sync-server-url-row)
      (publish-server-url-row)

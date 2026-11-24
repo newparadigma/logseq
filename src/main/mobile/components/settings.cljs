@@ -265,7 +265,7 @@
 
       [:div.mobile-setting-item
        {:on-click (fn []
-                    (js/window.open "https://github.com/logseq/db-test/issues"))}
+                    (js/window.open "https://github.com/newparadigma/logseq/issues"))}
        [:span.text-base (t :mobile.settings/report-bug)]]
 
       [:div.mobile-setting-item

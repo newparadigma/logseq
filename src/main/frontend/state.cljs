@@ -236,9 +236,6 @@
       :preferred-language                    (canonical-preferred-language (storage/get :preferred-language))
 
       ;; electron
-      :electron/auto-updater-downloaded      false
-      :electron/updater-pending?             false
-      :electron/updater                      {}
       :electron/app-base-info                nil
       :electron/user-cfgs                    nil
       :electron/server                       nil
@@ -1408,17 +1405,6 @@ should be done through this fn in order to get global config and config defaults
     (p/let [info (ipc/ipc :getAppBaseInfo)
             info (if (object? info) (bean/->clj info) info)]
       (set-state! :electron/app-base-info info))))
-
-(defn setup-electron-updater!
-  []
-  (when (util/electron?)
-    (js/window.apis.setUpdatesCallback
-     (fn [_ args]
-       (let [data (bean/->clj args)
-             pending? (not= (:type data) "completed")]
-         (set-state! :electron/updater-pending? pending?)
-         (when pending? (set-state! :electron/updater data))
-         nil)))))
 
 (defn clear-file-component!
   []

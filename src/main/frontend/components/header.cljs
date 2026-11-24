@@ -1,11 +1,9 @@
 (ns frontend.components.header
   (:require ["react" :as react]
-            [cljs-bean.core :as bean]
             [cljs-time.coerce :as tc]
             [cljs-time.core :as t]
             [clojure.string :as string]
             [dommy.core :as d]
-            [electron.ipc :as ipc]
             [frontend.components.avatar :as avatar]
             [frontend.components.block.breadcrumb :as block-breadcrumb]
             [frontend.components.block.breadcrumb-model :as breadcrumb-model]
@@ -18,12 +16,10 @@
             [frontend.components.rtc.indicator :as rtc-indicator]
             [frontend.components.server :as server]
             [frontend.components.settings :as settings]
-            [frontend.components.svg :as svg]
             [frontend.config :as config]
             [frontend.context.i18n :as i18n :refer [t]]
             [frontend.db.async :as db-async]
             [frontend.db.hooks :as db-hooks]
-            [frontend.handler :as handler]
             [frontend.handler.page :as page-handler]
             [frontend.handler.plugin :as plugin-handler]
             [frontend.handler.route :as route-handler]
@@ -170,7 +166,7 @@
                       "Plugins: " (string/join ", " (map (fn [[k v]]
                                                            (str (name k) " (" (:version v) ")"))
                                                          installed-plugins)))]
-    (str "https://github.com/logseq/db-test/issues/new?"
+    (str "https://github.com/newparadigma/logseq/issues/new?"
          "title=&"
          "template=bug_report.yaml&"
          "labels=from:in-app&"
@@ -358,38 +354,6 @@
       :arrow-right {:on-click #(js/window.history.forward)
                     :class "it navigation nav-right"})
      (t :header/go-forward))])
-
-(hsx/defc updater-tips-new-version
-  [t]
-  (let [[downloaded, set-downloaded] (hooks/use-state nil)
-        _ (hooks/use-effect!
-           (fn []
-             (when (util/electron?)
-               (-> (ipc/invoke "get-downloaded-update")
-                   (p/then
-                    (fn [args]
-                      (when args
-                        (let [args (bean/->clj args)]
-                          (set-downloaded args)
-                          (state/set-state! :electron/auto-updater-downloaded args)))))
-                   (p/catch (fn [_] nil)))
-               (let [channel "auto-updater-downloaded"
-                     callback (fn [_ args]
-                                (js/console.debug "[new-version downloaded] args:" args)
-                                (let [args (bean/->clj args)]
-                                  (set-downloaded args)
-                                  (state/set-state! :electron/auto-updater-downloaded args))
-                                nil)]
-                 (js/apis.addListener channel callback)
-                 #(js/apis.removeListener channel callback))))
-           [])]
-
-    (when downloaded
-      [:div.cp__header-tips
-       [:p (t :updater/update-ready-to-install)
-        [:a.restart.ml-2
-         {:on-click #(handler/quit-and-install-new-version!)}
-         (svg/reload 16) [:strong (t :updater/quit-and-install)]]]])))
 
 (defn- clear-recent-highlight!
   []
@@ -624,9 +588,7 @@
                            :current-repo current-repo
                            :default-home default-home})
 
-       (sidebar/toggle)
-
-       (updater-tips-new-version t)]]]))
+       (sidebar/toggle)]]]))
 
 (hsx/defc header
   [opts]

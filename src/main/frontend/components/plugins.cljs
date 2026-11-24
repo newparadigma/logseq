@@ -246,7 +246,6 @@
       [:li {:on-click #(plugin-logs/open-plugin-logs! {:pid id :name name})} (t :plugin/open-logs)]
       (when (util/electron?)
         [:li {:on-click #(js/apis.openPath url)} (t :plugin/open-package)])
-      [:li {:on-click #(plugin-handler/open-report-modal! id name)} (t :plugin/report-security)]
       [:li {:on-click
             #(-> (shui/dialog-confirm!
                   [:b (t :plugin/delete-alert name)]
@@ -824,7 +823,8 @@
                              {:title   [:span.flex.items-center.gap-1 (ui/icon "arrow-down-circle") (t :plugin.install-from-file/menu-title)]
                               :options {:on-click plugin-config-handler/open-replace-plugins-modal}}])
 
-                          [{:hr true}]
+                          (when (state/developer-mode?)
+                            [{:hr true}])
 
                           (when (state/developer-mode?)
                             (if (util/electron?)
@@ -833,17 +833,14 @@
                                           #(p/let [root (plugin-handler/get-ls-dotdir-root)]
                                              (js/apis.openPath (str root "/preferences.json")))}}
                                {:title [:span.flex.items-center.whitespace-nowrap.gap-1
-                                        (ui/icon "bug") (t :plugin/open-logseq-dir) [:code "~/.logseq"]]
+                                        (ui/icon "bug") (t :plugin/open-logseq-dir) [:code "~/.logseqDEV"]]
                                 :options {:on-click
                                           #(p/let [root (plugin-handler/get-ls-dotdir-root)]
                                              (js/apis.openPath root))}}]
                               [{:title [:span.flex.items-center.whitespace-nowrap.gap-1
                                         (ui/icon "plug") (t :plugin/load-from-web-url)]
                                 :options {:on-click
-                                          #(shui/dialog-open! load-from-web-url-container)}}]))
-
-                          [{:title [:span.flex.items-center.gap-1 (ui/icon "alert-triangle") (t :plugin/report-security)]
-                            :options {:on-click #(plugin-handler/open-report-modal!)}}])]
+                                          #(shui/dialog-open! load-from-web-url-container)}}])))]
 
         (ui/button
          (ui/icon "dots-vertical")

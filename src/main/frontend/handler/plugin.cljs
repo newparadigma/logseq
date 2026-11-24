@@ -8,7 +8,7 @@
             [electron.ipc :as ipc]
             [frontend.components.svg :as svg]
             [frontend.config :as config]
-            [frontend.context.i18n :refer [t interpolate-rich-text-node]]
+            [frontend.context.i18n :refer [t]]
             [frontend.format :as format]
             [frontend.fs :as fs]
             [frontend.handler.common.plugin :as plugin-common-handler]
@@ -843,23 +843,6 @@
      (if (has-setting-schema? id)
        (state/pub-event! [:go/plugins-settings id nav? (or (:name plugin) (:title plugin))])
        (open-settings-file-in-default-app! plugin)))))
-
-(defn open-report-modal!
-  ([] (open-report-modal! nil nil))
-  ([pid name]
-   (shui/dialog-open!
-     [:div.p-1
-      (when pid
-        [:h1.opacity-90.font-bold.pb-1.flex.item-center.gap-1
-         [:span.text-red-rx-10.flex.items-center (shui/tabler-icon "alert-triangle-filled" {:size 20})]
-         [:span name "  " [:code "#" (str pid)]]])
-      [:p
-       (interpolate-rich-text-node
-         (t :plugin/report-modal-desc)
-         [[:a.hover:underline
-           {:href (str "mailto://support@logseq.com?subject=Report plugin from Logseq Marketplace"
-                       (when pid (str " (#" pid ")")))}
-           "support@logseq.com"]])]])))
 
 (defn parse-user-md-content
   [content {:keys [url]}]
