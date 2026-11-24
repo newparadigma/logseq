@@ -24,12 +24,15 @@ class_name = "SyncDO"
 
 [[r2_buckets]]
 binding = "LOGSEQ_SYNC_ASSETS"
-bucket_name = "logseq-sync-assets-prod"
+bucket_name = "logseq-sync-assets"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "logseq-sync-graph-meta-prod"
-database_id = "00325aa2-c805-4693-b599-900a25dcde42"
+# Local development only (wrangler dev, migrate:local). The self-hosted
+# server is the Node adapter (docker/db-sync); for a Cloudflare deploy set
+# your own D1 database and R2 bucket here.
+database_name = "logseq-sync-graph-meta"
+database_id = "00000000-0000-0000-0000-000000000000"
 
 [[migrations]]
 tag = "v1"
@@ -53,105 +56,5 @@ name = "SEMANTIC_WRITE_RATE_LIMITER"
 namespace_id = "1002"
 
 [ratelimits.simple]
-limit = 20
-period = 60
-
-[env.staging]
-name = "logseq-sync-staging"
-
-[env.staging.limits]
-cpu_ms = 300000
-
-[env.staging.vars]
-AUTH_JWKS_URL = ""
-AUTH_ISSUER = ""
-AUTH_CLIENT_ID = ""
-AUTH_CLIENT_IDS = ""
-
-[[env.staging.durable_objects.bindings]]
-name = "LOGSEQ_SYNC_DO"
-class_name = "SyncDO"
-
-[[env.staging.migrations]]
-tag = "v1"
-new_sqlite_classes = [ "SyncDO" ]
-
-[[env.staging.r2_buckets]]
-binding = "LOGSEQ_SYNC_ASSETS"
-bucket_name = "logseq-sync-assets-dev"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "logseq-sync-graph-meta-staging"
-database_id = "00325aa2-c805-4693-b599-900a25dcde42"
-
-[env.staging.version_metadata]
-binding = "CF_VERSION_METADATA"
-
-[[env.staging.worker_loaders]]
-binding = "LOADER"
-
-[[env.staging.ratelimits]]
-name = "SEMANTIC_READ_RATE_LIMITER"
-namespace_id = "1101"
-
-[env.staging.ratelimits.simple]
-limit = 120
-period = 60
-
-[[env.staging.ratelimits]]
-name = "SEMANTIC_WRITE_RATE_LIMITER"
-namespace_id = "1102"
-
-[env.staging.ratelimits.simple]
-limit = 20
-period = 60
-
-[env.prod]
-name = "logseq-sync-prod"
-
-[env.prod.vars]
-AUTH_JWKS_URL = ""
-AUTH_ISSUER = ""
-AUTH_CLIENT_ID = ""
-AUTH_CLIENT_IDS = ""
-OPENAI_APPS_CHALLENGE = "LEs8t_lCac2IDOaMNTZ1_wc_hQ5w9UgdTkww9kGxjW8"
-
-[[env.prod.durable_objects.bindings]]
-name = "LOGSEQ_SYNC_DO"
-class_name = "SyncDO"
-
-[[env.prod.migrations]]
-tag = "v1"
-new_sqlite_classes = [ "SyncDO" ]
-
-[[env.prod.r2_buckets]]
-binding = "LOGSEQ_SYNC_ASSETS"
-bucket_name = "logseq-sync-assets-prod"
-
-[[env.prod.d1_databases]]
-binding = "DB"
-database_name = "logseq-sync-graphs-prod"
-database_id = "4c80e058-69b5-4985-88d1-f53711d817ba"
-
-[env.prod.version_metadata]
-binding = "CF_VERSION_METADATA"
-
-[[env.prod.worker_loaders]]
-binding = "LOADER"
-
-[[env.prod.ratelimits]]
-name = "SEMANTIC_READ_RATE_LIMITER"
-namespace_id = "1201"
-
-[env.prod.ratelimits.simple]
-limit = 120
-period = 60
-
-[[env.prod.ratelimits]]
-name = "SEMANTIC_WRITE_RATE_LIMITER"
-namespace_id = "1202"
-
-[env.prod.ratelimits.simple]
 limit = 20
 period = 60

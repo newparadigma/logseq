@@ -16,8 +16,7 @@ cd deps/db-sync
 pnpm show-usage-stats
 pnpm show-usage-stats --days 7
 pnpm show-usage-stats --json
-pnpm show-usage-stats --env staging --days 30 --json
-pnpm show-usage-stats --env local --json
+pnpm show-usage-stats --env <env> --days 30 --json
 ```
 
 ## Metric semantics

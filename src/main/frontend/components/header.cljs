@@ -115,7 +115,7 @@
    (shui/button-ghost-icon :cloud
                            {:class "local-graph-sync-btn"
                             :on-click #(repo/upload-local-graph-with-confirm! graph)})
-   (t :graph/use-sync-beta)
+   (t :graph/use-sync)
    {:trigger-props {:as-child true}}))
 
 (hsx/defc rtc-collaborators

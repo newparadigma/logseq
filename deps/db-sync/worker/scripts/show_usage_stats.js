@@ -14,10 +14,10 @@ function printHelp() {
   console.log(`Show db-sync usage stats from a D1 environment.
 
 Usage:
-  node worker/scripts/show_usage_stats.js [--env prod|local] [--days 7] [--json]
+  node worker/scripts/show_usage_stats.js [--env local|<env>] [--days 7] [--json]
 
 Options:
-  --env <env>            Wrangler environment to use. Defaults to "prod"; use "local" to query the local D1 database.
+  --env <env>            Wrangler environment to use. Defaults to "local" (the local D1 database of wrangler dev).
   --days <n>             Active window size in days. Defaults to 1.
   --database <name>      D1 binding or database name. Defaults to "DB".
   --config <path>        Wrangler config path. Defaults to worker/wrangler.toml.
@@ -49,7 +49,7 @@ function parseCliArgs(argv) {
   const { values } = parseArgs({
     args: argv,
     options: {
-      env: { type: "string", default: "prod" },
+      env: { type: "string", default: "local" },
       days: { type: "string", default: "1" },
       database: { type: "string", default: "DB" },
       config: { type: "string", default: defaultConfigPath },

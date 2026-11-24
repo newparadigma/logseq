@@ -3,6 +3,11 @@
 This package contains the DB sync server code and tests used by Logseq.
 It includes the Cloudflare Worker implementation and a Node.js adapter for self-hosting.
 
+The self-hosted server is the Node.js adapter, deployed with Docker and Caddy:
+see `../../docker/db-sync/README.md`. `worker/wrangler.toml` is set up for local
+Cloudflare development only (no deploy environments); set your own D1 database
+and R2 bucket there before a Cloudflare deploy.
+
 ## Requirements
 - Node.js (see repo root for required version)
 - Clojure (for shadow-cljs builds)
@@ -23,19 +28,12 @@ wrangler dev
 ### D1 Schema (Worker)
 
 The worker no longer initializes schema at request time. Apply the D1 schema
-via migrations during deployment/CI.
+via migrations: for local development, run `pnpm migrate:local`
+(`wrangler d1 migrations apply DB --local`).
 
-```bash
-cd deps/db-sync/worker
-wrangler d1 migrations apply logseq-sync-graph-meta-staging --env staging
-wrangler d1 migrations apply logseq-sync-graphs-prod --env prod
-```
+### Graph Lookup (D1)
 
-For local development, run `wrangler d1 migrations apply DB --local`.
-
-### Production Graph Lookup
-
-Show the graphs available to a production user by `username` or `user id`:
+Show the graphs available to a user by `username` or `user id`:
 
 ```bash
 cd deps/db-sync
@@ -43,8 +41,11 @@ pnpm show-graphs-for-user --username alice
 pnpm show-graphs-for-user --user-id us-east-1:example-user-id
 ```
 
-The script uses `worker/wrangler.toml`, runs against the remote D1 binding `DB`,
-defaults to `--env prod`, and prints JSON when `--json` is added.
+The D1 scripts (`show-graphs-for-user`, `show-usage-stats`, `delete-graphs-for-user`,
+`delete-user-totally`) use `worker/wrangler.toml` and the D1 binding `DB`. They
+default to `--env local` (the local D1 database of `wrangler dev`); another
+`--env <env>` runs against that remote environment. They print JSON when
+`--json` is added. They do not read the Node adapter's SQLite index.
 
 Show usage totals (total users, total graphs, users created today, graphs created today):
 
@@ -66,6 +67,7 @@ cd deps/db-sync
 pnpm run download-graph-db -- --graph-id 6f2d7f6f-xxxx-xxxx-xxxx-xxxxxxxxxxxx --admin-token <admin-token>
 ```
 
+The sync server URL is required: pass `--base-url <url>` or set `DB_SYNC_BASE_URL`.
 You can also pass `--admin-token <token>` or set `DB_SYNC_ADMIN_TOKEN`. The output defaults to
 `tmp/graph-<graph-id>.snapshot.sqlite` and can be changed with `--output`.
 
@@ -76,7 +78,7 @@ cd deps/db-sync
 pnpm run show-sqlite-checksum -- --db ~/Downloads/test.sqlite
 ```
 
-Delete the graphs owned by a production user after an explicit confirmation:
+Delete the graphs owned by a user after an explicit confirmation:
 
 ```bash
 cd deps/db-sync

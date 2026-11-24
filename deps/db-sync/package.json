@@ -18,8 +18,6 @@
     "show-sqlite-checksum": "clojure -M:cljs compile db-sync-show-checksum && node worker/dist/show-sqlite-checksum.js",
     "recompute-log-checksum": "clojure -M:cljs compile db-sync-recompute-log-checksum && node worker/dist/recompute-log-checksum.js",
     "migrate:local": "cd ./worker && wrangler d1 migrations apply DB --local",
-    "migrate:staging": "cd ./worker && wrangler d1 migrations apply logseq-sync-graph-meta-staging --env staging --remote",
-    "migrate:prod": "cd ./worker && wrangler d1 migrations apply logseq-sync-graphs-prod --env prod --remote",
     "test:node-adapter": "clojure -M:cljs compile db-sync-test && node worker/dist/worker-test.js",
     "test:chatgpt-app": "node --test worker/entry_test.mjs worker/asset_image_test.mjs worker/semantic_api_tools_test.mjs",
     "build:api-docs": "export AUTH_ISSUER=https://sync.example.com/ && clojure -M:cljs release db-sync-api-docs && node worker/dist/api-docs-spec.js && redocly build-docs worker/dist/openapi.json --output=worker/dist/api-docs.html --title=\"Logseq Server API\" --disableGoogleFont && node worker/scripts/embed_api_docs.mjs",
@@ -28,9 +26,7 @@
     "test": "clojure -M:cljs compile db-sync-test && node worker/dist/worker-test.js",
     "test:mcp": "pnpm clean && pnpm release && pnpm build:api-docs && pnpm test:mcp-transport && cd worker && pnpm exec wrangler deploy --dry-run --env=\"\"",
     "test:mcp-transport": "node --test --test-timeout=90000 worker/mcp_transport_test.mjs",
-    "clean": "rm -rf ./worker/dist/",
-    "deploy-prod": "pnpm clean && pnpm release && pnpm build:api-docs && pnpm test:mcp-transport && cd ./worker && pnpm exec wrangler deploy --env prod",
-    "deploy-staging": "pnpm clean && pnpm release && pnpm build:api-docs && pnpm test:mcp-transport && cd ./worker && pnpm exec wrangler deploy --env staging"
+    "clean": "rm -rf ./worker/dist/"
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",

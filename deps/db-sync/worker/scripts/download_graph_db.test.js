@@ -28,10 +28,12 @@ test("parseCliArgs accepts required args and defaults output", () => {
     "graph-1",
     "--admin-token",
     "admin-token-value",
+    "--base-url",
+    "https://sync.example.com",
   ]);
 
   assert.equal(parsed.graphId, "graph-1");
-  assert.equal(parsed.baseUrl, "https://api.logseq.com");
+  assert.equal(parsed.baseUrl, "https://sync.example.com");
   assert.equal(parsed.adminToken, "admin-token-value");
   assert.equal(parsed.output, path.resolve("tmp", "graph-graph-1.snapshot.sqlite"));
 });
@@ -54,8 +56,15 @@ test("CLI rejects missing --graph-id", () => {
   assert.match(result.stderr, /Missing required --graph-id\./);
 });
 
+test("CLI rejects missing base-url when env is absent", () => {
+  const result = runCli(["--graph-id", "graph-1", "--admin-token", "admin-token-value"], { DB_SYNC_BASE_URL: "" });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Missing sync server URL/);
+});
+
 test("CLI rejects missing admin-token when env is absent", () => {
-  const result = runCli(["--graph-id", "graph-1"], { DB_SYNC_ADMIN_TOKEN: "" });
+  const result = runCli(["--graph-id", "graph-1", "--base-url", "https://sync.example.com"], { DB_SYNC_ADMIN_TOKEN: "" });
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Missing admin token/);

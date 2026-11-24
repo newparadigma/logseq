@@ -148,7 +148,6 @@ format_functions = [
 allow_strings = [
   # Brand name — displayed literally in UI, intentionally not translated.
   "Logseq",
-  "Logseq Sync",
   "GitHub",
   # Typography test string — rendered as a glyph sample, not translatable.
   "Ag",

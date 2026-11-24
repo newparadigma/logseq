@@ -260,7 +260,7 @@
               {:key "logseq-sync"
                :class "use-logseq-sync-menu-item"
                :on-click #(upload-local-graph-with-confirm! repo)}
-              (t :graph/use-sync-beta)))
+              (t :graph/use-sync)))
 
            (when (and remote?
                       manager?)

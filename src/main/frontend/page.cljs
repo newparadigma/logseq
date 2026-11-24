@@ -84,7 +84,6 @@
                  [:div.leading-8
                   [:span.highlighted.font-bold (t :ui/export)]
                   [:span.toned-down (str " " (t :page/current-graph-as-sqlite-db))]]
-                 [:div.text-xs.leading-6.toned-down (t :page/send-db-for-debugging)]
                  [:a#download-as-sqlite-db.hidden]]
                 [:div.sm:self-start
                  (ui/button (t :export/graph)

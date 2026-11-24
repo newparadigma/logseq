@@ -47,13 +47,13 @@ function printHelp() {
   console.log(`Delete db-sync graphs owned by a user from a remote D1 environment.
 
 Usage:
-  node worker/scripts/delete_graphs_for_user.js --username <username> [--env prod]
-  node worker/scripts/delete_graphs_for_user.js --user-id <user-id> [--env prod]
+  node worker/scripts/delete_graphs_for_user.js --username <username> [--env <env>]
+  node worker/scripts/delete_graphs_for_user.js --user-id <user-id> [--env <env>]
 
 Options:
   --username <username>  Look up the target user by username.
   --user-id <user-id>    Look up the target user by user id.
-  --env <env>            Wrangler environment to use. Defaults to "prod".
+  --env <env>            Wrangler environment to use. Defaults to "local" (the local D1 database of wrangler dev).
   --database <name>      D1 binding or database name. Defaults to "DB".
   --config <path>        Wrangler config path. Defaults to worker/wrangler.toml.
   --base-url <url>       Worker base URL. Defaults to DB_SYNC_BASE_URL.
@@ -68,7 +68,7 @@ function parseCliArgs(argv) {
     options: {
       username: { type: "string" },
       "user-id": { type: "string" },
-      env: { type: "string", default: "prod" },
+      env: { type: "string", default: "local" },
       database: { type: "string", default: "DB" },
       config: { type: "string", default: defaultConfigPath },
       "base-url": { type: "string", default: process.env.DB_SYNC_BASE_URL },

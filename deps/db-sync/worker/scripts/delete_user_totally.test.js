@@ -18,7 +18,7 @@ test("parseCliArgs accepts --username", () => {
   assert.equal(parsed.lookupField, "username");
   assert.equal(parsed.lookupLabel, "username");
   assert.equal(parsed.lookupValue, "alice");
-  assert.equal(parsed.env, "prod");
+  assert.equal(parsed.env, "local");
   assert.equal(parsed.database, "DB");
   assert.equal(parsed.config, path.resolve(defaultConfigPath));
 });

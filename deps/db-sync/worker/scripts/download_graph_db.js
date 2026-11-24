@@ -8,8 +8,6 @@ const { parseArgs } = require("node:util");
 const transit = require("transit-js");
 const { fail } = require("./graph_user_lib");
 
-const defaultBaseUrl = "https://api.logseq.com";
-
 function printHelp() {
   console.log(`Download a graph snapshot and store it as a local sqlite debug DB.
 
@@ -20,7 +18,7 @@ Usage:
 Options:
   --graph-id <id>        Target graph id. Required.
   --admin-token <token>  Admin token. Defaults to DB_SYNC_ADMIN_TOKEN.
-  --base-url <url>       Worker base URL. Defaults to DB_SYNC_BASE_URL or https://api.logseq.com.
+  --base-url <url>       Sync server base URL. Defaults to DB_SYNC_BASE_URL. Required.
   --output <path>        SQLite output path. Defaults to ./tmp/graph-<graph-id>.snapshot.sqlite.
   --help                 Show this message.
 
@@ -40,7 +38,7 @@ function parseCliArgs(argv) {
     options: {
       "graph-id": { type: "string" },
       "admin-token": { type: "string", default: process.env.DB_SYNC_ADMIN_TOKEN },
-      "base-url": { type: "string", default: process.env.DB_SYNC_BASE_URL || defaultBaseUrl },
+      "base-url": { type: "string", default: process.env.DB_SYNC_BASE_URL },
       output: { type: "string" },
       help: { type: "boolean", default: false },
     },
@@ -55,6 +53,10 @@ function parseCliArgs(argv) {
 
   if (!values["graph-id"]) {
     fail("Missing required --graph-id.");
+  }
+
+  if (!values["base-url"]) {
+    fail("Missing sync server URL. Pass --base-url or set DB_SYNC_BASE_URL.");
   }
 
   if (!values["admin-token"]) {
