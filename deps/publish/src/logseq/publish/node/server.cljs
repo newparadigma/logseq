@@ -1,7 +1,8 @@
 (ns logseq.publish.node.server
   "Self-hosted publish server: runs the publish worker routes on Node.js with
   SQLite (metadata) and the filesystem (page payloads and assets)."
-  (:require ["http" :as http]
+  (:require ["fs" :as fs]
+            ["http" :as http]
             ["path" :as node-path]
             ["stream" :refer [Readable]]
             ["stream/promises" :refer [pipeline]]
@@ -37,6 +38,40 @@
        "AUTH_CLIENT_ID" (required-env "AUTH_CLIENT_ID")
        "AUTH_JWKS_URL" (required-env "AUTH_JWKS_URL")})
 
+(def ^:private static-dir
+  "Fonts, KaTeX, CodeMirror and emoji data that pages load from /static/
+  instead of CDNs; collected by `pnpm build:static` next to this script."
+  (node-path/join js/__dirname "static"))
+
+(def ^:private static-content-types
+  {".css" "text/css; charset=utf-8"
+   ".js" "text/javascript; charset=utf-8"
+   ".mjs" "text/javascript; charset=utf-8"
+   ".json" "application/json"
+   ".woff2" "font/woff2"
+   ".woff" "font/woff"
+   ".ttf" "font/ttf"
+   ".eot" "application/vnd.ms-fontobject"})
+
+(defn- static-file
+  "File under `static-dir` for a GET /static/... request, or nil."
+  [^js req]
+  (when (= "GET" (.-method req))
+    (let [pathname (.-pathname (js/URL. (.-url req) "http://localhost"))]
+      (when (string/starts-with? pathname "/static/")
+        (let [file (node-path/resolve static-dir (subs pathname (count "/static/")))]
+          (when (and (string/starts-with? file (str static-dir (.-sep node-path)))
+                     (contains? static-content-types (node-path/extname file))
+                     (.existsSync fs file)
+                     (.isFile (.statSync fs file)))
+            file))))))
+
+(defn- send-static! [^js res file]
+  (.writeHead res 200 #js {"content-type" (get static-content-types (node-path/extname file))
+                           "cache-control" "public, max-age=86400"
+                           "access-control-allow-origin" "*"})
+  (pipeline (.createReadStream fs file) res))
+
 (defn- node->request [^js req]
   (let [headers (js/Headers.)
         method (.-method req)
@@ -59,14 +94,20 @@
       (.end res))))
 
 (defn main [& _args]
+  (when-not (.existsSync fs static-dir)
+    (throw (js/Error. (str "Static files are missing in " static-dir ": run `pnpm build:static`"))))
   (let [port (js/parseInt (or (env-value "PUBLISH_PORT") "8788") 10)
         env (make-env (or (env-value "PUBLISH_DATA_DIR") "data/publish"))
         ^js server (.createServer
                 http
                 (fn [^js req ^js res]
                   ;; p/then turns a synchronous throw in a handler into a rejection
-                  (-> (p/then (p/resolved nil) #(routes/handle-fetch (node->request req) env))
-                      (p/then #(send-response! res %))
+                  (-> (p/then (p/resolved nil)
+                              (fn []
+                                (if-let [file (static-file req)]
+                                  (send-static! res file)
+                                  (p/then (routes/handle-fetch (node->request req) env)
+                                          #(send-response! res %)))))
                       (p/catch (fn [error]
                                  (js/console.error "publish: request failed" (.-method req) (.-url req) error)
                                  (if (.-headersSent res)

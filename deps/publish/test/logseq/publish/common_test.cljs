@@ -67,9 +67,6 @@
   (is (= "abc" (publish-common/normalize-etag "abc")))
   (is (nil? (publish-common/normalize-etag nil))))
 
-(deftest encode-path-encodes-path-segments
-  (is (= "with%20space/plus%2Bsign" (publish-common/encode-path "with space/plus+sign"))))
-
 (deftest short-id-for-page-is-deterministic-and-fixed-length
   (async done
     (-> (p/let [a (publish-common/short-id-for-page "graph-1" "page-1")

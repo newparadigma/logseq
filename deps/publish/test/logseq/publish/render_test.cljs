@@ -1,5 +1,6 @@
 (ns logseq.publish.render-test
   (:require [cljs.test :refer [deftest is testing]]
+            [logseq.db :as ldb]
             [logseq.publish.render :as render]))
 
 (deftest entity-properties-filters-explicitly-hidden-properties
@@ -56,3 +57,29 @@
               1)
         html (render/render-hiccup node)]
     (is (re-find #"https://www\.youtube\.com/embed/xu9p5ynlhZk" html))))
+
+(deftest page-html-loads-nothing-from-other-hosts-and-hides-empty-authors
+  (let [page-uuid #uuid "00000000-0000-0000-0000-000000000001"
+        transit (ldb/write-transit-str
+                 {:datoms [[1 :block/uuid page-uuid 1 true]
+                           [1 :block/title "Local page" 1 true]]
+                  :meta {:graph "graph-1"}})
+        html (render/render-page-html transit (str page-uuid) nil nil)]
+    (is (re-find #"Local page" html))
+    (testing "a page without created-by data shows no author line"
+      (is (not (re-find #"By:" html))))
+    (testing "styles, scripts and the favicon come from this server"
+      (is (nil? (re-find #"(?:src|href)=\"(?:https?:)?//" html))))))
+
+(deftest not-found-page-uses-the-home-layout
+  (let [html (render/render-404-html)]
+    (is (re-find #"publish-home-card" html))
+    (is (re-find #"<h1 class=\"publish-home-title\">404</h1>" html))))
+
+(deftest block-content-nodes-render-one-anchor-per-link
+  (doseq [[title label] [["A link: https://github.com/newparadigma/logseq" "https://github.com/newparadigma/logseq"]
+                         ["A link: [fork](https://github.com/newparadigma/logseq)" "fork"]]]
+    (let [html (render/render-hiccup
+                (render/block-content-nodes {:block/title title} {:uuid->title {} :graph-uuid "g"} 1))]
+      (is (= 1 (count (re-seq #"<a " html))) title)
+      (is (re-find (re-pattern (str "<a href=\"https://github.com/newparadigma/logseq\">" label "</a>")) html) title))))

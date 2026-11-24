@@ -453,6 +453,10 @@
                                      "DELETE FROM page_tags WHERE graph_uuid = ? AND source_page_uuid = ?;"
                                      graph-uuid
                                      page-uuid)
+            (publish-common/sql-exec sql
+                                     "DELETE FROM page_blocks WHERE graph_uuid = ? AND page_uuid = ?;"
+                                     graph-uuid
+                                     page-uuid)
             (publish-common/json-response {:ok true}))
 
           graph-uuid
@@ -460,6 +464,7 @@
             (publish-common/sql-exec sql "DELETE FROM pages WHERE graph_uuid = ?;" graph-uuid)
             (publish-common/sql-exec sql "DELETE FROM page_refs WHERE graph_uuid = ?;" graph-uuid)
             (publish-common/sql-exec sql "DELETE FROM page_tags WHERE graph_uuid = ?;" graph-uuid)
+            (publish-common/sql-exec sql "DELETE FROM page_blocks WHERE graph_uuid = ?;" graph-uuid)
             (publish-common/json-response {:ok true}))
 
           :else

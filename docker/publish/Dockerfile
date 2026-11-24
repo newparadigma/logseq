@@ -48,6 +48,10 @@ RUN --mount=type=cache,id=logseq-sync-m2,target=/root/.m2 \
     clojure -M:cljs release publish-node \
  && test -s worker/dist/node-server.js
 
+# Fonts, KaTeX, CodeMirror and emoji data that pages load from this server
+# instead of CDNs
+RUN pnpm build:static
+
 # ---------------------------------------------------------------------------
 # Runtime
 # ---------------------------------------------------------------------------
@@ -67,6 +71,7 @@ ENV NODE_ENV=production \
 WORKDIR /app
 COPY --from=build /src/deps/publish/node_modules ./node_modules
 COPY --from=build /src/deps/publish/worker/dist/node-server.js ./worker/dist/node-server.js
+COPY --from=build /src/deps/publish/worker/dist/static ./worker/dist/static
 
 # Starts as root only to prepare the data folder, then drops to PUID:PGID,
 # so files in the bind-mounted folder belong to your user on the host.

@@ -43,14 +43,15 @@ To test the publish features locally, follow these steps:
 SQLite (`meta.sqlite`), page payloads and assets as files (`objects/`).
 
 ```bash
-pnpm build:node
+pnpm build:node && pnpm build:static
 AUTH_ISSUER=... AUTH_CLIENT_ID=... AUTH_JWKS_URL=... PUBLISH_DATA_DIR=data/publish pnpm start:node
 ```
 
 It listens on `PUBLISH_PORT` (default 8788). The `AUTH_*` values are the
-sync server's (`deps/db-sync/scripts/selfhost-token.mjs env`). The
-`/pages/<graph>/<page>/transit` route needs R2 signing settings and does
-not work there. Docker setup: `docker/publish/`.
+sync server's (`deps/db-sync/scripts/selfhost-token.mjs env`). It also
+serves `worker/dist/static/` (fonts, KaTeX, CodeMirror, emoji data, collected
+by `pnpm build:static`) under `/static/`; the Cloudflare Worker has no such
+files. Docker setup: `docker/publish/`.
 
 ### Deploy
 

@@ -1,5 +1,22 @@
-@import url("https://cdn.jsdelivr.net/npm/katex@0.16.38/dist/katex.min.css");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+@import url("/static/katex/katex.min.css");
+
+/* Inter (inter-ui package) is served by the publish server; code falls back
+   to the system monospace font when JetBrains Mono is not installed. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/static/inter/InterVariable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/static/inter/InterVariable-Italic.woff2") format("woff2");
+}
 
 :root {
   color-scheme: light;
@@ -640,19 +657,14 @@ a:hover {
   z-index: 2;
 }
 
-.code-block .cm-editor {
+.code-block .CodeMirror {
   height: auto;
-  /* background: var(--code-bg); */
-  /* color: var(--code-ink); */
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 13px;
   line-height: 1.6;
 }
 
-.code-block .cm-scroller {
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-}
-
-.ͼ2 .cm-gutters.cm-gutters-before {
+.code-block .CodeMirror-gutters {
   border-right-width: 0;
 }
 
@@ -862,20 +874,6 @@ a:hover {
   color: #b42318;
   font-size: 13px;
   font-weight: 600;
-}
-
-.not-found {
-  text-align: center;
-  padding: 32px 16px 8px;
-}
-
-.not-found-eyebrow {
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 14px;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: var(--ink);
-  margin: 0 0 12px;
 }
 
 .page-list {

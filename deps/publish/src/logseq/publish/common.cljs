@@ -122,17 +122,6 @@
   [sql sql-str & args]
   (.apply (.-exec sql) sql (to-array (cons sql-str args))))
 
-(defn to-hex [buffer]
-  (->> (js/Uint8Array. buffer)
-       (array-seq)
-       (map (fn [b] (.padStart (.toString b 16) 2 "0")))
-       (apply str)))
-
-(defn sha256-hex [message]
-  (p/let [data (.encode text-encoder message)
-          digest (.digest js/crypto.subtle "SHA-256" data)]
-    (to-hex digest)))
-
 (def password-kdf-max-iterations 90000)
 (def password-kdf-iterations 90000)
 
@@ -219,80 +208,6 @@
                                      0
                                      (range (.-length expected)))]
                 (zero? mismatch)))))))))
-
-(defn hmac-sha256 [key message]
-  (p/let [crypto-key (.importKey js/crypto.subtle
-                                 "raw"
-                                 key
-                                 #js {:name "HMAC" :hash "SHA-256"}
-                                 false
-                                 #js ["sign"])]
-    (.sign js/crypto.subtle "HMAC" crypto-key message)))
-
-(defn encode-rfc3986 [value]
-  (-> (js/encodeURIComponent value)
-      (.replace #"[!'()*]" (fn [c]
-                             (str "%"
-                                  (.toUpperCase (.toString (.charCodeAt c 0) 16)))))))
-
-(defn encode-path [path]
-  (->> (string/split path #"/")
-       (map encode-rfc3986)
-       (string/join "/")))
-
-(defn get-signature-key [secret date-stamp region service]
-  (p/let [k-date (hmac-sha256
-                  (.encode text-encoder (str "AWS4" secret))
-                  (.encode text-encoder date-stamp))
-          k-region (hmac-sha256 k-date (.encode text-encoder region))
-          k-service (hmac-sha256 k-region (.encode text-encoder service))]
-    (hmac-sha256 k-service (.encode text-encoder "aws4_request"))))
-
-(defn presign-r2-url [r2-key env]
-  (p/let [region "auto"
-          service "s3"
-          host (str (aget env "R2_ACCOUNT_ID") ".r2.cloudflarestorage.com")
-          bucket (aget env "R2_BUCKET")
-          method "GET"
-          now (js/Date.)
-          amz-date (.replace (.toISOString now) #"[ :-]|\.\d{3}" "")
-          date-stamp (.slice amz-date 0 8)
-          credential-scope (str date-stamp "/" region "/" service "/aws4_request")
-          params (->> [["X-Amz-Algorithm" "AWS4-HMAC-SHA256"]
-                       ["X-Amz-Credential" (str (aget env "R2_ACCESS_KEY_ID") "/" credential-scope)]
-                       ["X-Amz-Date" amz-date]
-                       ["X-Amz-Expires" "300"]
-                       ["X-Amz-SignedHeaders" "host"]]
-                      (sort-by first))
-          canonical-query (->> params
-                               (map (fn [[k v]]
-                                      (str (encode-rfc3986 k) "=" (encode-rfc3986 v))))
-                               (string/join "&"))
-          canonical-uri (str "/" bucket "/" (encode-path r2-key))
-          canonical-headers (str "host:" host "\n")
-          signed-headers "host"
-          payload-hash "UNSIGNED-PAYLOAD"
-          canonical-request (string/join "\n"
-                                         [method
-                                          canonical-uri
-                                          canonical-query
-                                          canonical-headers
-                                          signed-headers
-                                          payload-hash])
-          canonical-hash (sha256-hex canonical-request)
-          string-to-sign (string/join "\n"
-                                      ["AWS4-HMAC-SHA256"
-                                       amz-date
-                                       credential-scope
-                                       canonical-hash])
-          signing-key (get-signature-key (aget env "R2_SECRET_ACCESS_KEY")
-                                         date-stamp
-                                         region
-                                         service)
-          raw-signature (hmac-sha256 signing-key (.encode text-encoder string-to-sign))
-          signature (to-hex raw-signature)
-          signed-query (str canonical-query "&X-Amz-Signature=" signature)]
-    (str "https://" host canonical-uri "?" signed-query)))
 
 (defn normalize-etag [etag]
   (when etag

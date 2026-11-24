@@ -47,9 +47,45 @@
                             (.rmSync fs dir #js {:recursive true :force true})
                             (done)))))))
 
+(deftest bucket-delete-and-list-test
+  (async done
+         (let [dir (temp-dir)
+               ^js bucket (storage/make-bucket dir)
+               payload (.-buffer (.encode (js/TextEncoder.) "x"))
+               list-keys (fn [prefix]
+                           (p/let [^js result (.list bucket #js {:prefix prefix})]
+                             (is (false? (.-truncated result)))
+                             (mapv #(.-key ^js %) (.-objects result))))]
+           (-> (p/let [_ (p/all (map #(.put bucket % payload #js {})
+                                     ["publish/g1/a.transit"
+                                      "publish/assets/g1/u1.png"
+                                      "publish/assets/g1/u1@1024.png"
+                                      "publish/assets/g1/u2.png"
+                                      "publish/assets/g2/u1.png"]))
+                       graph-assets (list-keys "publish/assets/g1/")
+                       asset-variants (list-keys "publish/assets/g1/u1")
+                       missing-dir (list-keys "publish/assets/g3/")
+                       _ (.delete bucket "publish/assets/g1/u1.png")
+                       _ (.delete bucket "publish/assets/g1/never-stored.png")
+                       deleted (.head bucket "publish/assets/g1/u1.png")
+                       after-delete (list-keys "publish/assets/g1/")]
+                 (is (= ["publish/assets/g1/u1.png" "publish/assets/g1/u1@1024.png" "publish/assets/g1/u2.png"]
+                        graph-assets))
+                 (is (= ["publish/assets/g1/u1.png" "publish/assets/g1/u1@1024.png"] asset-variants))
+                 (is (= [] missing-dir))
+                 (is (nil? deleted))
+                 (is (not (.existsSync fs (node-path/join dir "publish/assets/g1/u1.png.meta.json"))))
+                 (is (= ["publish/assets/g1/u1@1024.png" "publish/assets/g1/u2.png"] after-delete)))
+               (p/catch (fn [e] (is false (str e))))
+               (p/finally (fn []
+                            (.rmSync fs dir #js {:recursive true :force true})
+                            (done)))))))
+
 (deftest bucket-rejects-keys-outside-base-dir-test
   (let [dir (temp-dir)
         ^js bucket (storage/make-bucket dir)]
     (doseq [bad-key ["../x" "publish/assets/../../../x" "publish/a.png.meta.json"]]
-      (is (thrown-with-msg? js/Error #"invalid object key" (.get bucket bad-key)) bad-key))
+      (is (thrown-with-msg? js/Error #"invalid object key" (.get bucket bad-key)) bad-key)
+      (is (thrown-with-msg? js/Error #"invalid object key" (.delete bucket bad-key)) bad-key))
+    (is (thrown-with-msg? js/Error #"invalid object key" (.list bucket #js {:prefix "../../"})))
     (.rmSync fs dir #js {:recursive true :force true})))

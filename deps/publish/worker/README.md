@@ -7,10 +7,6 @@ metadata in a Durable Object backed by SQLite.
 
 - `PUBLISH_META_DO`: Durable Object namespace
 - `PUBLISH_R2`: R2 bucket
-- `R2_ACCOUNT_ID`: Cloudflare account id for signing
-- `R2_BUCKET`: R2 bucket name for signing
-- `R2_ACCESS_KEY_ID`: R2 access key for signing
-- `R2_SECRET_ACCESS_KEY`: R2 secret key for signing
 - `AUTH_JWKS_URL`: JWKS URL for Cognito user pool
 - `AUTH_ISSUER`: Cognito issuer URL
 - `AUTH_CLIENT_ID`: Cognito client ID
@@ -27,7 +23,7 @@ metadata in a Durable Object backed by SQLite.
 - `GET /pages/:graph-uuid/:page-uuid`
   - Returns metadata for the page
 - `GET /pages/:graph-uuid/:page-uuid/transit`
-  - Returns JSON with a signed R2 URL and `etag`
+  - Returns the stored transit payload with its `etag`
 - `DELETE /pages/:graph-uuid/:page-uuid`
   - Deletes a published page
 - `DELETE /pages/:graph-uuid`

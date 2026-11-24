@@ -1,31 +1,55 @@
-import katexPkg from "https://esm.sh/katex@0.16.38?bundle";
-
-// Core CodeMirror pieces
-import { EditorState } from "https://esm.sh/@codemirror/state@6";
-import {
-  EditorView,
-  lineNumbers,
-} from "https://esm.sh/@codemirror/view@6";
-
-// Highlighting
-import {
-  syntaxHighlighting,
-  defaultHighlightStyle,
-} from "https://esm.sh/@codemirror/language@6";
-
-// Languages
-import { javascript } from "https://esm.sh/@codemirror/lang-javascript@6";
-import { python } from "https://esm.sh/@codemirror/lang-python@6";
-import { html } from "https://esm.sh/@codemirror/lang-html@6";
-import { json } from "https://esm.sh/@codemirror/lang-json@6";
-import { markdown } from "https://esm.sh/@codemirror/lang-markdown@6";
-import { sql } from "https://esm.sh/@codemirror/lang-sql@6";
-import { css } from "https://esm.sh/@codemirror/lang-css@6";
-import { clojure } from "https://esm.sh/@nextjournal/lang-clojure";
-import emojiData from "https://esm.sh/@emoji-mart/data@1?bundle";
-
-const katex = katexPkg.default || katexPkg;
+// KaTeX, CodeMirror 5 and emoji data are served by the publish server itself
+// under /static/ (no CDN) and loaded only when a page needs them.
 const THEME_KEY = "publish-theme";
+
+const loadScript = (src) =>
+  new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+
+const loadStylesheet = (href) => {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  document.head.appendChild(link);
+};
+
+let emojiDataPromise = null;
+const loadEmojiData = () => {
+  emojiDataPromise ||= fetch("/static/emoji-native.json").then((resp) => {
+    if (!resp.ok) throw new Error(`Failed to load emoji data: ${resp.status}`);
+    return resp.json();
+  });
+  return emojiDataPromise;
+};
+
+let codeMirrorPromise = null;
+const codeMirrorModes = [
+  "xml",
+  "meta",
+  "javascript",
+  "css",
+  "htmlmixed",
+  "python",
+  "markdown",
+  "sql",
+  "clojure",
+];
+const loadCodeMirror = () => {
+  if (!codeMirrorPromise) {
+    loadStylesheet("/static/codemirror/codemirror.css");
+    // Modes register themselves on window.CodeMirror, so they load in order
+    codeMirrorPromise = codeMirrorModes.reduce(
+      (acc, mode) => acc.then(() => loadScript(`/static/codemirror/mode/${mode}.js`)),
+      loadScript("/static/codemirror/codemirror.js")
+    ).then(() => window.CodeMirror);
+  }
+  return codeMirrorPromise;
+};
 
 document.addEventListener("click", (event) => {
   const btn = event.target.closest(".block-toggle");
@@ -36,7 +60,7 @@ document.addEventListener("click", (event) => {
   btn.setAttribute("aria-expanded", String(!collapsed));
 });
 
-const getEmojiNative = (id) => {
+const getEmojiNative = (emojiData, id) => {
   const emoji = emojiData?.emojis?.[id];
   if (!emoji) return null;
   return emoji?.skins?.[0]?.native || null;
@@ -170,11 +194,14 @@ const renderTablerExtIcon = (el, id) => {
   return false;
 };
 
-const renderPropertyIcons = () => {
+const renderPropertyIcons = async () => {
   const icons = Array.from(
     document.querySelectorAll(".property-icon[data-icon-type][data-icon-id]")
   );
   if (!icons.length) return;
+  const emojiData = icons.some((el) => el.dataset.iconType === "emoji")
+    ? await loadEmojiData()
+    : null;
 
   icons.forEach((el) => {
     const id = el.dataset.iconId;
@@ -182,7 +209,7 @@ const renderPropertyIcons = () => {
     if (!id) return;
 
     if (type === "emoji") {
-      const native = getEmojiNative(id);
+      const native = getEmojiNative(emojiData, id);
       el.textContent = native || id;
       return;
     }
@@ -651,58 +678,62 @@ const initSearch = () => {
 
 const initPublish = () => {
   applyTheme(preferredTheme());
-  renderPropertyIcons();
+  renderPropertyIcons().catch(console.error);
   if (!window.tablerIcons) {
-    window.addEventListener("load", renderPropertyIcons, { once: true });
+    window.addEventListener(
+      "load",
+      () => renderPropertyIcons().catch(console.error),
+      { once: true }
+    );
   }
 
   initTwitterEmbeds();
   initSearch();
 
-  document.querySelectorAll(".math-block").forEach((el) => {
-    const tex = el.textContent;
-    try {
-      katex.render(tex, el, { displayMode: true, throwOnError: false });
-    } catch (_) {}
-  });
+  const mathBlocks = document.querySelectorAll(".math-block");
+  if (mathBlocks.length) {
+    import("/static/katex/katex.mjs")
+      .then(({ default: katex }) => {
+        mathBlocks.forEach((el) => {
+          katex.render(el.textContent, el, { displayMode: true, throwOnError: false });
+        });
+      })
+      .catch(console.error);
+  }
 
-  document.querySelectorAll(".code-block").forEach((block) => {
-    const codeEl = block.querySelector("code");
-    const doc = codeEl ? codeEl.textContent : "";
-    block.textContent = "";
+  const codeBlocks = document.querySelectorAll(".code-block");
+  if (codeBlocks.length) {
+    loadCodeMirror()
+      .then((CodeMirror) => {
+        codeBlocks.forEach((block) => {
+          const codeEl = block.querySelector("code");
+          const doc = codeEl ? codeEl.textContent : "";
+          block.textContent = "";
+          CodeMirror(block, {
+            value: doc,
+            mode: codeMirrorMode((block.dataset.lang || "").toLowerCase()),
+            readOnly: true,
+            lineNumbers: true,
+            lineWrapping: true,
+          });
+        });
+      })
+      .catch(console.error);
+  }
+};
 
-    const lang = (block.dataset.lang || "").toLowerCase();
-    const langExt = (() => {
-      if (!lang) return null;
-      if (["js", "javascript", "ts", "typescript"].includes(lang)) {
-        return javascript({ typescript: lang.startsWith("t") });
-      }
-      if (["py", "python"].includes(lang)) return python();
-      if (["html", "htm"].includes(lang)) return html();
-      if (["json"].includes(lang)) return json();
-      if (["md", "markdown"].includes(lang)) return markdown();
-      if (["sql"].includes(lang)) return sql();
-      if (["css", "scss"].includes(lang)) return css();
-      if (["clj", "cljc", "cljs", "clojure"].includes(lang)) return clojure();
-      return null;
-    })();
-
-    const extensions = [
-      lineNumbers(),
-      syntaxHighlighting(defaultHighlightStyle),
-      EditorView.editable.of(false),
-      EditorView.lineWrapping,
-    ];
-
-    if (langExt) extensions.push(langExt);
-
-    const state = EditorState.create({
-      doc,
-      extensions,
-    });
-
-    new EditorView({ state, parent: block });
-  });
+const codeMirrorMode = (lang) => {
+  if (["js", "javascript"].includes(lang)) return "javascript";
+  if (["ts", "typescript"].includes(lang)) return "text/typescript";
+  if (["py", "python"].includes(lang)) return "python";
+  if (["html", "htm"].includes(lang)) return "htmlmixed";
+  if (["json"].includes(lang)) return "application/json";
+  if (["md", "markdown"].includes(lang)) return "markdown";
+  if (["sql"].includes(lang)) return "text/x-sql";
+  if (["css"].includes(lang)) return "css";
+  if (["scss"].includes(lang)) return "text/x-scss";
+  if (["clj", "cljc", "cljs", "clojure"].includes(lang)) return "clojure";
+  return null;
 };
 
 if (document.readyState === "loading") {

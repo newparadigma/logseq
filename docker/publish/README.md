@@ -89,9 +89,13 @@ docker compose up -d --build
   `DATA_DIR/objects/publish/<graph>/<hash>.transit` (page contents),
   `DATA_DIR/objects/publish/assets/<graph>/` (images and other assets).
   Back up `DATA_DIR`.
-- Unpublishing a page removes it from `meta.sqlite` only; its `.transit`
-  file and assets stay in `objects/`.
+- Unpublishing a page deletes its `.transit` file and the assets no other
+  published page of the graph uses; unpublishing the last page of a graph
+  deletes all of the graph's files. Republishing a changed page replaces its
+  `.transit` file. An asset removed from a page stays until the page is
+  unpublished.
 - `./caddy/` holds the TLS certificates; it can be deleted, Caddy then
   requests new ones.
-- Published pages load fonts and scripts from public CDNs (`cdn.jsdelivr.net`,
-  `esm.sh`), so visitors' browsers contact them.
+- Fonts, KaTeX, CodeMirror and emoji data are served by this server under
+  `/static/` (built into the image by `pnpm build:static`). A page contacts
+  other hosts only for embeds it contains (YouTube, Vimeo, tweets).

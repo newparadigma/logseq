@@ -72,8 +72,11 @@
                    :get (fn [id]
                           #js {:fetch (fn [url opts]
                                         (js/Promise.resolve
-                                         (route-dispatch id url (method-from-opts opts))))})}]
-    #js {"PUBLISH_META_DO" do-ns}))
+                                         (route-dispatch id url (method-from-opts opts))))})}
+        empty-r2 #js {:list (fn [_opts] (js/Promise.resolve #js {:objects #js [] :truncated false}))
+                      :delete (fn [_key] (js/Promise.resolve nil))}]
+    #js {"PUBLISH_META_DO" do-ns
+         "PUBLISH_R2" empty-r2}))
 
 (deftest short-url-does-not-redirect-to-uuid-url
   (testing "short URL should not redirect to /page/:graph/:page"
@@ -180,9 +183,10 @@
                      :get (fn [_id] do-stub)}
           env #js {"PUBLISH_META_DO" do-ns}]
       (-> (p/let [response (routes/handle-fetch (js/Request. "https://publish.example/p/abc") env)
-                  body (.json response)]
+                  body (.text response)]
             (is (= 404 (.-status response)))
-            (is (= "not found" (aget body "error")))
+            (is (= "text/html; charset=utf-8" (.get (.-headers response) "content-type")))
+            (is (re-find #"<h1[^>]*>404</h1>" body))
             (done))
           (p/catch (fn [error]
                      (is nil (str error))
@@ -281,6 +285,11 @@
                         (= method "DELETE")
                         (= url "https://publish/pages/graph-1/page-1"))
                    (ok-json-response #js {"ok" true})
+
+                   (and (= id "index")
+                        (= method "GET")
+                        (= url "https://publish/pages/graph-1"))
+                   (ok-json-response #js {"pages" #js []})
 
                    (and (= id "graph-1:page-1")
                         (= method "DELETE")

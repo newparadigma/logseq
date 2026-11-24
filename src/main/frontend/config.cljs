@@ -17,6 +17,10 @@
 
 (defonce publishing? common-config/PUBLISHING)
 
+(defonce ^{:doc "Bumped when a custom sync or publish server URL changes, so views showing them re-render."}
+  *custom-server-urls-revision
+  (atom 0))
+
 (defn get-custom-sync-server-url
   "Read the user-configured custom sync server URL from localStorage.
    Returns nil when not set or empty."
@@ -32,7 +36,8 @@
   (when-not util/node-test?
     (if (or (nil? url) (string/blank? url))
       (.removeItem js/localStorage "sync-server-url")
-      (.setItem js/localStorage "sync-server-url" (string/trim url)))))
+      (.setItem js/localStorage "sync-server-url" (string/trim url)))
+    (swap! *custom-server-urls-revision inc)))
 
 (defn valid-sync-server-url?
   "Return true when `url` looks like a valid HTTP(S) base URL."
@@ -80,7 +85,8 @@
   (when-not util/node-test?
     (if (or (nil? url) (string/blank? url))
       (.removeItem js/localStorage "publish-server-url")
-      (.setItem js/localStorage "publish-server-url" (string/trim url)))))
+      (.setItem js/localStorage "publish-server-url" (string/trim url)))
+    (swap! *custom-server-urls-revision inc)))
 
 (defn valid-publish-server-url?
   "Return true when `url` looks like a valid HTTP(S) base URL."

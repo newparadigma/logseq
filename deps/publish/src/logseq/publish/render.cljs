@@ -11,7 +11,7 @@
             [logseq.publish.model :as publish-model]))
 
 ;; Timestamp in milliseconds used for cache busting static assets.
-(defonce version 1779272152856)
+(defonce version 1795532915693)
 
 (def ref-regex
   (js/RegExp. "\\[\\[([0-9a-fA-F-]{36})\\]\\]|\\(\\(([0-9a-fA-F-]{36})\\)\\)" "g"))
@@ -178,7 +178,7 @@
 (defn- icon-runtime-script
   []
   [:script
-   "(function(){if(window.React&&window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED){return;}var s='http://www.w3.org/2000/svg';var k=function(n){return n.replace(/[A-Z]/g,function(m){return'-'+m.toLowerCase();});};var a=function(el,key,val){if(key==='className'){el.setAttribute('class',val);return;}if(key==='style'&&val&&typeof val==='object'){for(var sk in val){el.style[sk]=val[sk];}return;}if(key==='ref'||key==='key'||key==='children'){return;}if(val===true){el.setAttribute(key,'');return;}if(val===false||val==null){return;}var attr=key;if(key==='strokeWidth'){attr='stroke-width';}else if(key==='strokeLinecap'){attr='stroke-linecap';}else if(key==='strokeLinejoin'){attr='stroke-linejoin';}else if(key!=='viewBox'&&/[A-Z]/.test(key)){attr=k(key);}el.setAttribute(attr,val);};var c=function(el,child){if(child==null||child===false){return;}if(Array.isArray(child)){child.forEach(function(n){c(el,n);});return;}if(typeof child==='string'||typeof child==='number'){el.appendChild(document.createTextNode(child));return;}if(child.nodeType){el.appendChild(child);} };var e=function(type,props){var children=Array.prototype.slice.call(arguments,2);if(type===Symbol.for('react.fragment')){var frag=document.createDocumentFragment();children.forEach(function(n){c(frag,n);});return frag;}if(typeof type==='function'){return type(Object.assign({},props,{children:children}));}var isSvg=type==='svg'||(props&&props.xmlns===s);var el=isSvg?document.createElementNS(s,type):document.createElement(type);if(props){for(var p in props){a(el,p,props[p]);}}children.forEach(function(n){c(el,n);});return el;};window.React={createElement:e,forwardRef:function(fn){return fn;},Fragment:Symbol.for('react.fragment'),__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:{current:null}}};window.PropTypes=new Proxy({}, {get:function(){return function(){return null;};}});})();"])
+   "(function(){if(window.React&&window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED){return;}var s='http://www.w3.org/2000/svg';var k=function(n){return n.replace(/[A-Z]/g,function(m){return'-'+m.toLowerCase();});};var a=function(el,key,val){if(key==='className'){el.setAttribute('class',val);return;}if(key==='style'&&val&&typeof val==='object'){for(var sk in val){el.style[sk]=val[sk];}return;}if(key==='ref'||key==='key'||key==='children'){return;}if(val===true){el.setAttribute(key,'');return;}if(val===false||val==null){return;}var attr=key;if(key==='strokeWidth'){attr='stroke-width';}else if(key==='strokeLinecap'){attr='stroke-linecap';}else if(key==='strokeLinejoin'){attr='stroke-linejoin';}else if(key!=='viewBox'&&/[A-Z]/.test(key)){attr=k(key);}el.setAttribute(attr,val);};var c=function(el,child){if(child==null||child===false){return;}if(Array.isArray(child)){child.forEach(function(n){c(el,n);});return;}if(typeof child==='string'||typeof child==='number'){el.appendChild(document.createTextNode(child));return;}if(child.nodeType){el.appendChild(child);} };var e=function(type,props){var children=Array.prototype.slice.call(arguments,2);if(type===Symbol.for('react.fragment')){var frag=document.createDocumentFragment();children.forEach(function(n){c(frag,n);});return frag;}if(typeof type==='function'){return type(Object.assign({},props,{children:children}));}var isSvg=type==='svg'||(props&&props.xmlns===s);var el=isSvg?document.createElementNS(s,type):document.createElement(type);if(props){for(var p in props){a(el,p,props[p]);}}children.forEach(function(n){c(el,n);});return el;};window.React={createElement:e,forwardRef:function(fn){return fn;},Fragment:Symbol.for('react.fragment'),__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:{current:null}}};window.PropTypes=new Proxy({}, {get:function(){return function(){return null;};}});var j=function(type,props,key){return{$$typeof:Symbol.for('react.element'),type:type,props:props||{},key:key==null?null:key};};window.ReactJSXRuntime={jsx:j,jsxs:j,Fragment:Symbol.for('react.fragment')};})();"])
 
 (def ^:private favicon-href
   "Logseq logo (the app's `svg/logo`) inlined, so pages load no image from asset.logseq.com."
@@ -238,8 +238,7 @@
      (theme-init-script)
      (icon-runtime-script)
      [:script {:defer true :src "/static/tabler.ext.js"}]
-     [:link {:rel "stylesheet"
-             :href "https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0/dist/tabler-icons.min.css"}]
+     [:link {:rel "stylesheet" :href (str "/static/tabler-icons.min.css?v=" version)}]
      [:link {:rel "stylesheet" :href (str "/static/tabler-extension.css?v=" version)}]
      [:link {:rel "stylesheet" :href (str "/static/publish.css?v=" version)}]
      custom-css
@@ -618,7 +617,9 @@
       (let [sub-ast (inline-ast data)
             simple-plain? (and (= 1 (count sub-ast))
                                (= "Plain" (ffirst sub-ast)))]
-        (if (and (seq sub-ast) (not simple-plain?))
+        ;; Inside a link label, parsing the text again turns a bare URL
+        ;; label into another link, nested again on every pass
+        (if (and (seq sub-ast) (not simple-plain?) (not (:in-link? ctx)))
           (mapcat #(inline->nodes ctx %) sub-ast)
           (content->nodes data uuid->title graph-uuid)))
 
@@ -644,9 +645,10 @@
       (let [url (:url data)
             label (:label data)
             [link-type link-value] url
+            label-ctx (assoc ctx :in-link? true)
             label-nodes (cond
-                          (vector? label) (mapcat #(inline->nodes ctx %) label)
-                          (seq? label) (mapcat #(inline->nodes ctx %) label)
+                          (vector? label) (mapcat #(inline->nodes label-ctx %) label)
+                          (seq? label) (mapcat #(inline->nodes label-ctx %) label)
                           (string? label) (content->nodes label uuid->title graph-uuid)
                           :else [])
             page-uuid (when (= "Page_ref" link-type)
@@ -1239,7 +1241,7 @@
 
                (page-title-node page-title (:logseq.property/icon page-entity))
                [:div.page-meta
-                (when true
+                (when (seq authors)
                   [:div.page-authors (str "By: " (string/join ", " authors))])
 
                 (let [updated-at (format-timestamp page-updated-at)]
@@ -1377,142 +1379,152 @@
                (publish-script)]]]]
     (str "<!doctype html>" (render-hiccup doc))))
 
-(defn render-home-html
-  []
+(def ^:private home-background-script
+  [:script
+   "(function(){\n"
+   "  const svg = document.getElementById('publish-home-bg');\n"
+   "  if (!svg) return;\n"
+   "  let width = window.innerWidth;\n"
+   "  let height = window.innerHeight;\n"
+   "  const POINTS_COUNT = 40;\n"
+   "  const MAX_DIST = 160;\n"
+   "  const pts = [];\n"
+   "  let circlesGroup;\n"
+   "  let linesGroup;\n"
+   "\n"
+   "  const cssVar = (name) =>\n"
+   "    getComputedStyle(document.documentElement)\n"
+   "      .getPropertyValue(name)\n"
+   "      .trim();\n"
+   "\n"
+   "  function resize() {\n"
+   "    width = window.innerWidth;\n"
+   "    height = window.innerHeight;\n"
+   "    svg.setAttribute('width', width);\n"
+   "    svg.setAttribute('height', height);\n"
+   "    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);\n"
+   "  }\n"
+   "\n"
+   "  function createSvgElement(tag, attrs) {\n"
+   "    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);\n"
+   "    for (const k in attrs) el.setAttribute(k, attrs[k]);\n"
+   "    return el;\n"
+   "  }\n"
+   "\n"
+   "  function init() {\n"
+   "    resize();\n"
+   "    svg.innerHTML = '';\n"
+   "\n"
+   "    const lineColor = cssVar('--muted') || '#6f6e69';\n"
+   "    const dotColor = cssVar('--ink') || '#282726';\n"
+   "\n"
+   "    linesGroup = createSvgElement('g', {\n"
+   "      stroke: lineColor,\n"
+   "      'stroke-width': 0.6,\n"
+   "      'stroke-linecap': 'round',\n"
+   "      opacity: 0.35\n"
+   "    });\n"
+   "    circlesGroup = createSvgElement('g', { fill: dotColor, opacity: 0.65 });\n"
+   "\n"
+   "    svg.appendChild(linesGroup);\n"
+   "    svg.appendChild(circlesGroup);\n"
+   "    pts.length = 0;\n"
+   "\n"
+   "    for (let i = 0; i < POINTS_COUNT; i++) {\n"
+   "      const x = Math.random() * width;\n"
+   "      const y = Math.random() * height;\n"
+   "      const speed = 0.15 + Math.random() * 0.25;\n"
+   "      const angle = Math.random() * Math.PI * 2;\n"
+   "      const vx = Math.cos(angle) * speed;\n"
+   "      const vy = Math.sin(angle) * speed;\n"
+   "\n"
+   "      const circle = createSvgElement('circle', {\n"
+   "        cx: x,\n"
+   "        cy: y,\n"
+   "        r: 2 + Math.random() * 1.2\n"
+   "      });\n"
+   "\n"
+   "      circlesGroup.appendChild(circle);\n"
+   "      pts.push({ x, y, vx, vy, circle });\n"
+   "    }\n"
+   "  }\n"
+   "\n"
+   "  function step() {\n"
+   "    linesGroup.innerHTML = '';\n"
+   "\n"
+   "    for (let i = 0; i < pts.length; i++) {\n"
+   "      const p = pts[i];\n"
+   "      p.x += p.vx;\n"
+   "      p.y += p.vy;\n"
+   "\n"
+   "      if (p.x < 0 || p.x > width) p.vx *= -1;\n"
+   "      if (p.y < 0 || p.y > height) p.vy *= -1;\n"
+   "\n"
+   "      p.circle.setAttribute('cx', p.x);\n"
+   "      p.circle.setAttribute('cy', p.y);\n"
+   "    }\n"
+   "\n"
+   "    for (let i = 0; i < pts.length; i++) {\n"
+   "      for (let j = i + 1; j < pts.length; j++) {\n"
+   "        const p1 = pts[i];\n"
+   "        const p2 = pts[j];\n"
+   "        const dx = p1.x - p2.x;\n"
+   "        const dy = p1.y - p2.y;\n"
+   "        const dist = Math.sqrt(dx * dx + dy * dy);\n"
+   "        if (dist < MAX_DIST) {\n"
+   "          const opacity = 0.35 * (1 - dist / MAX_DIST);\n"
+   "          const line = createSvgElement('line', {\n"
+   "            x1: p1.x,\n"
+   "            y1: p1.y,\n"
+   "            x2: p2.x,\n"
+   "            y2: p2.y,\n"
+   "            opacity: opacity.toString()\n"
+   "          });\n"
+   "          linesGroup.appendChild(line);\n"
+   "        }\n"
+   "      }\n"
+   "    }\n"
+   "\n"
+   "    requestAnimationFrame(step);\n"
+   "  }\n"
+   "\n"
+   "  window.addEventListener('resize', () => {\n"
+   "    init();\n"
+   "  });\n"
+   "\n"
+   "  init();\n"
+   "  requestAnimationFrame(step);\n"
+   "})();\n"])
+
+(defn- render-home-layout
+  "Page with the home page look: animated background and a centered card."
+  [title & card-nodes]
   (let [doc [:html
-             (render-head "Logseq Publish")
+             (render-head title)
              [:body.publish-home
               [:svg#publish-home-bg.publish-home-bg
                {:aria-hidden "true"}]
-              [:main.publish-home-card
-               [:div.publish-home-logo "Logseq Publish"]
-               [:h1.publish-home-title
-                "Small notes,"
-                [:br]
-                [:strong "big "]
-                "connections!"]
-               [:p.publish-home-subtitle
-                "Publish your Logseq notes to the web. Each note links through "
-                [:code "#tag"]
-                " or "
-                [:code "[[page]] references"]
-                ", connecting your dots with others."]]
-              [:script
-               "(function(){\n"
-               "  const svg = document.getElementById('publish-home-bg');\n"
-               "  if (!svg) return;\n"
-               "  let width = window.innerWidth;\n"
-               "  let height = window.innerHeight;\n"
-               "  const POINTS_COUNT = 40;\n"
-               "  const MAX_DIST = 160;\n"
-               "  const pts = [];\n"
-               "  let circlesGroup;\n"
-               "  let linesGroup;\n"
-               "\n"
-               "  const cssVar = (name) =>\n"
-               "    getComputedStyle(document.documentElement)\n"
-               "      .getPropertyValue(name)\n"
-               "      .trim();\n"
-               "\n"
-               "  function resize() {\n"
-               "    width = window.innerWidth;\n"
-               "    height = window.innerHeight;\n"
-               "    svg.setAttribute('width', width);\n"
-               "    svg.setAttribute('height', height);\n"
-               "    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);\n"
-               "  }\n"
-               "\n"
-               "  function createSvgElement(tag, attrs) {\n"
-               "    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);\n"
-               "    for (const k in attrs) el.setAttribute(k, attrs[k]);\n"
-               "    return el;\n"
-               "  }\n"
-               "\n"
-               "  function init() {\n"
-               "    resize();\n"
-               "    svg.innerHTML = '';\n"
-               "\n"
-               "    const lineColor = cssVar('--muted') || '#6f6e69';\n"
-               "    const dotColor = cssVar('--ink') || '#282726';\n"
-               "\n"
-               "    linesGroup = createSvgElement('g', {\n"
-               "      stroke: lineColor,\n"
-               "      'stroke-width': 0.6,\n"
-               "      'stroke-linecap': 'round',\n"
-               "      opacity: 0.35\n"
-               "    });\n"
-               "    circlesGroup = createSvgElement('g', { fill: dotColor, opacity: 0.65 });\n"
-               "\n"
-               "    svg.appendChild(linesGroup);\n"
-               "    svg.appendChild(circlesGroup);\n"
-               "    pts.length = 0;\n"
-               "\n"
-               "    for (let i = 0; i < POINTS_COUNT; i++) {\n"
-               "      const x = Math.random() * width;\n"
-               "      const y = Math.random() * height;\n"
-               "      const speed = 0.15 + Math.random() * 0.25;\n"
-               "      const angle = Math.random() * Math.PI * 2;\n"
-               "      const vx = Math.cos(angle) * speed;\n"
-               "      const vy = Math.sin(angle) * speed;\n"
-               "\n"
-               "      const circle = createSvgElement('circle', {\n"
-               "        cx: x,\n"
-               "        cy: y,\n"
-               "        r: 2 + Math.random() * 1.2\n"
-               "      });\n"
-               "\n"
-               "      circlesGroup.appendChild(circle);\n"
-               "      pts.push({ x, y, vx, vy, circle });\n"
-               "    }\n"
-               "  }\n"
-               "\n"
-               "  function step() {\n"
-               "    linesGroup.innerHTML = '';\n"
-               "\n"
-               "    for (let i = 0; i < pts.length; i++) {\n"
-               "      const p = pts[i];\n"
-               "      p.x += p.vx;\n"
-               "      p.y += p.vy;\n"
-               "\n"
-               "      if (p.x < 0 || p.x > width) p.vx *= -1;\n"
-               "      if (p.y < 0 || p.y > height) p.vy *= -1;\n"
-               "\n"
-               "      p.circle.setAttribute('cx', p.x);\n"
-               "      p.circle.setAttribute('cy', p.y);\n"
-               "    }\n"
-               "\n"
-               "    for (let i = 0; i < pts.length; i++) {\n"
-               "      for (let j = i + 1; j < pts.length; j++) {\n"
-               "        const p1 = pts[i];\n"
-               "        const p2 = pts[j];\n"
-               "        const dx = p1.x - p2.x;\n"
-               "        const dy = p1.y - p2.y;\n"
-               "        const dist = Math.sqrt(dx * dx + dy * dy);\n"
-               "        if (dist < MAX_DIST) {\n"
-               "          const opacity = 0.35 * (1 - dist / MAX_DIST);\n"
-               "          const line = createSvgElement('line', {\n"
-               "            x1: p1.x,\n"
-               "            y1: p1.y,\n"
-               "            x2: p2.x,\n"
-               "            y2: p2.y,\n"
-               "            opacity: opacity.toString()\n"
-               "          });\n"
-               "          linesGroup.appendChild(line);\n"
-               "        }\n"
-               "      }\n"
-               "    }\n"
-               "\n"
-               "    requestAnimationFrame(step);\n"
-               "  }\n"
-               "\n"
-               "  window.addEventListener('resize', () => {\n"
-               "    init();\n"
-               "  });\n"
-               "\n"
-               "  init();\n"
-               "  requestAnimationFrame(step);\n"
-               "})();\n"]]]]
+              (into [:main.publish-home-card
+                     [:div.publish-home-logo "Logseq Publish"]]
+                    card-nodes)
+              home-background-script]]]
     (str "<!doctype html>" (render-hiccup doc))))
+
+(defn render-home-html
+  []
+  (render-home-layout
+   "Logseq Publish"
+   [:h1.publish-home-title
+    "Small notes,"
+    [:br]
+    [:strong "big "]
+    "connections!"]
+   [:p.publish-home-subtitle
+    "Publish your Logseq notes to the web. Each note links through "
+    [:code "#tag"]
+    " or "
+    [:code "[[page]] references"]
+    ", connecting your dots with others."]))
 
 (defn render-ref-html
   [graph-uuid ref-name ref-title ref-items]
@@ -1594,17 +1606,9 @@
 
 (defn render-404-html
   []
-  (let [title "Page not found"
-        doc [:html
-             (render-head title)
-             [:body
-              [:main.wrap
-               (toolbar-node
-                [:a.toolbar-btn {:href "/"} "Home"]
-                (theme-toggle-node))
-               [:div.not-found
-                [:p.not-found-eyebrow "404"]
-                [:h1 title]
-                [:p.tag-sub "We couldn't find that page. It may have been removed or never published."]]
-               (publish-script)]]]]
-    (str "<!doctype html>" (render-hiccup doc))))
+  (render-home-layout
+   "Page not found"
+   [:h1.publish-home-title "404"]
+   [:p.publish-home-subtitle
+    "We couldn't find that page. It may have been removed or never published."]
+   [:p.publish-home-subtitle [:a {:href "/"} "Go to the home page"]]))

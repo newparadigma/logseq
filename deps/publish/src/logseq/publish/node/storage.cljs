@@ -4,6 +4,7 @@
   (:require ["better-sqlite3" :as sqlite3]
             ["fs" :as fs]
             ["path" :as node-path]
+            [clojure.string :as string]
             [promesa.core :as p]))
 
 (defn- ensure-dir! [dir]
@@ -63,7 +64,7 @@
 
 (defn make-bucket
   "Returns an object with the subset of the R2 bucket API the publish worker uses
-  (`head`, `get`, `put`), storing each object and its metadata as files."
+  (`head`, `get`, `put`, `delete`, `list`), storing each object and its metadata as files."
   [base-dir]
   (let [base-dir (node-path/resolve base-dir)]
     (ensure-dir! base-dir)
@@ -89,4 +90,27 @@
                   (p/let [_ (.writeFile (.-promises fs) (str file-path ".meta.json") (js/JSON.stringify meta))
                           _ (.writeFile (.-promises fs) tmp-path (js/Uint8Array. body))
                           _ (.rename (.-promises fs) tmp-path file-path)]
-                    nil)))}))
+                    nil)))
+         :delete (fn [key]
+                   (let [file-path (key->path base-dir key)]
+                     ;; The file first: an object whose metadata is gone is never left visible.
+                     (p/let [_ (.rm (.-promises fs) file-path #js {:force true})
+                             _ (.rm (.-promises fs) (str file-path ".meta.json") #js {:force true})]
+                       nil)))
+         ;; All matches in one page (`truncated` is always false)
+         :list (fn [^js opts]
+                 (let [prefix (.-prefix opts)
+                       dir (if (string/ends-with? prefix "/")
+                             (key->path base-dir (subs prefix 0 (dec (count prefix))))
+                             (node-path/dirname (key->path base-dir prefix)))]
+                   (p/let [entries (missing->nil (.readdir (.-promises fs) dir #js {:recursive true}))
+                           entries (set (or entries []))
+                           keys (->> entries
+                                     ;; Only stored objects have a metadata sidecar
+                                     (filter #(contains? entries (str % ".meta.json")))
+                                     (map #(-> (node-path/relative base-dir (node-path/join dir %))
+                                               (string/replace (.-sep node-path) "/")))
+                                     (filter #(string/starts-with? % prefix))
+                                     sort)]
+                     #js {:objects (to-array (map (fn [k] #js {:key k}) keys))
+                          :truncated false})))}))

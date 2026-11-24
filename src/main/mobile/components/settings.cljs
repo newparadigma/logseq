@@ -227,6 +227,7 @@
         theme (rfx/use-sub [:ui/theme])
         system-theme? (rfx/use-sub [:ui/system-theme?])
         preferred-language (rfx/use-sub [:preferred-language])
+        _server-urls-revision (hooks/use-atom-value config/*custom-server-urls-revision)
         theme-value (if system-theme?
                       "system"
                       (or theme "system"))]

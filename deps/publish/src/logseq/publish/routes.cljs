@@ -1,6 +1,7 @@
 (ns logseq.publish.routes
   "Handles routing and responses for worker"
   (:require [cljs-bean.core :as bean]
+            [clojure.set :as set]
             [clojure.string :as string]
             [logseq.publish.assets :as publish-assets]
             [logseq.publish.common :as publish-common]
@@ -13,8 +14,64 @@
 (def publish-css (resource/inline "logseq/publish/publish.css"))
 (def publish-js (resource/inline "logseq/publish/publish.js"))
 (def tabler-ext-js (resource/inline "js/tabler.ext.js"))
-;; Should this be used?
-;; (def tabler-extension-css (resource/inline "css/tabler-extension.css"))
+
+(defn- html-not-found []
+  (js/Response.
+   (publish-render/render-404-html)
+   #js {:status 404
+        :headers (publish-common/merge-headers
+                  #js {"content-type" "text/html; charset=utf-8"}
+                  (publish-common/cors-headers))}))
+
+(defn- <list-keys
+  "All R2 keys under `prefix` (R2 lists in pages)."
+  [^js r2 prefix]
+  (letfn [(step [cursor acc]
+            (p/let [^js result (.list r2 (if cursor
+                                           #js {:prefix prefix :cursor cursor}
+                                           #js {:prefix prefix}))
+                    acc (into acc (map #(.-key ^js %)) (.-objects result))]
+              (if (.-truncated result)
+                (step (.-cursor result) acc)
+                acc)))]
+    (step nil [])))
+
+(defn- <delete-keys! [^js r2 keys]
+  (p/all (map #(.delete r2 %) keys)))
+
+(defn- <delete-graph-objects!
+  "Deletes every stored page payload and asset of a graph."
+  [r2 graph-uuid]
+  (p/let [page-keys (<list-keys r2 (str "publish/" graph-uuid "/"))
+          asset-keys (<list-keys r2 (str "publish/assets/" graph-uuid "/"))]
+    (<delete-keys! r2 (concat page-keys asset-keys))))
+
+(defn- <page-asset-uuids
+  "Uuids of the asset blocks in the page payload stored under `r2-key`."
+  [^js r2 r2-key]
+  (p/let [^js object (.get r2 r2-key)
+          buffer (when object (.arrayBuffer object))]
+    (if-not buffer
+      #{}
+      (let [payload (publish-common/read-transit-safe (.decode publish-common/text-decoder buffer))]
+        (->> (vals (publish-model/datoms->entities (:datoms payload)))
+             (keep (fn [entity]
+                     (when (:logseq.property.asset/type entity)
+                       (some-> (:block/uuid entity) str))))
+             set)))))
+
+(defn- <delete-page-objects!
+  "Deletes a page payload and the assets (with their image variants) that no
+  other published page of the graph uses. With no pages left, deletes all of
+  the graph's objects, custom publish.css/js included."
+  [r2 graph-uuid r2-key other-r2-keys]
+  (if (empty? other-r2-keys)
+    (<delete-graph-objects! r2 graph-uuid)
+    (p/let [own (<page-asset-uuids r2 r2-key)
+            others (p/all (map #(<page-asset-uuids r2 %) other-r2-keys))
+            orphans (set/difference own (apply set/union #{} others))
+            asset-keys (p/all (map #(<list-keys r2 (str "publish/assets/" graph-uuid "/" %)) orphans))]
+      (<delete-keys! r2 (cons r2-key (apply concat asset-keys))))))
 
 (defn- request-password
   [request]
@@ -102,65 +159,74 @@
                                               ":"
                                               page_uuid))
                       do-stub (.get do-ns do-id)
+                      index-stub (.get do-ns (.idFromName do-ns "index"))
                       page-tags (or (:page-tags payload)
                                     (get payload "page-tags"))
-                      owner-sub (:owner_sub meta)
-                      owner-username (:owner_username meta)
+                      ;; The owner comes from the verified token, not from the request body
+                      owner-sub (aget claims "sub")
+                      owner-username (aget claims "cognito:username")
                       updated-at (.now js/Date)]
                   (when-not (and owner-sub owner-username)
-                    (throw (ex-info "owner sub or username is missing"
+                    (throw (ex-info "owner sub or username is missing in the token"
                                     {:owner-sub owner-sub
                                      :owner-username owner-username})))
-                  (p/let [existing (.head r2 r2-key)
-                          _ (when-not existing
-                              (.put r2 r2-key body
-                                    #js {:httpMetadata #js {:contentType "application/transit+json"}}))
-                          short-id (publish-common/short-id-for-page graph-uuid page_uuid)
-                          password-hash (when (and (string? page-password)
-                                                   (not (string/blank? page-password)))
-                                          (publish-common/hash-password page-password))]
-                    (let [payload (bean/->js
-                                   {:page_uuid page_uuid
-                                    :page_title page-title
-                                    :page_tags (when page-tags
-                                                 (js/JSON.stringify (clj->js page-tags)))
-                                    :password_hash password-hash
-                                    :graph graph-uuid
-                                    :schema_version schema_version
-                                    :block_count block_count
-                                    :content_hash content_hash
-                                    :content_length content_length
-                                    :r2_key r2-key
-                                    :owner_sub owner-sub
-                                    :owner_username owner-username
-                                    :created_at created_at
-                                    :updated_at updated-at
-                                    :short_id short-id
-                                    :refs refs
-                                    :tagged_nodes tagged-nodes
-                                    :blocks (when (seq blocks)
-                                              (map (fn [block]
-                                                     (assoc block :updated_at updated-at))
-                                                   blocks))})
-                          body-str (js/JSON.stringify payload)]
-                      (p/let [meta-resp (.fetch do-stub "https://publish/pages"
+                  (p/let [previous-resp (.fetch index-stub (str "https://publish/pages/" graph-uuid "/" page_uuid)
+                                                #js {:method "GET"})
+                          previous (when (.-ok previous-resp) (.json previous-resp))]
+                    (if (and previous (not= owner-sub (aget previous "owner_sub")))
+                      (publish-common/forbidden)
+                      (p/let [existing (.head r2 r2-key)
+                              _ (when-not existing
+                                  (.put r2 r2-key body
+                                        #js {:httpMetadata #js {:contentType "application/transit+json"}}))
+                              short-id (publish-common/short-id-for-page graph-uuid page_uuid)
+                              password-hash (when (and (string? page-password)
+                                                       (not (string/blank? page-password)))
+                                              (publish-common/hash-password page-password))]
+                        (let [payload (bean/->js
+                                       {:page_uuid page_uuid
+                                        :page_title page-title
+                                        :page_tags (when page-tags
+                                                     (js/JSON.stringify (clj->js page-tags)))
+                                        :password_hash password-hash
+                                        :graph graph-uuid
+                                        :schema_version schema_version
+                                        :block_count block_count
+                                        :content_hash content_hash
+                                        :content_length content_length
+                                        :r2_key r2-key
+                                        :owner_sub owner-sub
+                                        :owner_username owner-username
+                                        :created_at created_at
+                                        :updated_at updated-at
+                                        :short_id short-id
+                                        :refs refs
+                                        :tagged_nodes tagged-nodes
+                                        :blocks (when (seq blocks)
+                                                  (map (fn [block]
+                                                         (assoc block :updated_at updated-at))
+                                                       blocks))})
+                              body-str (js/JSON.stringify payload)]
+                          (p/let [meta-resp (.fetch do-stub "https://publish/pages"
+                                                    #js {:method "POST"
+                                                         :headers #js {"content-type" "application/json"}
+                                                         :body body-str})]
+                            (if-not (.-ok meta-resp)
+                              (publish-common/json-response {:error "metadata store failed"} 500)
+                              (p/let [_ (.fetch index-stub "https://publish/pages"
                                                 #js {:method "POST"
                                                      :headers #js {"content-type" "application/json"}
-                                                     :body body-str})]
-                        (if-not (.-ok meta-resp)
-                          (publish-common/json-response {:error "metadata store failed"} 500)
-                          (let [index-id (.idFromName do-ns "index")
-                                index-stub (.get do-ns index-id)]
-                            (p/let [_ (.fetch index-stub "https://publish/pages"
-                                              #js {:method "POST"
-                                                   :headers #js {"content-type" "application/json"}
-                                                   :body body-str})]
-                              (publish-common/json-response {:page_uuid page_uuid
-                                                             :graph_uuid graph-uuid
-                                                             :r2_key r2-key
-                                                             :short_id short-id
-                                                             :short_url (str "/p/" short-id)
-                                                             :updated_at (.now js/Date)})))))))))))))
+                                                     :body body-str})
+                                      ;; A changed page gets a new content hash: drop the old payload
+                                      previous-key (some-> previous (aget "r2_key"))
+                                      _ (when (and previous-key (not= previous-key r2-key))
+                                          (.delete r2 previous-key))]
+                                (publish-common/json-response {:page_uuid page_uuid
+                                                               :graph_uuid graph-uuid
+                                                               :r2_key r2-key
+                                                               :short_id short-id
+                                                               :short_url (str "/p/" short-id)
+                                                               :updated_at (.now js/Date)}))))))))))))))
       (p/catch (fn [^js err]
                  (js/console.error "publish:post-pages error"
                                    (some-> err .-name)
@@ -179,7 +245,7 @@
       (p/let [tags-resp (.fetch do-stub (str "https://publish/pages/" graph-uuid "/" tag-uuid "/tagged_nodes")
                                 #js {:method "GET"})]
       (if-not (.-ok tags-resp)
-        (publish-common/not-found)
+        (html-not-found)
         (p/let [raw (.json tags-resp)
                 tag-items (js->clj (or (aget raw "tagged_nodes") #js [])
                                    :keywordize-keys true)
@@ -233,31 +299,26 @@
             do-stub (.get do-ns do-id)]
         (p/let [meta-resp (.fetch do-stub (str "https://publish/pages/" graph-uuid "/" page-uuid))]
           (if-not (.-ok meta-resp)
-            (js/Response.
-             (publish-render/render-404-html)
-             #js {:headers (publish-common/merge-headers
-                            #js {"content-type" "text/html; charset=utf-8"}
-                            (publish-common/cors-headers))})
+            (html-not-found)
             (p/let [{:keys [allowed?]} (check-page-password request graph-uuid page-uuid env)]
               (if-not allowed?
                 (publish-common/json-response {:error "password required"} 401)
                 (p/let [meta (.json meta-resp)
-                        r2-key (aget meta "r2_key")]
-                  (if-not r2-key
-                    (publish-common/json-response {:error "missing transit"} 404)
-                    (p/let [etag (aget meta "content_hash")
-                            if-none-match (publish-common/normalize-etag (.get (.-headers request) "if-none-match"))
-                            signed-url (when-not (and etag if-none-match (= etag if-none-match))
-                                         (publish-common/presign-r2-url r2-key env))]
-                      (if (and etag if-none-match (= etag if-none-match))
-                        (js/Response. nil #js {:status 304
-                                               :headers (publish-common/merge-headers
-                                                         #js {:etag etag}
-                                                         (publish-common/cors-headers))})
-                        (publish-common/json-response {:url signed-url
-                                                       :expires_in 300
-                                                       :etag etag}
-                                                      200)))))))))))))
+                        etag (aget meta "content_hash")
+                        if-none-match (publish-common/normalize-etag (.get (.-headers request) "if-none-match"))]
+                  (if (and etag if-none-match (= etag if-none-match))
+                    (js/Response. nil #js {:status 304
+                                           :headers (publish-common/merge-headers
+                                                     #js {:etag etag}
+                                                     (publish-common/cors-headers))})
+                    (p/let [^js object (.get (aget env "PUBLISH_R2") (aget meta "r2_key"))]
+                      (if-not object
+                        (publish-common/json-response {:error "missing transit"} 404)
+                        (js/Response. (.-body object)
+                                      #js {:headers (publish-common/merge-headers
+                                                     #js {"content-type" "application/transit+json"
+                                                          :etag etag}
+                                                     (publish-common/cors-headers))})))))))))))))
 
 (defn handle-get-page-refs [request env]
   (let [url (js/URL. (.-url request))
@@ -274,11 +335,7 @@
                 do-stub (.get do-ns do-id)]
             (p/let [refs-resp (.fetch do-stub (str "https://publish/pages/" graph-uuid "/" page-uuid "/refs"))]
               (if-not (.-ok refs-resp)
-                (js/Response.
-                 (publish-render/render-404-html)
-                 #js {:headers (publish-common/merge-headers
-                                #js {"content-type" "text/html; charset=utf-8"}
-                                (publish-common/cors-headers))})
+                (html-not-found)
                 (p/let [refs (.json refs-resp)]
                   (publish-common/json-response (js->clj refs :keywordize-keys true) 200))))))))))
 
@@ -310,11 +367,7 @@
       (p/let [meta-resp (.fetch do-stub (str "https://publish/pages/" graph-uuid)
                                 #js {:method "GET"})]
         (if-not (.-ok meta-resp)
-          (js/Response.
-           (publish-render/render-404-html)
-           #js {:headers (publish-common/merge-headers
-                          #js {"content-type" "text/html; charset=utf-8"}
-                          (publish-common/cors-headers))})
+          (html-not-found)
           (p/let [meta (.json meta-resp)]
             (publish-common/json-response (js->clj meta :keywordize-keys true) 200)))))))
 
@@ -346,11 +399,7 @@
       (p/let [meta-resp (.fetch do-stub (str "https://publish/pages/" graph-uuid)
                                 #js {:method "GET"})]
         (if-not (.-ok meta-resp)
-          (js/Response.
-           (publish-render/render-404-html)
-           #js {:headers (publish-common/merge-headers
-                          #js {"content-type" "text/html; charset=utf-8"}
-                          (publish-common/cors-headers))})
+          (html-not-found)
           (p/let [meta (.json meta-resp)
                   pages (or (aget meta "pages") #js [])]
             (js/Response.
@@ -368,11 +417,7 @@
       (p/let [resp (.fetch do-stub (str "https://publish/tag/" (js/encodeURIComponent tag-name))
                            #js {:method "GET"})]
         (if-not (.-ok resp)
-          (js/Response.
-           (publish-render/render-404-html)
-           #js {:headers (publish-common/merge-headers
-                          #js {"content-type" "text/html; charset=utf-8"}
-                          (publish-common/cors-headers))})
+          (html-not-found)
           (p/let [data (.json resp)]
             (publish-common/json-response (js->clj data :keywordize-keys true) 200)))))))
 
@@ -385,11 +430,7 @@
       (p/let [resp (.fetch do-stub (str "https://publish/tag/" (js/encodeURIComponent tag-name))
                            #js {:method "GET"})]
         (if-not (.-ok resp)
-          (js/Response.
-           (publish-render/render-404-html)
-           #js {:headers (publish-common/merge-headers
-                          #js {"content-type" "text/html; charset=utf-8"}
-                          (publish-common/cors-headers))})
+          (html-not-found)
           (p/let [data (.json resp)
                   rows (or (aget data "tagged_nodes") #js [])
                   title (or tag-name "Tag")]
@@ -421,7 +462,7 @@
       (p/let [resp (.fetch do-stub (str "https://publish/ref/" (js/encodeURIComponent ref-name))
                            #js {:method "GET"})]
         (if-not (.-ok resp)
-          (publish-common/not-found)
+          (html-not-found)
           (p/let [data (.json resp)
                   rows (or (aget data "pages") #js [])
                   title (or ref-name "Reference")]
@@ -468,7 +509,13 @@
                                                #js {:method "DELETE"})]
                       (if (or (not (.-ok page-resp)) (not (.-ok index-resp)))
                         (publish-common/not-found)
-                        (publish-common/json-response {:ok true} 200)))))))))))))
+                        (p/let [list-resp (.fetch index-stub (str "https://publish/pages/" graph-uuid)
+                                                  #js {:method "GET"})
+                                remaining (.json list-resp)
+                                other-r2-keys (keep #(aget % "r2_key") (aget remaining "pages"))
+                                _ (<delete-page-objects! (aget env "PUBLISH_R2") graph-uuid
+                                                         (aget meta "r2_key") other-r2-keys)]
+                          (publish-common/json-response {:ok true} 200))))))))))))))
 
 (defn handle-delete-graph [request env]
   (let [url (js/URL. (.-url request))
@@ -508,7 +555,8 @@
                                              #js {:method "DELETE"})]
                       (if-not (.-ok del-resp)
                         (publish-common/not-found)
-                        (publish-common/json-response {:ok true} 200)))))))))))))
+                        (p/let [_ (<delete-graph-objects! (aget env "PUBLISH_R2") graph-uuid)]
+                          (publish-common/json-response {:ok true} 200))))))))))))))
 
 (defn handle-page-html [request env]
   (let [url (js/URL. (.-url request))
@@ -718,11 +766,11 @@
             (p/let [resp (.fetch do-stub (str "https://publish/short/" short-id)
                                  #js {:method "GET"})]
               (if-not (.-ok resp)
-                (publish-common/not-found)
+                (html-not-found)
                 (p/let [data (.json resp)
                         row (aget data "page")]
                   (if-not row
-                    (publish-common/not-found)
+                    (html-not-found)
                     (let [graph-uuid (aget row "graph_uuid")
                           page-uuid (aget row "page_uuid")
                           page-path (str "/page/" graph-uuid "/" page-uuid)
@@ -740,7 +788,7 @@
             (p/let [resp (.fetch index-stub (str "https://publish/user/" username)
                                  #js {:method "GET"})]
               (if-not (.-ok resp)
-                (publish-common/not-found)
+                (html-not-found)
                 (p/let [data (.json resp)
                         user (aget data "user")
                         rows (or (aget data "pages") #js [])]
@@ -766,8 +814,4 @@
           (handle-delete-page request env)))
 
       :else
-      (js/Response.
-       (publish-render/render-404-html)
-       #js {:headers (publish-common/merge-headers
-                      #js {"content-type" "text/html; charset=utf-8"}
-                      (publish-common/cors-headers))}))))
+      (html-not-found))))

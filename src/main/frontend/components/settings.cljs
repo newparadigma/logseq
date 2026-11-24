@@ -724,7 +724,8 @@
 
 (hsx/defc sync-server-url-button
   []
-  (let [current-url (config/get-custom-sync-server-url)]
+  (let [_revision (hooks/use-atom-value config/*custom-server-urls-revision)
+        current-url (config/get-custom-sync-server-url)]
     (ui/button [:span.flex.items-center
                 [:span.pr-1
                  (if (seq current-url)
@@ -780,7 +781,8 @@
 
 (hsx/defc publish-server-url-button
   []
-  (let [current-url (config/get-custom-publish-server-url)]
+  (let [_revision (hooks/use-atom-value config/*custom-server-urls-revision)
+        current-url (config/get-custom-publish-server-url)]
     (ui/button [:span.flex.items-center
                 [:span.pr-1
                  (if (seq current-url)
