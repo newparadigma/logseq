@@ -380,7 +380,7 @@ E2EE password rules:
 - Do not overwrite a valid stored payload after a failed verification.
 - Encrypt the persisted password with material derived from the refresh token.
 - Browser storage uses the platform secret store.
-- The Node platform prefers the OS keychain under the Logseq E2EE service.
+- The Node platform prefers the OS keychain under the LogseqDEV E2EE service.
 - If keychain access fails, Node falls back to root-dir/kv-store.json.
 - CLI E2E mode uses the KV store directly so tests do not mutate the keychain.
 - Headless flows fail with a missing-password error and a command hint.

@@ -263,7 +263,7 @@ Sync config persistence:
 
 E2EE password persistence locations:
 - Browser runtime stores the refresh-token-encrypted password payload in its platform secret storage.
-- Node runtime prefers the OS keychain under the `Logseq E2EE` service. If keychain access fails, it falls back to `<root-dir>/kv-store.json`. CLI E2E mode uses the KV store directly.
+- Node runtime prefers the OS keychain under the `LogseqDEV E2EE` service. If keychain access fails, it falls back to `<root-dir>/kv-store.json`. CLI E2E mode uses the KV store directly.
 
 Inspect and edit commands:
 - `list page [--expand] [--limit <n>] [--offset <n>] [--sort <field>] [--order asc|desc]` - list pages (defaults to `--sort updated-at --order desc`)
