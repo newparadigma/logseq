@@ -371,7 +371,11 @@
   "Prepares and uploads the publish payload for a page."
   [page & [{:keys [password]}]]
   (let [repo (state/get-current-repo)]
-    (if (and repo page (:db/id page))
+    (cond
+      (nil? (config/publish-api-base))
+      (notification/show! (t :publish/server-url-not-set-error) :error)
+
+      (and repo page (:db/id page))
       (p/let [payload (state/<invoke-db-worker :thread-api/build-publish-page-payload
                                                repo
                                                (:db/id page))]
@@ -412,30 +416,34 @@
                            (js/console.error error)
                            (notification/show! (t :publish/publish-error) :error)))))
           (notification/show! (t :publish/publish-error) :error)))
+
+      :else
       (notification/show! (t :publish/invalid-page-error) :error))))
 
 (defn unpublish-page!
   [page]
-  (let [repo (state/get-current-repo)
-        token (state/get-auth-id-token)
-        headers (cond-> {}
-                  token (assoc "authorization" (str "Bearer " token)))]
-    (p/let [graph-uuid (<get-graph-uuid repo)
-            page-uuid (some-> (:block/uuid page) str)]
-      (if (and graph-uuid page-uuid)
-        (-> (p/let [resp (js/fetch (publish-page-endpoint graph-uuid page-uuid)
-                                   (clj->js {:method "DELETE"
-                                             :headers headers}))]
-              (if (.-ok resp)
-                (do
-                  (property-handler/remove-block-property! (:db/id page)
-                                                           :logseq.property.publish/published-url)
-                  (notification/show! (t :publish/unpublished) :success false))
-                (p/let [body (.text resp)]
-                  (throw (ex-info "Unpublish failed"
-                                  {:status (.-status resp)
-                                   :body body})))))
-            (p/catch (fn [error]
-                       (js/console.error error)
-                       (notification/show! (t :publish/unpublish-error) :error))))
-        (notification/show! (t :publish/unpublish-missing-page-id) :error)))))
+  (if (nil? (config/publish-api-base))
+    (notification/show! (t :publish/server-url-not-set-error) :error)
+    (let [repo (state/get-current-repo)
+          token (state/get-auth-id-token)
+          headers (cond-> {}
+                    token (assoc "authorization" (str "Bearer " token)))]
+      (p/let [graph-uuid (<get-graph-uuid repo)
+              page-uuid (some-> (:block/uuid page) str)]
+        (if (and graph-uuid page-uuid)
+          (-> (p/let [resp (js/fetch (publish-page-endpoint graph-uuid page-uuid)
+                                     (clj->js {:method "DELETE"
+                                               :headers headers}))]
+                (if (.-ok resp)
+                  (do
+                    (property-handler/remove-block-property! (:db/id page)
+                                                             :logseq.property.publish/published-url)
+                    (notification/show! (t :publish/unpublished) :success false))
+                  (p/let [body (.text resp)]
+                    (throw (ex-info "Unpublish failed"
+                                    {:status (.-status resp)
+                                     :body body})))))
+              (p/catch (fn [error]
+                         (js/console.error error)
+                         (notification/show! (t :publish/unpublish-error) :error))))
+          (notification/show! (t :publish/unpublish-missing-page-id) :error))))))

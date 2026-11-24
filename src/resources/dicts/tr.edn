@@ -1654,10 +1654,6 @@
  :settings.sync-server/url-invalid-error "URL https:// veya http:// ile başlamalıdır"
 
  :settings-page/publish-server-url "Yayınlama Sunucusu URL'si"
- :settings-page/publish-server-url-cleared "Yayınlama sunucusu URL'si temizlendi. Resmi Logseq Publish kullanılıyor."
- :settings-page/publish-server-url-default "Logseq Publish"
- :settings-page/publish-server-url-desc "Kendi barındırdığınız tek sayfa yayınlama için özel bir HTTPS yayınlama sunucusu URL'si ayarlayın. Logseq kimlik doğrulama belirteçleriniz bu sunucuya gönderilir, bu yüzden yalnızca güvendiğiniz bir URL kullanın. Resmi Logseq Publish hizmetini kullanmak için boş bırakın."
- :settings-page/publish-server-url-reset "Varsayılana sıfırla"
  :settings-page/publish-server-url-saved "Yayınlama sunucusu URL'si kaydedildi."
 
  :shell/input-command-title "Komut girin"

@@ -33,9 +33,24 @@ To test the publish features locally, follow these steps:
 
 * Run `pnpm watch` or `pnpm release` to build the publish worker js asset.
 * Run `wrangler dev` in worker/ to start a local cloudflare worker server.
-* In `frontend.config`, enable the commented out `PUBLISH-API-BASE` which points to a localhost url.
-* Login on the desktop app.
+* In the desktop app, set Settings → Publish Server URL to the localhost url.
+* Sign in on the desktop app.
 * Go to any page and select `Publish` from its page menu.
+
+### Self-hosted (Node.js)
+
+`logseq.publish.node.server` runs the same routes on Node.js: metadata in
+SQLite (`meta.sqlite`), page payloads and assets as files (`objects/`).
+
+```bash
+pnpm build:node
+AUTH_ISSUER=... AUTH_CLIENT_ID=... AUTH_JWKS_URL=... PUBLISH_DATA_DIR=data/publish pnpm start:node
+```
+
+It listens on `PUBLISH_PORT` (default 8788). The `AUTH_*` values are the
+sync server's (`deps/db-sync/scripts/selfhost-token.mjs env`). The
+`/pages/<graph>/<page>/transit` route needs R2 signing settings and does
+not work there. Docker setup: `docker/publish/`.
 
 ### Deploy
 

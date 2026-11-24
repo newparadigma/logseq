@@ -1655,10 +1655,6 @@
  :settings.sync-server/url-invalid-error "URL має починатися з https:// або http://"
 
  :settings-page/publish-server-url "URL сервера публікації"
- :settings-page/publish-server-url-cleared "URL сервера публікації очищено. Використовується офіційний сервіс Logseq Publish."
- :settings-page/publish-server-url-default "Logseq Publish"
- :settings-page/publish-server-url-desc "Вкажіть власну URL HTTPS-сервера для публікації односторінкового сайту на власному хостингу. Ваші токени автентифікації Logseq надсилатимуться на цей сервер, тому використовуйте лише перевірену адресу. Залиште поле порожнім, щоб використовувати офіційний сервіс Logseq Publish."
- :settings-page/publish-server-url-reset "Скинути до стандартних налаштувань"
  :settings-page/publish-server-url-saved "URL сервера публікації збережено."
 
  :shell/input-command-title "Введіть команду"

@@ -10,6 +10,11 @@
                    :js-options {:js-provider :import}
                    :closure-defines {shadow.cljs.devtools.client.env/enabled false}
                    :devtools {:enabled false}}
+  ;; Self-hosted server: worker routes on Node.js with SQLite and files
+  :publish-node {:target :node-script
+                 :output-to "worker/dist/node-server.js"
+                 :main logseq.publish.node.server/main
+                 :devtools {:enabled false}}
   :publish-test {:target :node-test
                  :output-to "worker/dist/worker-test.js"
                  :devtools {:enabled false}

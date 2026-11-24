@@ -2,7 +2,6 @@
   "Handles routing and responses for worker"
   (:require [cljs-bean.core :as bean]
             [clojure.string :as string]
-            [logseq.common.authorization :as authorization]
             [logseq.publish.assets :as publish-assets]
             [logseq.publish.common :as publish-common]
             [logseq.publish.index :as publish-index]
@@ -53,21 +52,11 @@
 
 (defn- auth-claims
   [request env]
-  (p/let [auth-header (.get (.-headers request) "authorization")
-          token (when (and auth-header (string/starts-with? auth-header "Bearer "))
-                  (subs auth-header 7))
-          claims (cond
-                   (nil? token) nil
-                   :else (authorization/verify-jwt token env))]
+  (p/let [claims (publish-common/<request-claims request env)]
     {:claims claims}))
 
 (defn handle-post-pages [request env]
-  (-> (p/let [auth-header (.get (.-headers request) "authorization")
-              token (when (and auth-header (string/starts-with? auth-header "Bearer "))
-                      (subs auth-header 7))
-              claims (cond
-                       (nil? token) nil
-                       :else (authorization/verify-jwt token env))]
+  (-> (p/let [claims (publish-common/<request-claims request env)]
         (if (nil? claims)
           (publish-common/unauthorized)
           (p/let [body (.arrayBuffer request)]

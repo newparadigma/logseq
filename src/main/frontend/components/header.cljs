@@ -200,8 +200,7 @@
                                         (page-handler/<unfavorite-page! block-id-str)
                                      (page-handler/<favorite-page! block-id-str)))}}
                          {:title   (t :publish/dialog-title)
-                          :options {:disabled (not config/publish-enabled?)
-                                    :on-click #(shui/dialog-open! (fn [] (page-menu/publish-page-dialog page))
+                          :options {:on-click #(shui/dialog-open! (fn [] (page-menu/publish-page-dialog page))
                                                                   {:class "w-auto max-w-md"})}}]))))
         page-menu-and-hr (concat page-menu [{:hr true}])
         login? (and (rfx/use-sub [:auth/id-token]) (user-handler/logged-in?))

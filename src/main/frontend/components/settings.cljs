@@ -746,17 +746,16 @@
         reset-url! (fn []
                      (config/set-custom-publish-server-url! nil)
                      (set-url! "")
-                     (notification/show! (t :settings-page/publish-server-url-cleared) :success))]
+                     (notification/show! (t :settings-page/publish-server-url-clear-success) :success))]
     [:div.cp__settings-publish-server-cnt
      [:h1.mb-2.text-2xl.font-bold (t :settings-page/publish-server-url)]
      [:div.p-2
-      [:p.text-sm.opacity-70.mb-4 (t :settings-page/publish-server-url-desc)]
+      [:p.text-sm.opacity-70.mb-4 (t :settings-page/publish-server-url-self-hosted-desc)]
       [:p
        [:label
         [:strong "URL"]
         [:input.form-input.is-small
          {:value url
-          :placeholder config/default-publish-api-base
           :style {:width "100%"}
           :on-change #(set-url! (util/evalue %))}]]]
       [:p.pt-2.flex.gap-2
@@ -777,7 +776,7 @@
           {:size :sm
            :variant :outline
            :on-click (fn [] (reset-url!))}
-          (t :settings-page/publish-server-url-reset)))]]]))
+          (t :settings-page/publish-server-url-clear)))]]]))
 
 (hsx/defc publish-server-url-button
   []
@@ -786,7 +785,7 @@
                 [:span.pr-1
                  (if (seq current-url)
                    current-url
-                   (t :settings-page/publish-server-url-default))]
+                   (t :settings-page/publish-server-url-not-set))]
                 (ui/icon "edit")]
                :class "text-sm"
                :on-click #(state/pub-event! [:go/publish-server-settings]))))

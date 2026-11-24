@@ -137,7 +137,7 @@
                              lookup)))
 
 (defevent! :publish/open-dialog [_]
-  (when (and config/publish-enabled? (not config/publishing?))
+  (when-not config/publishing?
     (p/let [page (when-let [page-name (state/get-current-page)]
                    (<page-for-publish-dialog page-name))]
       (when (entity/page? page)

@@ -391,3 +391,20 @@
           (p/catch (fn [error]
                      (is nil (str error))
                      (done)))))))
+
+(deftest unverified-token-is-unauthorized
+  (testing "a token that fails verification gets 401, not a server error"
+    (async done
+      (let [request (fn [method path]
+                      (js/Request. (str "https://publish.example" path)
+                                   #js {:method method
+                                        :headers #js {"authorization" "Bearer forged"}}))]
+        (-> (p/let [responses (p/with-redefs [authorization/verify-jwt (fn [_ _] (p/rejected (ex-info "kid" {})))]
+                                (p/all [(routes/handle-fetch (request "POST" "/pages") (empty-env))
+                                        (routes/handle-fetch (request "POST" "/assets") (empty-env))
+                                        (routes/handle-fetch (request "DELETE" "/pages/graph-1/page-1") (empty-env))]))]
+              (is (= [401 401 401] (map #(.-status %) responses)))
+              (done))
+            (p/catch (fn [error]
+                       (is nil (str error))
+                       (done))))))))

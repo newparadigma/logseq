@@ -1650,10 +1650,6 @@
  :settings.sync-server/url-invalid-error "URL 必須以 https:// 或 http:// 開頭"
 
  :settings-page/publish-server-url "發佈伺服器 URL"
- :settings-page/publish-server-url-cleared "發佈伺服器 URL 已清除。將使用官方 Logseq Publish。"
- :settings-page/publish-server-url-default "Logseq Publish"
- :settings-page/publish-server-url-desc "為自架的單頁發佈設定自訂 HTTPS 發佈伺服器 URL。您的 Logseq 驗證權杖會傳送到此伺服器，請僅使用可信的網址。留空則使用官方 Logseq Publish 服務。"
- :settings-page/publish-server-url-reset "重設為預設值"
  :settings-page/publish-server-url-saved "發佈伺服器 URL 已儲存。"
 
  :shell/input-command-title "輸入指令"

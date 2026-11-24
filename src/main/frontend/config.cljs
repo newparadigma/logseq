@@ -17,15 +17,6 @@
 
 (defonce publishing? common-config/PUBLISHING)
 
-(def default-publish-api-base "https://logseq.io")
-
-;; Page publishing is blocked until a self-hosted publish server without a
-;; Logseq account exists (see agent_context.md).
-(def publish-enabled? false)
-
-;; Enable for local development
-;; (def default-publish-api-base "http://localhost:8787")
-
 (defn get-custom-sync-server-url
   "Read the user-configured custom sync server URL from localStorage.
    Returns nil when not set or empty."
@@ -103,12 +94,11 @@
   (string/replace custom-url #"/+$" ""))
 
 (defn publish-api-base
-  "Return the base URL for the single-page publish service. Uses the user-configured
-   URL from localStorage when set, otherwise the default url above. Read on each call so URL changes take effect without a restart."
+  "Return the base URL of the user-configured publish server, or nil. There is
+  no default publish server. Read on each call so URL changes take effect
+  without a restart."
   []
-  (if-let [custom (get-custom-publish-server-url)]
-    (custom-url->publish-api-base custom)
-    default-publish-api-base))
+  (some-> (get-custom-publish-server-url) custom-url->publish-api-base))
 
 ;; Feature flags
 ;; =============

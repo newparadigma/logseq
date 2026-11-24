@@ -1,0 +1,4 @@
+/.env
+/data/
+/caddy/
+/docker-compose.override.yml

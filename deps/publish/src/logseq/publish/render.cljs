@@ -180,6 +180,16 @@
   [:script
    "(function(){if(window.React&&window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED){return;}var s='http://www.w3.org/2000/svg';var k=function(n){return n.replace(/[A-Z]/g,function(m){return'-'+m.toLowerCase();});};var a=function(el,key,val){if(key==='className'){el.setAttribute('class',val);return;}if(key==='style'&&val&&typeof val==='object'){for(var sk in val){el.style[sk]=val[sk];}return;}if(key==='ref'||key==='key'||key==='children'){return;}if(val===true){el.setAttribute(key,'');return;}if(val===false||val==null){return;}var attr=key;if(key==='strokeWidth'){attr='stroke-width';}else if(key==='strokeLinecap'){attr='stroke-linecap';}else if(key==='strokeLinejoin'){attr='stroke-linejoin';}else if(key!=='viewBox'&&/[A-Z]/.test(key)){attr=k(key);}el.setAttribute(attr,val);};var c=function(el,child){if(child==null||child===false){return;}if(Array.isArray(child)){child.forEach(function(n){c(el,n);});return;}if(typeof child==='string'||typeof child==='number'){el.appendChild(document.createTextNode(child));return;}if(child.nodeType){el.appendChild(child);} };var e=function(type,props){var children=Array.prototype.slice.call(arguments,2);if(type===Symbol.for('react.fragment')){var frag=document.createDocumentFragment();children.forEach(function(n){c(frag,n);});return frag;}if(typeof type==='function'){return type(Object.assign({},props,{children:children}));}var isSvg=type==='svg'||(props&&props.xmlns===s);var el=isSvg?document.createElementNS(s,type):document.createElement(type);if(props){for(var p in props){a(el,p,props[p]);}}children.forEach(function(n){c(el,n);});return el;};window.React={createElement:e,forwardRef:function(fn){return fn;},Fragment:Symbol.for('react.fragment'),__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED:{ReactCurrentOwner:{current:null}}};window.PropTypes=new Proxy({}, {get:function(){return function(){return null;};}});})();"])
 
+(def ^:private favicon-href
+  "Logseq logo (the app's `svg/logo`) inlined, so pages load no image from asset.logseq.com."
+  (str "data:image/svg+xml,"
+       (js/encodeURIComponent
+        (str "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 21 21' fill='#002b36'>"
+             "<ellipse transform='matrix(0.987073 0.160274 -0.239143 0.970984 11.7346 2.59206)' rx='3.29236' ry='2.04373'/>"
+             "<ellipse transform='matrix(-0.495846 0.868411 -0.825718 -0.564084 3.97209 5.54515)' rx='2.95326' ry='3.37606'/>"
+             "<ellipse transform='matrix(0.987073 0.160274 -0.239143 0.970984 13.0843 14.72)' rx='7.78547' ry='6.13006'/>"
+             "</svg>"))))
+
 (defn- head-node
   [title {:keys [description keywords topics tags url custom-css-hash graph-uuid]}]
   (let [description (when (string? description)
@@ -196,21 +206,17 @@
                              [:meta {:name "tags" :content tags}])
                            (when (string? topics)
                              [:meta {:name "topics" :content topics}])
-                           [:meta {:content "summary_large_image" :name "twitter:card"}]
+                           [:meta {:content "summary" :name "twitter:card"}]
                            (when description
                              [:meta {:content description :name "twitter:description"}])
                            [:meta {:content "@logseq" :name "twitter:site"}]
                            [:meta {:content title :name "twitter:title"}]
-                           [:meta {:content "https://asset.logseq.com/static/img/social-banner-230118.png"
-                                   :name "twitter:image:src"}]
                            (when description
                              [:meta {:content description :name "twitter:image:alt"}])
                            [:meta {:content title :property "og:title"}]
                            [:meta {:content "article" :property "og:type"}]
                            (when url
                              [:meta {:content url :property "og:url"}])
-                           [:meta {:content "https://asset.logseq.com/static/img/social-banner-230118.png"
-                                   :property "og:image"}]
                            (when description
                              [:meta {:content description :property "og:description"}])
                            [:meta {:content "logseq" :property "og:site_name"}]])
@@ -223,14 +229,7 @@
              :content "width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0"}]
      [:meta {:http-equiv "X-UA-Compatible" :content "ie=edge"}]
      [:title title]
-     [:link {:href "https://asset.logseq.com/static/img/logo.png"
-             :rel "shortcut icon"
-             :type "image/png"}]
-     [:link {:href "https://asset.logseq.com/static/img/logo.png"
-             :rel "shortcut icon"
-             :sizes "192x192"}]
-     [:link {:href "https://asset.logseq.com/static/img/logo.png"
-             :rel "apple-touch-icon"}]
+     [:link {:href favicon-href :rel "icon" :type "image/svg+xml"}]
      [:meta {:content "Logseq" :name "apple-mobile-web-app-title"}]
      [:meta {:content "yes" :name "apple-mobile-web-app-capable"}]
      [:meta {:content "yes" :name "apple-touch-fullscreen"}]

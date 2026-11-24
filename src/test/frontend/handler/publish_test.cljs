@@ -1,6 +1,7 @@
 (ns frontend.handler.publish-test
   (:require [cljs.test :refer [async deftest is]]
             [clojure.string :as string]
+            [frontend.config :as config]
             [frontend.handler.notification :as notification]
             [frontend.handler.publish :as publish-handler]
             [frontend.handler.property :as property-handler]
@@ -123,8 +124,10 @@
           original-get-graph-uuid publish-handler/<get-graph-uuid
           original-remove-property property-handler/remove-block-property!
           original-notification-show notification/show!
+          original-publish-api-base config/publish-api-base
           original-fetch js/fetch]
       (state/swap-state! assoc :git/current-repo repo)
+      (set! config/publish-api-base (constantly "https://publish.test"))
       (set! js/fetch
             (fn [url opts]
               (swap! fetch-calls conj [url opts])
@@ -163,5 +166,23 @@
              (set! publish-handler/<get-graph-uuid original-get-graph-uuid)
              (set! property-handler/remove-block-property! original-remove-property)
              (set! notification/show! original-notification-show)
+             (set! config/publish-api-base original-publish-api-base)
              (set! js/fetch original-fetch)
              (done)))))))
+
+(deftest publish-and-unpublish-need-a-publish-server-url-test
+  (let [fetch-calls (atom [])
+        notifications (atom [])
+        original-notification-show notification/show!
+        original-fetch js/fetch]
+    (set! js/fetch (fn [& args] (swap! fetch-calls conj args) (p/resolved #js {:ok true})))
+    (set! notification/show! (fn [& args] (swap! notifications conj (vec args))))
+    (try
+      (is (nil? (config/publish-api-base)) "no publish server URL is set in tests")
+      (publish-handler/publish-page! {:db/id 42})
+      (publish-handler/unpublish-page! {:db/id 42})
+      (is (empty? @fetch-calls))
+      (is (= [:error :error] (map second @notifications)))
+      (finally
+        (set! notification/show! original-notification-show)
+        (set! js/fetch original-fetch)))))

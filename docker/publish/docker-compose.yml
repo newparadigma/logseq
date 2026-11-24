@@ -1,0 +1,45 @@
+services:
+  logseq-publish:
+    build:
+      # Repository root: the server is built from the checked-out commit
+      context: ../..
+      dockerfile: docker/publish/Dockerfile
+    image: logseq-publish:local
+    container_name: logseq-publish
+    restart: unless-stopped
+    environment:
+      # Self-issued sign-in tokens, the same as the sync server's
+      # (deps/db-sync/scripts/selfhost-token.mjs)
+      AUTH_ISSUER: ${AUTH_ISSUER:?set AUTH_ISSUER in .env}
+      AUTH_CLIENT_ID: ${AUTH_CLIENT_ID:?set AUTH_CLIENT_ID in .env}
+      AUTH_JWKS_URL: ${AUTH_JWKS_URL:?set AUTH_JWKS_URL in .env}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+    volumes:
+      # Page metadata (SQLite), page payloads and assets
+      - ${DATA_DIR:-./data}:/data
+    # Not published to the host: only reachable through Caddy
+    expose:
+      - "8788"
+
+  # Takes ports 80 and 443. On a host that already runs the sync server's
+  # Caddy, drop this service and add the PUBLISH_DOMAIN block of ./Caddyfile
+  # to that Caddy instead (see README.md).
+  caddy:
+    image: caddy:2
+    container_name: logseq-publish-caddy
+    restart: unless-stopped
+    depends_on:
+      logseq-publish:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PUBLISH_DOMAIN: ${PUBLISH_DOMAIN:?set PUBLISH_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # TLS certificates and Caddy state
+      - ./caddy/data:/data
+      - ./caddy/config:/config

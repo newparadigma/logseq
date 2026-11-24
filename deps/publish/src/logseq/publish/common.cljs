@@ -3,6 +3,7 @@
   (:require [clojure.string :as string]
             [cognitect.transit :as transit]
             [datascript.transit :as dt]
+            [logseq.common.authorization :as authorization]
             [logseq.db :as ldb]
             [promesa.core :as p]))
 
@@ -58,6 +59,17 @@
 
 (defn not-found []
   (json-response {:error "not found"} 404))
+
+(defn <request-claims
+  "Claims of the request's bearer token, or nil when the token is missing or
+  fails verification (bad signature, unknown key, wrong issuer, expired)."
+  [request env]
+  (let [auth-header (.get (.-headers request) "authorization")
+        token (when (and auth-header (string/starts-with? auth-header "Bearer "))
+                (subs auth-header 7))]
+    (if token
+      (p/catch (authorization/verify-jwt token env) (constantly nil))
+      (p/resolved nil))))
 
 (defn normalize-meta [meta]
   (when meta
