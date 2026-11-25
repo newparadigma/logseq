@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Last opp filtyper som bilde, PDF, DOCX, osv."
  :editor.slash/yesterday-desc "Sett inn gårsdagens dato"
 
- :electron/about "Om Logseq"
+ :electron/about "Om Blocklog"
  :electron/add-to-dictionary "Legg til i ordbok"
  :electron/block-not-exist "Kunne ikke åpne lenken. Blokk-ID `{1}` finnes ikke i grafen."
  :electron/cancel "Avbryt"
@@ -632,7 +632,7 @@
  :graph/create-new "Opprett en ny graf"
  :graph/creating "Graf opprettes"
  :graph/delete-local-action "Slett lokal graf"
- :graph/delete-local-confirm-desc "Er du sikker på at du vil slette grafen \"{1}\" permanent fra Logseq?"
+ :graph/delete-local-confirm-desc "Er du sikker på at du vil slette grafen \"{1}\" permanent fra Blocklog?"
  :graph/delete-server-action "Slett fra server"
  :graph/delete-warning "⚠️ Vær oppmerksom på at vi ikke kan gjenopprette denne grafen etter sletting. Sørg for at du har en sikkerhetskopi før du sletter den."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Legg til sider"
  :library/title "Bibliotek"
 
- :mobile/camera-access-denied "Kameratilgang nektet. Aktiver den i Innstillinger > Logseq."
- :mobile/microphone-access-denied "Mikrofontilgang nektet. Aktiver den i Innstillinger > Logseq."
+ :mobile/camera-access-denied "Kameratilgang nektet. Aktiver den i Innstillinger > Blocklog."
+ :mobile/microphone-access-denied "Mikrofontilgang nektet. Aktiver den i Innstillinger > Blocklog."
 
  :mobile.header/actions "Handlinger"
  :mobile.header/create-graph "Opprett graf"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "Dataimport"
 
  :onboarding.setup/desc "Arbeidsområde for din kunnskap"
- :onboarding.setup/title (fn [] ["Velkommen til " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Velkommen til " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Legg til i Favoritter"
  :page/added-tag-to-node "La til taggen \"{1}\" til \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Gå tilbake til startsiden"
  :page/hide-properties "Skjul egenskaper"
  :page/local-storage "lokal lagring"
- :page/logseq-is-having-a-problem "Logseq har et problem"
+ :page/logseq-is-having-a-problem "Blocklog har et problem"
  :page/make-private "Gjør den privat"
  :page/make-public "Gjør den offentlig for publisering"
  :page/moved-to-recycle "Noden er flyttet til papirkurven"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "Ny utvidelse registrert"
  :plugin/no-settings-schema "Ingen innstillingsskjema!"
  :plugin/open-logs "Vis logger"
- :plugin/open-logseq-dir "Åpne Logseq-mappe"
+ :plugin/open-logseq-dir "Åpne Blocklog-mappe"
  :plugin/open-package "Åpne pakke"
  :plugin/open-preferences "Åpne innstillinger"
  :plugin/open-settings "Åpne innstillinger"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "URL-adresser støtter både GitHub-depotier og lokale utviklingsservere. (For eksempler: {1}, {2})"
  :plugin.install-from-web-url/theme-label "tema"
 
- :plugin.package-config/detach-desc "Å fjerne den kobler bare pluginen fra Logseq og lar kildemappen være urørt."
+ :plugin.package-config/detach-desc "Å fjerne den kobler bare pluginen fra Blocklog og lar kildemappen være urørt."
  :plugin.package-config/parse-error "Kunne ikke tolke konfigurasjonen for plugin-pakken."
  :plugin.package-config/remove-error "Kunne ikke fjerne den ødelagte pluginen."
  :plugin.package-config/remove-external-success "Den ødelagte pluginen ble fjernet fra pluginlisten."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Avslutt kodemodus"
  :plugin.settings/title "Utvidelsesinnstillinger"
 
- :plugin.themes/default-desc "Logseq-standardtema ({1})."
+ :plugin.themes/default-desc "Blocklog-standardtema ({1})."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "Temaer ({1})"
  :plugin.themes/light-and-dark "lyse & mørke temaer"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Automatisk chmod"
  :settings.advanced/auto-chmod-desc "Still inn filtillatelser automatisk"
  :settings.advanced/developer-mode "Utviklermodus"
- :settings.advanced/developer-mode-desc "Utviklermodus hjelper bidragsytere og tilleggsutviklere med å teste sine integrasjoner mot Logseq mer effektivt."
+ :settings.advanced/developer-mode-desc "Utviklermodus hjelper bidragsytere og tilleggsutviklere med å teste sine integrasjoner mot Blocklog mer effektivt."
  :settings.advanced/network-proxy "Nettverksproxy"
 
  :settings.ai/enable-mcp-server "Aktiver MCP-server"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Laster opp..."
  :sync/user-doesnt-exist-yet "Bruker finnes ikke ennå"
 
- :theme/logseq-default "Logseq-standardtema"
+ :theme/logseq-default "Blocklog-standardtema"
  :theme/switch-to "Bytt til {1}-tema"
 
  :ui/all-done "Alt ferdig"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "YouTube-avspilleren er ikke klar ennå."
 
  :zotero/attachments "Vedlegg"
- :zotero/imported-file-warning "Dette er en importert Zotero-fil, angi Zotero-datamappe for å åpne filen i Logseq."
- :zotero/linked-file-warning "Dette er en lenket Zotero-fil, angi basemappe for Zotero-lenkede vedlegg for å åpne filen i Logseq."
+ :zotero/imported-file-warning "Dette er en importert Zotero-fil, angi Zotero-datamappe for å åpne filen i Blocklog."
+ :zotero/linked-file-warning "Dette er en lenket Zotero-fil, angi basemappe for Zotero-lenkede vedlegg for å åpne filen i Blocklog."
  :zotero/notes "Notater"
 }

@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Upload bestandstypen zoals afbeelding, PDF, DOCX, enz."
  :editor.slash/yesterday-desc "Voeg de datum van gisteren in"
 
- :electron/about "Over Logseq"
+ :electron/about "Over Blocklog"
  :electron/add-to-dictionary "Aan woordenboek toevoegen"
  :electron/block-not-exist "Link openen mislukt. Blok-id `{1}` bestaat niet in de grafiek."
  :electron/cancel "Annuleren"
@@ -632,7 +632,7 @@
  :graph/create-new "Nieuwe grafiek aanmaken"
  :graph/creating "Grafiek wordt gemaakt"
  :graph/delete-local-action "Lokale grafiek verwijderen"
- :graph/delete-local-confirm-desc "Weet u zeker dat u de grafiek \"{1}\" permanent uit Logseq wilt verwijderen?"
+ :graph/delete-local-confirm-desc "Weet u zeker dat u de grafiek \"{1}\" permanent uit Blocklog wilt verwijderen?"
  :graph/delete-server-action "Van server verwijderen"
  :graph/delete-warning "⚠️ Let op: we kunnen deze grafiek na verwijdering niet herstellen. Zorg ervoor dat u een back-up hebt voordat u deze verwijdert."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Pagina's toevoegen"
  :library/title "Bibliotheek"
 
- :mobile/camera-access-denied "Cameratoegang is geweigerd. Schakel het in bij Instellingen > Logseq."
- :mobile/microphone-access-denied "Microfoontogang is geweigerd. Schakel het in bij Instellingen > Logseq."
+ :mobile/camera-access-denied "Cameratoegang is geweigerd. Schakel het in bij Instellingen > Blocklog."
+ :mobile/microphone-access-denied "Microfoontogang is geweigerd. Schakel het in bij Instellingen > Blocklog."
 
  :mobile.header/actions "Acties"
  :mobile.header/create-graph "Grafiek aanmaken"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "Gegevens importeren"
 
  :onboarding.setup/desc "Werkruimte voor uw kennis"
- :onboarding.setup/title (fn [] ["Welkom bij " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Welkom bij " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Voeg aan favorieten toe"
  :page/added-tag-to-node "Tag \"{1}\" toegevoegd aan \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Terug naar startpagina"
  :page/hide-properties "Eigenschappen verbergen"
  :page/local-storage "lokale opslag"
- :page/logseq-is-having-a-problem "Logseq ondervindt een probleem"
+ :page/logseq-is-having-a-problem "Blocklog ondervindt een probleem"
  :page/make-private "Maak prive"
  :page/make-public "Maak publiek"
  :page/moved-to-recycle "Knooppunt is verplaatst naar Prullenbak"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "Nieuwe plug-in geregistreerd"
  :plugin/no-settings-schema "Geen instellingsschema!"
  :plugin/open-logs "Logboeken bekijken"
- :plugin/open-logseq-dir "Logseq-map openen"
+ :plugin/open-logseq-dir "Blocklog-map openen"
  :plugin/open-package "Open pakket"
  :plugin/open-preferences "Voorkeuren openen"
  :plugin/open-settings "Open instellingen"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "URL's ondersteunen zowel GitHub-repositories als lokale ontwikkelingservers. (Voor voorbeelden: {1}, {2})"
  :plugin.install-from-web-url/theme-label "thema"
 
- :plugin.package-config/detach-desc "Door deze te verwijderen wordt de plugin alleen losgekoppeld van Logseq en blijft de bronmap onaangetast."
+ :plugin.package-config/detach-desc "Door deze te verwijderen wordt de plugin alleen losgekoppeld van Blocklog en blijft de bronmap onaangetast."
  :plugin.package-config/parse-error "Kan de pakketconfiguratie van de plugin niet parseren."
  :plugin.package-config/remove-error "Kan de beschadigde plugin niet verwijderen."
  :plugin.package-config/remove-external-success "De beschadigde plugin is uit de pluginlijst verwijderd."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Codemodus afsluiten"
  :plugin.settings/title "Plug-in-instellingen"
 
- :plugin.themes/default-desc "Standaardthema van Logseq ({1})."
+ :plugin.themes/default-desc "Standaardthema van Blocklog ({1})."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "Thema's ({1})"
  :plugin.themes/light-and-dark "lichte & donkere thema's"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Automatisch chmod"
  :settings.advanced/auto-chmod-desc "Bestandsmachtigingen automatisch instellen"
  :settings.advanced/developer-mode "Ontwikkelaar modus"
- :settings.advanced/developer-mode-desc "De ontwikkelaarsmodus helpt bijdragers en extensie-ontwikkelaars om hun integratie met Logseq efficiënter te testen."
+ :settings.advanced/developer-mode-desc "De ontwikkelaarsmodus helpt bijdragers en extensie-ontwikkelaars om hun integratie met Blocklog efficiënter te testen."
  :settings.advanced/network-proxy "Netwerk proxy"
 
  :settings.ai/enable-mcp-server "MCP-server inschakelen"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Uploaden..."
  :sync/user-doesnt-exist-yet "Gebruiker bestaat nog niet"
 
- :theme/logseq-default "Standaardthema van Logseq"
+ :theme/logseq-default "Standaardthema van Blocklog"
  :theme/switch-to "Schakel over naar het thema {1}"
 
  :ui/all-done "Alles klaar"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "YouTube-speler is nog niet klaar."
 
  :zotero/attachments "Bijlagen"
- :zotero/imported-file-warning "Dit is een geïmporteerd Zotero-bestand, stel Zotero-gegevensmap in om het bestand in Logseq te openen."
- :zotero/linked-file-warning "Dit is een gekoppeld Zotero-bestand, stel basismap voor gekoppelde Zotero-bijlagen in om het bestand in Logseq te openen."
+ :zotero/imported-file-warning "Dit is een geïmporteerd Zotero-bestand, stel Zotero-gegevensmap in om het bestand in Blocklog te openen."
+ :zotero/linked-file-warning "Dit is een gekoppeld Zotero-bestand, stel basismap voor gekoppelde Zotero-bijlagen in om het bestand in Blocklog te openen."
  :zotero/notes "Notities"
 }

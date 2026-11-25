@@ -506,11 +506,11 @@
  :editor.slash/upload-asset-desc "Resim, PDF, DOCX vb. gibi dosya türlerini yükle"
  :editor.slash/yesterday-desc "Dünün tarihini ekle"
 
- :electron/about "Logseq Hakkında"
+ :electron/about "Blocklog Hakkında"
  :electron/add-to-dictionary "Sözlüğe ekle"
  :electron/block-not-exist "Bağlantı açılamadı. Blok kimliği `{1}` grafikte mevcut değil."
  :electron/cancel "İptal"
- :electron/cli-install-failed "Logseq CLI yüklenemedi.\n{1}"
+ :electron/cli-install-failed "Blocklog CLI yüklenemedi.\n{1}"
  :electron/copy-image "Görüntüyü kopyala"
  :electron/link-open-confirm "Bu bağlantıyı açmak istediğinizden emin misiniz?\n{1}"
  :electron/link-open-failed-missing-graph "Bağlantı açılamadı. Grafik eksik."
@@ -670,7 +670,7 @@
  :graph/creating "Graf oluşturuluyor"
  :graph/db-worker-recovery-failed-error "\"{1}\" grafiği için veritabanı çalışanına yeniden bağlanılamadı. Lütfen tekrar deneyin veya grafiği yeniden açın."
  :graph/delete-local-action "Yerel grafı sil"
- :graph/delete-local-confirm-desc "\"{1}\" grafiğini Logseq'den kalıcı olarak silmek istediğinizden emin misiniz?"
+ :graph/delete-local-confirm-desc "\"{1}\" grafiğini Blocklog'den kalıcı olarak silmek istediğinizden emin misiniz?"
  :graph/delete-server-action "Sunucudan sil"
  :graph/delete-warning "⚠️ Silindikten sonra bu grafiği kurtaramayacağımızı unutmayın. Silmeden önce yedekleriniz olduğundan emin olun."
  :graph/diff "Git diff"
@@ -891,8 +891,8 @@
  :library/add-pages "Sayfa ekle"
  :library/title "Kütüphane"
 
- :mobile/camera-access-denied "Kamera erişimi reddedildi. Ayarlar > Logseq'te etkinleştirin."
- :mobile/microphone-access-denied "Mikrofon erişimi reddedildi. Ayarlar > Logseq'te etkinleştirin."
+ :mobile/camera-access-denied "Kamera erişimi reddedildi. Ayarlar > Blocklog'te etkinleştirin."
+ :mobile/microphone-access-denied "Mikrofon erişimi reddedildi. Ayarlar > Blocklog'te etkinleştirin."
 
  :mobile.header/actions "İşlemler"
  :mobile.header/create-graph "Grafik oluştur"
@@ -975,15 +975,15 @@
 
  :notification/copied "Kopyalandı"
 
- :onboarding.import/desc "Notlarınız EDN veya Markdown biçimindeyse, Logseq bunlarla çalışabilir."
+ :onboarding.import/desc "Notlarınız EDN veya Markdown biçimindeyse, Blocklog bunlarla çalışabilir."
  :onboarding.import/sqlite-desc "SQLite veritabanından içe aktar"
  :onboarding.import/title "İçe aktarmak istediğiniz notlarınız var mı?"
 
  :onboarding.import-option/desc "Bunu uygulama içinde daha sonra da yapabilirsiniz."
  :onboarding.import-option/title "Mevcut notları içe aktar"
 
- :onboarding.setup/desc "Önce Logseq'in düşüncelerinizi, fikirlerinizi ve notlarınızı depolayacağı bir klasör seçmeniz gerekir."
- :onboarding.setup/title (fn [] [[:strong "Logseq"] "'e hoş geldiniz!"])
+ :onboarding.setup/desc "Önce Blocklog'in düşüncelerinizi, fikirlerinizi ve notlarınızı depolayacağı bir klasör seçmeniz gerekir."
+ :onboarding.setup/title (fn [] [[:strong "Blocklog"] "'e hoş geldiniz!"])
 
  :page/add-to-favorites "Sık kullanılanlara ekle"
  :page/added-tag-to-node "\"{1}\" etiketi \"{2}\" öğesine eklendi"
@@ -1002,7 +1002,7 @@
  :page/go-back-home "Ana sayfaya dön"
  :page/hide-properties "Özellikleri gizle"
  :page/local-storage "yerel depolama"
- :page/logseq-is-having-a-problem "Logseq'te bir sorun var. Tekrar çalışır duruma getirmek için lütfen aşağıdaki güvenli adımları sırayla deneyin:"
+ :page/logseq-is-having-a-problem "Blocklog'te bir sorun var. Tekrar çalışır duruma getirmek için lütfen aşağıdaki güvenli adımları sırayla deneyin:"
  :page/make-private "Özel yap"
  :page/make-public "Yayımlamak için herkese açık hale getir"
  :page/moved-to-recycle "Düğüm Geri Dönüşüm'e taşındı"
@@ -1142,7 +1142,7 @@
  :plugin/new-registered "Yeni eklenti kaydedildi"
  :plugin/no-settings-schema "Ayar Şeması Yok!"
  :plugin/open-logs "Günlükleri görüntüle"
- :plugin/open-logseq-dir "Logseq klasörünü aç"
+ :plugin/open-logseq-dir "Blocklog klasörünü aç"
  :plugin/open-package "Eklentinin içeriğini aç"
  :plugin/open-preferences "Tercihleri aç"
  :plugin/open-settings "Ayarları aç"
@@ -1171,7 +1171,7 @@
  :plugin.install-from-web-url/supports-note "URL'ler hem GitHub depoları hem de yerel geliştirme sunucularını destekler. (Örnekler: {1}, {2})"
  :plugin.install-from-web-url/theme-label "tema"
 
- :plugin.package-config/detach-desc "Kaldırmak, eklentiyi yalnızca Logseq'ten ayırır ve kaynak klasörü olduğu gibi bırakır."
+ :plugin.package-config/detach-desc "Kaldırmak, eklentiyi yalnızca Blocklog'ten ayırır ve kaynak klasörü olduğu gibi bırakır."
  :plugin.package-config/parse-error "Eklenti paket yapılandırması ayrıştırılamadı."
  :plugin.package-config/remove-error "Bozuk eklenti kaldırılamadı."
  :plugin.package-config/remove-external-success "Bozuk eklenti eklenti listesinden kaldırıldı."
@@ -1187,7 +1187,7 @@
  :plugin.settings/exit-code-mode "Kod modundan çık"
  :plugin.settings/title "Eklenti ayarları"
 
- :plugin.themes/default-desc "Varsayılan Logseq {1} teması."
+ :plugin.themes/default-desc "Varsayılan Blocklog {1} teması."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1} temalar"
  :plugin.themes/light-and-dark "açık & koyu temalar"
@@ -1547,7 +1547,7 @@
  :settings.advanced/auto-chmod "Otomatik chmod"
  :settings.advanced/auto-chmod-desc "Dosya izinlerini otomatik olarak ayarla"
  :settings.advanced/developer-mode "Geliştirici modu"
- :settings.advanced/developer-mode-desc "Geliştirici modu, katkıda bulunanların ve eklenti geliştiricilerinin Logseq ile entegrasyonlarını daha verimli bir şekilde test etmelerine yardımcı olur."
+ :settings.advanced/developer-mode-desc "Geliştirici modu, katkıda bulunanların ve eklenti geliştiricilerinin Blocklog ile entegrasyonlarını daha verimli bir şekilde test etmelerine yardımcı olur."
  :settings.advanced/network-proxy "Ağ ara sunucusu"
 
  :settings.ai/enable-mcp-server "MCP sunucusunu etkinleştir"
@@ -1682,7 +1682,7 @@
  :sync/uploading "Yükleniyor..."
  :sync/user-doesnt-exist-yet "Kullanıcı henüz mevcut değil"
 
- :theme/logseq-default "Varsayılan Logseq teması"
+ :theme/logseq-default "Varsayılan Blocklog teması"
  :theme/switch-to "{1} temasına geç"
 
  :ui/all-done "Tümü tamamlandı"
@@ -1822,7 +1822,7 @@
  :youtube/player-not-ready "YouTube oynatıcısı henüz hazır değildir."
 
  :zotero/attachments "Ekler"
- :zotero/imported-file-warning "Bu, içe aktarılmış bir Zotero dosyasıdır, dosyayı Logseq'te açmak için Zotero veri dizini ayarlayın."
- :zotero/linked-file-warning "Bu, bağlantılı bir Zotero dosyasıdır, dosyayı Logseq'te açmak için Zotero bağlantılı ek temel dizini ayarlayın."
+ :zotero/imported-file-warning "Bu, içe aktarılmış bir Zotero dosyasıdır, dosyayı Blocklog'te açmak için Zotero veri dizini ayarlayın."
+ :zotero/linked-file-warning "Bu, bağlantılı bir Zotero dosyasıdır, dosyayı Blocklog'te açmak için Zotero bağlantılı ek temel dizini ayarlayın."
  :zotero/notes "Notlar"
 }

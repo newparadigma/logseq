@@ -97,7 +97,7 @@
  :bug-report.inspector/tip "Qualcosa non va? Nessun problema, clicca per tornare al passo precedente."
  :bug-report.inspector/title "Ispettore dati degli appunti"
 
- :bug-report.issue/action-desc "Aiutaci a migliorare Logseq!"
+ :bug-report.issue/action-desc "Aiutaci a migliorare Blocklog!"
  :bug-report.issue/action-title "Segnala un difetto"
  :bug-report.issue/desc "Se non puoi raccogliere informazioni aggiuntive, segnala il difetto direttamente."
  :bug-report.issue/report-link "Segnala problema"
@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Carica tipi di file come immagine, PDF, DOCX, ecc."
  :editor.slash/yesterday-desc "Inserisci la data di ieri"
 
- :electron/about "Informazioni su Logseq"
+ :electron/about "Informazioni su Blocklog"
  :electron/add-to-dictionary "Aggiungi al dizionario"
  :electron/block-not-exist "Apertura del link non riuscita. L'ID del blocco `{1}` non esiste nel grafo."
  :electron/cancel "Annulla"
@@ -632,7 +632,7 @@
  :graph/create-new "Crea un nuovo grafo"
  :graph/creating "Creazione del grafo"
  :graph/delete-local-action "Elimina grafo locale"
- :graph/delete-local-confirm-desc "Sei sicuro di voler eliminare permanentemente il grafo \"{1}\" da Logseq?"
+ :graph/delete-local-confirm-desc "Sei sicuro di voler eliminare permanentemente il grafo \"{1}\" da Blocklog?"
  :graph/delete-server-action "Elimina dal server"
  :graph/delete-warning "⚠️ Nota che non possiamo recuperare questo grafo dopo l'eliminazione. Assicurati di avere i backup prima di eliminarlo."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Aggiungi pagine"
  :library/title "Libreria"
 
- :mobile/camera-access-denied "L'accesso alla fotocamera è negato. Abilitalo in Impostazioni > Logseq."
- :mobile/microphone-access-denied "L'accesso al microfono è negato. Abilitalo in Impostazioni > Logseq."
+ :mobile/camera-access-denied "L'accesso alla fotocamera è negato. Abilitalo in Impostazioni > Blocklog."
+ :mobile/microphone-access-denied "L'accesso al microfono è negato. Abilitalo in Impostazioni > Blocklog."
 
  :mobile.header/actions "Azioni"
  :mobile.header/create-graph "Crea grafo"
@@ -902,15 +902,15 @@
 
  :notification/copied "Copiato"
 
- :onboarding.import/desc "Se sono in formato EDN o Markdown Logseq può lavorarci."
+ :onboarding.import/desc "Se sono in formato EDN o Markdown Blocklog può lavorarci."
  :onboarding.import/sqlite-desc "Importa da database SQLite"
  :onboarding.import/title "Hai già note che vuoi importare?"
 
  :onboarding.import-option/desc "Puoi farlo anche dopo nell'app."
  :onboarding.import-option/title "Importa note esistenti"
 
- :onboarding.setup/desc "Per prima cosa devi scegliere una cartella in cui Logseq conserverò i tuoi pensieri, idee e note."
- :onboarding.setup/title (fn [] ["Benvenuti in " [:strong "Logseq!"]])
+ :onboarding.setup/desc "Per prima cosa devi scegliere una cartella in cui Blocklog conserverò i tuoi pensieri, idee e note."
+ :onboarding.setup/title (fn [] ["Benvenuti in " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Aggiungi ai Preferiti"
  :page/added-tag-to-node "Aggiunto tag \"{1}\" a \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Torna alla home"
  :page/hide-properties "Nascondi proprietà"
  :page/local-storage "archiviazione locale"
- :page/logseq-is-having-a-problem "Logseq sta riscontrando un problema. Per tentare di farlo tornare a funzionare esegue i seguenti passi in ordine:"
+ :page/logseq-is-having-a-problem "Blocklog sta riscontrando un problema. Per tentare di farlo tornare a funzionare esegue i seguenti passi in ordine:"
  :page/make-private "Segna come privato"
  :page/make-public "Segna come pubblico per la pubblicazione"
  :page/moved-to-recycle "Il nodo è stato spostato nel cestino"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "Gli URL supportano sia i repository GitHub che i server di sviluppo locale. (Per esempio: {1}, {2})"
  :plugin.install-from-web-url/theme-label "tema"
 
- :plugin.package-config/detach-desc "La rimozione si limita a scollegare il plugin da Logseq e lascia intatta la cartella sorgente."
+ :plugin.package-config/detach-desc "La rimozione si limita a scollegare il plugin da Blocklog e lascia intatta la cartella sorgente."
  :plugin.package-config/parse-error "Impossibile analizzare la configurazione del pacchetto del plugin."
  :plugin.package-config/remove-error "Impossibile rimuovere il plugin danneggiato."
  :plugin.package-config/remove-external-success "Il plugin danneggiato è stato rimosso dall'elenco dei plugin."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Esci dalla modalità codice"
  :plugin.settings/title "Impostazioni estensioni"
 
- :plugin.themes/default-desc "Tema predefinito di Logseq ({1})."
+ :plugin.themes/default-desc "Tema predefinito di Blocklog ({1})."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "Temi ({1})"
  :plugin.themes/light-and-dark "temi chiari & scuri"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Cambia permessi dei file automaticamente"
  :settings.advanced/auto-chmod-desc "Disabilita per consentire la modifica da più utenti autorizzati dall'appartenenza al gruppo."
  :settings.advanced/developer-mode "Modalità sviluppatore"
- :settings.advanced/developer-mode-desc "La modalità sviluppatore aiuta i contributori e gli sviluppatori di estensioni a testare le loro integrazioni con Logseq in modo più efficiente."
+ :settings.advanced/developer-mode-desc "La modalità sviluppatore aiuta i contributori e gli sviluppatori di estensioni a testare le loro integrazioni con Blocklog in modo più efficiente."
  :settings.advanced/network-proxy "Proxy di rete"
 
  :settings.ai/enable-mcp-server "Abilita server MCP"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Upload in corso..."
  :sync/user-doesnt-exist-yet "L'utente non esiste ancora"
 
- :theme/logseq-default "Tema predefinito di Logseq"
+ :theme/logseq-default "Tema predefinito di Blocklog"
  :theme/switch-to "Passa al tema {1}"
 
  :ui/all-done "Tutto fatto!"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "Il player YouTube non è ancora pronto."
 
  :zotero/attachments "Allegati"
- :zotero/imported-file-warning "Questo è un file Zotero importato, imposta directory dei dati di Zotero per aprire il file in Logseq."
- :zotero/linked-file-warning "Questo è un file Zotero collegato, imposta directory di base degli allegati collegati di Zotero per aprire il file in Logseq."
+ :zotero/imported-file-warning "Questo è un file Zotero importato, imposta directory dei dati di Zotero per aprire il file in Blocklog."
+ :zotero/linked-file-warning "Questo è un file Zotero collegato, imposta directory di base degli allegati collegati di Zotero per aprire il file in Blocklog."
  :zotero/notes "Note"
 }

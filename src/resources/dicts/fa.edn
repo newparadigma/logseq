@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "بارگذاری انواع فایل مثل تصویر، PDF، DOCX و غیره"
  :editor.slash/yesterday-desc "درج تاریخ دیروز"
 
- :electron/about "درباره Logseq"
+ :electron/about "درباره Blocklog"
  :electron/add-to-dictionary "افزودن به فرهنگ لغت"
  :electron/block-not-exist "باز کردن پیوند ناموفق بود. شناسهٔ بلوک `{1}` در گراف وجود ندارد."
  :electron/cancel "لغو"
@@ -632,7 +632,7 @@
  :graph/create-new "ایجاد گراف جدید"
  :graph/creating "در حال ایجاد گراف"
  :graph/delete-local-action "حذف گراف محلی"
- :graph/delete-local-confirm-desc "آیا مطمئن هستید که می‌خواهید گراف \"{1}\" را برای‌ همیشه از Logseq حذف کنید؟"
+ :graph/delete-local-confirm-desc "آیا مطمئن هستید که می‌خواهید گراف \"{1}\" را برای‌ همیشه از Blocklog حذف کنید؟"
  :graph/delete-server-action "حذف از سرور"
  :graph/delete-warning "⚠️ توجه داشته باشید که پس از حذف نمی‌توانیم این گراف را بازیابی کنیم. مطمئن شوید که قبل از حذف پشتیبان‌های پیشگیری‌کننده دارید."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "افزودن صفحه‌ها"
  :library/title "کتابخانه"
 
- :mobile/camera-access-denied "دسترسی دوربین رد شده است. آن را در تنظیمات > Logseq فعال کنید."
- :mobile/microphone-access-denied "دسترسی میکروفون رد شده است. آن را در تنظیمات > Logseq فعال کنید."
+ :mobile/camera-access-denied "دسترسی دوربین رد شده است. آن را در تنظیمات > Blocklog فعال کنید."
+ :mobile/microphone-access-denied "دسترسی میکروفون رد شده است. آن را در تنظیمات > Blocklog فعال کنید."
 
  :mobile.header/actions "عملیات"
  :mobile.header/create-graph "ایجاد گراف"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "وارد کردن داده‌ها"
 
  :onboarding.setup/desc "فضای کاری برای دانش شما"
- :onboarding.setup/title (fn [] ["به " [:strong "Logseq"] " خوش آمدید!"])
+ :onboarding.setup/title (fn [] ["به " [:strong "Blocklog"] " خوش آمدید!"])
 
  :page/add-to-favorites "افزودن به علاقه‌مندی‌ها"
  :page/added-tag-to-node "برچسب \"{1}\" را به \"{2}\" اضافه کرد"
@@ -929,7 +929,7 @@
  :page/go-back-home "بازگشت به صفحه اصلی"
  :page/hide-properties "مخفی کردن ویژگی‌ها"
  :page/local-storage "حافظه محلی"
- :page/logseq-is-having-a-problem "Logseq با مشکلی مواجه شده است. برای برگرداندن برنامه به حالت پایدار، لطفاً این مراحل امن را به‌ترتیب امتحان کنید:"
+ :page/logseq-is-having-a-problem "Blocklog با مشکلی مواجه شده است. برای برگرداندن برنامه به حالت پایدار، لطفاً این مراحل امن را به‌ترتیب امتحان کنید:"
  :page/make-private "خصوصی کردن"
  :page/make-public "عمومی کردن"
  :page/moved-to-recycle "گره به سطل بازیافت منتقل شد"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "افزونه جدید ثبت شد"
  :plugin/no-settings-schema "بدون طرح تنظیمات!"
  :plugin/open-logs "مشاهده گزارش‌ها"
- :plugin/open-logseq-dir "باز کردن پوشه Logseq"
+ :plugin/open-logseq-dir "باز کردن پوشه Blocklog"
  :plugin/open-package "باز کردن بسته"
  :plugin/open-preferences "باز کردن تنظیمات"
  :plugin/open-settings "باز کردن تنظیمات"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "آدرس‌های URL هم مخازن GitHub و هم سرورهای توسعه محلی را پشتیبانی می‌کنند. (برای نمونه‌ها: {1}, {2})"
  :plugin.install-from-web-url/theme-label "پوسته"
 
- :plugin.package-config/detach-desc "حذف آن فقط افزونه را از Logseq جدا می‌کند و پوشهٔ منبع را دست‌نخورده نگه می‌دارد."
+ :plugin.package-config/detach-desc "حذف آن فقط افزونه را از Blocklog جدا می‌کند و پوشهٔ منبع را دست‌نخورده نگه می‌دارد."
  :plugin.package-config/parse-error "تجزیهٔ پیکربندی بستهٔ افزونه ناموفق بود."
  :plugin.package-config/remove-error "حذف افزونهٔ خراب ناموفق بود."
  :plugin.package-config/remove-external-success "افزونهٔ خراب از فهرست افزونه‌ها حذف شد."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "خروج از حالت کد"
  :plugin.settings/title "تنظیمات افزونه‌ها"
 
- :plugin.themes/default-desc "تم پیش‌فرض {1} Logseq."
+ :plugin.themes/default-desc "تم پیش‌فرض {1} Blocklog."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "تم‌های {1}"
  :plugin.themes/light-and-dark "تم‌های روشن و تیره"
@@ -1546,7 +1546,7 @@
  :sync/uploading "در حال بارگذاری..."
  :sync/user-doesnt-exist-yet "کاربر هنوز وجود ندارد"
 
- :theme/logseq-default "تم پیش‌فرض Logseq"
+ :theme/logseq-default "تم پیش‌فرض Blocklog"
  :theme/switch-to "به طرح زمینه {1} بروید"
 
  :ui/all-done "همه‌چیز انجام شد"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "پخش‌کننده YouTube هنوز آماده نیست."
 
  :zotero/attachments "پیوست‌ها"
- :zotero/imported-file-warning "این یک فایل واردشده از Zotero است، برای باز کردن فایل در Logseq، پوشه دادهٔ Zotero را تنظیم کنید."
- :zotero/linked-file-warning "این یک فایل پیوندی Zotero است، برای باز کردن فایل در Logseq، پوشه پایهٔ پیوست‌های پیوندی Zotero را تنظیم کنید."
+ :zotero/imported-file-warning "این یک فایل واردشده از Zotero است، برای باز کردن فایل در Blocklog، پوشه دادهٔ Zotero را تنظیم کنید."
+ :zotero/linked-file-warning "این یک فایل پیوندی Zotero است، برای باز کردن فایل در Blocklog، پوشه پایهٔ پیوست‌های پیوندی Zotero را تنظیم کنید."
  :zotero/notes "یادداشت‌ها"
 }

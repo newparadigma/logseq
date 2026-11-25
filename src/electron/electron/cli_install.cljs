@@ -97,4 +97,4 @@
     (catch :default error
       (let [message (error-message error)]
         (log-warn! :cli/install "Failed to install logseq launcher" error)
-        (show-error-box! "Logseq" (t :electron/cli-install-failed message))))))
+        (show-error-box! "Blocklog" (t :electron/cli-install-failed message))))))

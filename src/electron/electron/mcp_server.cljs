@@ -219,7 +219,7 @@
 ;; Server fns
 ;; ==========
 (defn create-mcp-server []
-  (McpServer. #js {:name "Logseq MCP Server"
+  (McpServer. #js {:name "Blocklog MCP Server"
                    :version "0.1.0"}))
 
 (defn create-mcp-api-server [api-fn]

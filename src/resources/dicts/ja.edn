@@ -97,7 +97,7 @@
  :bug-report.inspector/tip "なにかおかしいですか？問題ありません、クリックすることで前のステップに戻ることができます。"
  :bug-report.inspector/title "クリップボードのデータを調査"
 
- :bug-report.issue/action-desc "あなたのお手伝いでLogseqはより良くなります！"
+ :bug-report.issue/action-desc "あなたのお手伝いでBlocklogはより良くなります！"
  :bug-report.issue/action-title "バグ報告を提出する"
  :bug-report.issue/desc "もし追加の情報を収集するツールが使えなかった場合、直接バグを報告してください。"
  :bug-report.issue/report-link "問題を報告"
@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "画像、PDF、DOCX などのファイル形式をアップロード"
  :editor.slash/yesterday-desc "昨日の日付を挿入"
 
- :electron/about "Logseqについて"
+ :electron/about "Blocklogについて"
  :electron/add-to-dictionary "辞書に追加"
  :electron/block-not-exist "リンクを開けませんでした。ブロックID `{1}` はグラフ内に存在しません。"
  :electron/cancel "キャンセル"
@@ -632,7 +632,7 @@
  :graph/create-new "新しいグラフを作成"
  :graph/creating "グラフを作成中"
  :graph/delete-local-action "ローカルグラフを削除"
- :graph/delete-local-confirm-desc "Logseqからグラフ\"{1}\"を永久に削除してもよろしいですか？"
+ :graph/delete-local-confirm-desc "Blocklogからグラフ\"{1}\"を永久に削除してもよろしいですか？"
  :graph/delete-server-action "サーバーから削除"
  :graph/delete-warning "⚠️ 削除されたグラフは復旧できません。削除する前に必ずバックアップを作成してください。"
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "ページを追加"
  :library/title "ライブラリ"
 
- :mobile/camera-access-denied "カメラアクセスが拒否されました。設定 > Logseqで有効にしてください。"
- :mobile/microphone-access-denied "マイクアクセスが拒否されました。設定 > Logseqで有効にしてください。"
+ :mobile/camera-access-denied "カメラアクセスが拒否されました。設定 > Blocklogで有効にしてください。"
+ :mobile/microphone-access-denied "マイクアクセスが拒否されました。設定 > Blocklogで有効にしてください。"
 
  :mobile.header/actions "アクション"
  :mobile.header/create-graph "グラフを作成"
@@ -902,7 +902,7 @@
 
  :notification/copied "コピーしました"
 
- :onboarding.import/desc "EDN、Markdown形式のいずれかであればLogseqはうまく処理できます。"
+ :onboarding.import/desc "EDN、Markdown形式のいずれかであればBlocklogはうまく処理できます。"
  :onboarding.import/sqlite-desc "SQLiteデータベースからインポート"
  :onboarding.import/title "既に持っている読み込みたいノートはありますか？"
 
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "既に存在するノートを読み込む"
 
  :onboarding.setup/desc "はじめに、あなたの考えやアイデア、ノートを保存しておくためのフォルダを選択する必要があります。"
- :onboarding.setup/title (fn [] [["ようこそ！ " [:strong "Logseq"] " へ！"]])
+ :onboarding.setup/title (fn [] [["ようこそ！ " [:strong "Blocklog"] " へ！"]])
 
  :page/add-to-favorites "お気に入りに追加"
  :page/added-tag-to-node "タグ「{1}」を「{2}」に追加しました"
@@ -929,7 +929,7 @@
  :page/go-back-home "ホームに戻る"
  :page/hide-properties "プロパティを隠す"
  :page/local-storage "ローカルストレージ"
- :page/logseq-is-having-a-problem "Logseqになにか問題があります。きちんと動く状態に戻すため、以下の項目を上から順番に実行してください："
+ :page/logseq-is-having-a-problem "Blocklogになにか問題があります。きちんと動く状態に戻すため、以下の項目を上から順番に実行してください："
  :page/make-private "非公開にする"
  :page/make-public "パブリッシュのため公開する"
  :page/moved-to-recycle "ノードはごみ箱に移動されました"
@@ -1056,7 +1056,7 @@
  :plugin/new-registered "新しいプラグインが登録されました"
  :plugin/no-settings-schema "設定スキーマがありません！"
  :plugin/open-logs "ログを表示"
- :plugin/open-logseq-dir "Logseqディレクトリを開く"
+ :plugin/open-logseq-dir "Blocklogディレクトリを開く"
  :plugin/open-package "パッケージを開く"
  :plugin/open-preferences "環境設定を開く"
  :plugin/open-settings "設定を開く"
@@ -1085,7 +1085,7 @@
  :plugin.install-from-web-url/supports-note "URLはGitHubリポジトリとローカル開発サーバーの両方をサポートしています。（例：{1}、{2}）"
  :plugin.install-from-web-url/theme-label "テーマ"
 
- :plugin.package-config/detach-desc "削除しても、Logseq からプラグインを切り離すだけで、元のフォルダーはそのまま残ります。"
+ :plugin.package-config/detach-desc "削除しても、Blocklog からプラグインを切り離すだけで、元のフォルダーはそのまま残ります。"
  :plugin.package-config/parse-error "プラグインパッケージ設定の解析に失敗しました。"
  :plugin.package-config/remove-error "破損したプラグインの削除に失敗しました。"
  :plugin.package-config/remove-external-success "破損したプラグインをプラグイン一覧から削除しました。"
@@ -1101,7 +1101,7 @@
  :plugin.settings/exit-code-mode "コードモードを終了"
  :plugin.settings/title "プラグイン設定"
 
- :plugin.themes/default-desc "Logseq のデフォルト{1}テーマ."
+ :plugin.themes/default-desc "Blocklog のデフォルト{1}テーマ."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1}テーマ"
  :plugin.themes/light-and-dark "ライト・ダークテーマ"
@@ -1444,7 +1444,7 @@
  :settings.advanced/auto-chmod "ファイル権限を自動設定"
  :settings.advanced/auto-chmod-desc "ファイル保存時に権限を自動設定します"
  :settings.advanced/developer-mode "開発者モード"
- :settings.advanced/developer-mode-desc "開発者モードはコントリビューターと機能拡張の開発者がLogseqとの統合をより効率的にテストする助けになります。"
+ :settings.advanced/developer-mode-desc "開発者モードはコントリビューターと機能拡張の開発者がBlocklogとの統合をより効率的にテストする助けになります。"
  :settings.advanced/network-proxy "ネットワークプロキシ"
 
  :settings.ai/enable-mcp-server "MCPサーバーを有効化"
@@ -1559,7 +1559,7 @@
  :sync/uploading "アップロード中..."
  :sync/user-doesnt-exist-yet "ユーザーはまだ存在しません"
 
- :theme/logseq-default "Logseq デフォルトテーマ"
+ :theme/logseq-default "Blocklog デフォルトテーマ"
  :theme/switch-to "{1} テーマに切り替える"
 
  :ui/all-done "全て完了しました"
@@ -1690,7 +1690,7 @@
  :youtube/player-not-ready "YouTubeプレーヤーはまだ準備できていません。"
 
  :zotero/attachments "添付ファイル"
- :zotero/imported-file-warning "これは Zotero からインポートされたファイルです、Logseq でファイルを開くには Zotero データディレクトリ を設定してください。"
- :zotero/linked-file-warning "これは Zotero にリンクされたファイルです、Logseq でファイルを開くには Zotero リンク添付ファイルのベースディレクトリ を設定してください。"
+ :zotero/imported-file-warning "これは Zotero からインポートされたファイルです、Blocklog でファイルを開くには Zotero データディレクトリ を設定してください。"
+ :zotero/linked-file-warning "これは Zotero にリンクされたファイルです、Blocklog でファイルを開くには Zotero リンク添付ファイルのベースディレクトリ を設定してください。"
  :zotero/notes "ノート"
 }

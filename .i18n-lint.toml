@@ -148,6 +148,7 @@ format_functions = [
 allow_strings = [
   # Brand name — displayed literally in UI, intentionally not translated.
   "Logseq",
+  "Blocklog",
   "GitHub",
   # Typography test string — rendered as a glyph sample, not translatable.
   "Ag",
@@ -166,6 +167,7 @@ allow_strings = [
   "SOCKS5",
   # Config directory path shown literally.
   "~/.logseq",
+  "~/.blocklog",
 ]
 
 # Regex patterns to allow.

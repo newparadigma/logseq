@@ -117,7 +117,7 @@
  :bug-report.inspector/tip "Có gì đó không đúng? Không sao, nhấp để quay lại bước trước."
  :bug-report.inspector/title "Công cụ kiểm tra dữ liệu bảng nhớ tạm"
 
- :bug-report.issue/action-desc "Giúp Logseq tốt hơn!"
+ :bug-report.issue/action-desc "Giúp Blocklog tốt hơn!"
  :bug-report.issue/action-title "Gửi báo cáo lỗi"
  :bug-report.issue/desc "Nếu không có công cụ nào giúp bạn thu thập thêm thông tin, hãy gửi báo cáo lỗi trực tiếp."
  :bug-report.issue/report-link "Báo cáo sự cố"

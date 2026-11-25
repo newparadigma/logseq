@@ -97,7 +97,7 @@
  :bug-report.inspector/tip "Etwas stimmt nicht? Kein Problem, klicken Sie hier, um zum letzten Schritt zurückzugehen."
  :bug-report.inspector/title "Untersuchung der Zwischenablage"
 
- :bug-report.issue/action-desc "Helfen Sie, Logseq zu verbessern!"
+ :bug-report.issue/action-desc "Helfen Sie, Blocklog zu verbessern!"
  :bug-report.issue/action-title "Fehlerbericht einsenden"
  :bug-report.issue/desc "Wenn Ihnen keine Werkzeuge zum Sammeln zusätzlicher Information zur Verfügung stehen, melden Sie den Fehler bitte direkt."
  :bug-report.issue/report-link "Problem melden"
@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Laden Sie Dateitypen wie Bilder, PDF, DOCX usw. hoch"
  :editor.slash/yesterday-desc "Füge das Datum von gestern ein"
 
- :electron/about "Über Logseq"
+ :electron/about "Über Blocklog"
  :electron/add-to-dictionary "Zum Wörterbuch hinzufügen"
  :electron/block-not-exist "Öffnen des Links fehlgeschlagen. Die Block-ID `{1}` existiert im Graphen nicht."
  :electron/cancel "Abbrechen"
@@ -632,7 +632,7 @@
  :graph/create-new "Neuen Graphen erstellen"
  :graph/creating "Graph wird erstellt"
  :graph/delete-local-action "Lokalen Graphen löschen"
- :graph/delete-local-confirm-desc "Sind Sie sicher, dass Sie den Graphen \"{1}\" permanent aus Logseq löschen möchten?"
+ :graph/delete-local-confirm-desc "Sind Sie sicher, dass Sie den Graphen \"{1}\" permanent aus Blocklog löschen möchten?"
  :graph/delete-server-action "Vom Server löschen"
  :graph/delete-warning "⚠️ Beachten Sie, dass wir diesen Graphen nach dem Löschen nicht wiederherstellen können. Stellen Sie sicher, dass Sie eine Sicherung haben, bevor Sie ihn löschen."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Seiten hinzufügen"
  :library/title "Bibliothek"
 
- :mobile/camera-access-denied "Kamerazugriff ist verweigert. Aktivieren Sie ihn in Einstellungen > Logseq."
- :mobile/microphone-access-denied "Mikrophonzugriff ist verweigert. Aktivieren Sie ihn in Einstellungen > Logseq."
+ :mobile/camera-access-denied "Kamerazugriff ist verweigert. Aktivieren Sie ihn in Einstellungen > Blocklog."
+ :mobile/microphone-access-denied "Mikrophonzugriff ist verweigert. Aktivieren Sie ihn in Einstellungen > Blocklog."
 
  :mobile.header/actions "Aktionen"
  :mobile.header/create-graph "Graph erstellen"
@@ -902,15 +902,15 @@
 
  :notification/copied "Kopiert"
 
- :onboarding.import/desc "Logseq importiert EDN und Markdown."
+ :onboarding.import/desc "Blocklog importiert EDN und Markdown."
  :onboarding.import/sqlite-desc "Aus SQLite-Datenbank importieren"
  :onboarding.import/title "Möchten Sie bestehende Notizen importieren?"
 
  :onboarding.import-option/desc "Sie können dies auch später in der App tun."
  :onboarding.import-option/title "Vorhandene Notizen importieren"
 
- :onboarding.setup/desc "Wählen Sie ein Verzeichnis, wo Logseq Ihre Gedanken, Ideen und Notizen aufbewahren kann."
- :onboarding.setup/title (fn [] ["Willkommen bei " [:strong "Logseq!"]])
+ :onboarding.setup/desc "Wählen Sie ein Verzeichnis, wo Blocklog Ihre Gedanken, Ideen und Notizen aufbewahren kann."
+ :onboarding.setup/title (fn [] ["Willkommen bei " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Zu Favoriten hinzufügen"
  :page/added-tag-to-node "Tag „{1}“ zu „{2}“ hinzugefügt"
@@ -929,7 +929,7 @@
  :page/go-back-home "Zurück zur Startseite"
  :page/hide-properties "Eigenschaften ausblenden"
  :page/local-storage "Lokaler Speicher"
- :page/logseq-is-having-a-problem "Logseq hat ein Problem festgestellt. Versuche zurückzukehren ..."
+ :page/logseq-is-having-a-problem "Blocklog hat ein Problem festgestellt. Versuche zurückzukehren ..."
  :page/make-private "Privat machen"
  :page/make-public "Beim Export in HTML veröffentlichen"
  :page/moved-to-recycle "Knoten wurde in den Papierkorb verschoben"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "URLs unterstützen sowohl GitHub-Repositorys als auch lokale Entwicklungsserver. (Für Beispiele: {1}, {2})"
  :plugin.install-from-web-url/theme-label "Theme"
 
- :plugin.package-config/detach-desc "Durch das Entfernen wird das Plugin nur von Logseq getrennt, der Quellordner bleibt unberührt."
+ :plugin.package-config/detach-desc "Durch das Entfernen wird das Plugin nur von Blocklog getrennt, der Quellordner bleibt unberührt."
  :plugin.package-config/parse-error "Die Paketkonfiguration des Plugins konnte nicht geparst werden."
  :plugin.package-config/remove-error "Das defekte Plugin konnte nicht entfernt werden."
  :plugin.package-config/remove-external-success "Das defekte Plugin wurde aus der Plugin-Liste entfernt."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Code-Modus beenden"
  :plugin.settings/title "Plugin-Einstellungen"
 
- :plugin.themes/default-desc "Logseq-Standardtheme ({1})."
+ :plugin.themes/default-desc "Blocklog-Standardtheme ({1})."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "Themes ({1})"
  :plugin.themes/light-and-dark "helle & dunkle Themes"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Dateiberechtigungen automatisch ändern"
  :settings.advanced/auto-chmod-desc "Deaktivieren um Bearbeitung durch mehrere Nutzer mit Gruppenmitgliedschafts-Berechtigungen zu erlauben."
  :settings.advanced/developer-mode "Entwicklermodus"
- :settings.advanced/developer-mode-desc "Der Entwicklermodus hilft Mitwirkenden und Entwicklern von Erweiterungen, ihre Integration mit Logseq effizienter zu testen."
+ :settings.advanced/developer-mode-desc "Der Entwicklermodus hilft Mitwirkenden und Entwicklern von Erweiterungen, ihre Integration mit Blocklog effizienter zu testen."
  :settings.advanced/network-proxy "Netzwerk-Proxy"
 
  :settings.ai/enable-mcp-server "MCP-Server aktivieren"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Wird hochgeladen..."
  :sync/user-doesnt-exist-yet "Benutzer existiert noch nicht"
 
- :theme/logseq-default "Logseq-Standardtheme"
+ :theme/logseq-default "Blocklog-Standardtheme"
  :theme/switch-to "Zu {1} Thema wechseln"
 
  :ui/all-done "Fertig"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "YouTube-Player ist noch nicht bereit."
 
  :zotero/attachments "Anhänge"
- :zotero/imported-file-warning "Dies ist eine importierte Zotero-Datei, lege Zotero-Datenverzeichnis fest, um die Datei in Logseq zu öffnen."
- :zotero/linked-file-warning "Dies ist eine verknüpfte Zotero-Datei, lege Basisverzeichnis für verknüpfte Zotero-Anhänge fest, um die Datei in Logseq zu öffnen."
+ :zotero/imported-file-warning "Dies ist eine importierte Zotero-Datei, lege Zotero-Datenverzeichnis fest, um die Datei in Blocklog zu öffnen."
+ :zotero/linked-file-warning "Dies ist eine verknüpfte Zotero-Datei, lege Basisverzeichnis für verknüpfte Zotero-Anhänge fest, um die Datei in Blocklog zu öffnen."
  :zotero/notes "Notizen"
 }

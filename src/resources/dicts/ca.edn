@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Enviar tipus d'arxiu com imatge, PDF, DOCX, etc."
  :editor.slash/yesterday-desc "Inserir la data d'ahir"
 
- :electron/about "Quant a Logseq"
+ :electron/about "Quant a Blocklog"
  :electron/add-to-dictionary "Afegir al diccionari"
  :electron/block-not-exist "No s'ha pogut obrir l'enllaç. L'identificador del bloc `{1}` no existeix al graf."
  :electron/cancel "Cancel·lar"
@@ -632,7 +632,7 @@
  :graph/create-new "Crear un graf nou"
  :graph/creating "S'està creant el graf"
  :graph/delete-local-action "Suprimeix el graf local"
- :graph/delete-local-confirm-desc "Esteu segur que voleu eliminar permanentment el gràfic \"{1}\" de Logseq?"
+ :graph/delete-local-confirm-desc "Esteu segur que voleu eliminar permanentment el gràfic \"{1}\" de Blocklog?"
  :graph/delete-server-action "Suprimeix del servidor"
  :graph/delete-warning "⚠️ Tingueu en compte que no podem recuperar aquest gràfic després de ser eliminat. Assegureu-vos que teniu còpies de seguretat abans de suprimir-lo."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Afegeix pàgines"
  :library/title "Biblioteca"
 
- :mobile/camera-access-denied "L'accés a la càmera està denegat. Habilita-la a Configuració > Logseq."
- :mobile/microphone-access-denied "L'accés al micròfon està denegat. Habilita-lo a Configuració > Logseq."
+ :mobile/camera-access-denied "L'accés a la càmera està denegat. Habilita-la a Configuració > Blocklog."
+ :mobile/microphone-access-denied "L'accés al micròfon està denegat. Habilita-lo a Configuració > Blocklog."
 
  :mobile.header/actions "Accions"
  :mobile.header/create-graph "Crear graf"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "Importar dades"
 
  :onboarding.setup/desc "L'espai de treball del vostre coneixement"
- :onboarding.setup/title (fn [] ["Benvingut a " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Benvingut a " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Afegir a Preferits"
  :page/added-tag-to-node "S'ha afegit l'etiqueta \"{1}\" a \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Tornar a l'inici"
  :page/hide-properties "Amagar propietats"
  :page/local-storage "emmagatzematge local"
- :page/logseq-is-having-a-problem "Logseq està tenint un problema. Per intentar tornar a un estat de treball, intenti el següent procediment en ordre:"
+ :page/logseq-is-having-a-problem "Blocklog està tenint un problema. Per intentar tornar a un estat de treball, intenti el següent procediment en ordre:"
  :page/make-private "Fer privada"
  :page/make-public "Fer pública al publicar"
  :page/moved-to-recycle "El node s'ha mogut a la paperera"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "Nou connector registrat"
  :plugin/no-settings-schema "No hi ha esquema de configuració!"
  :plugin/open-logs "Veure registres"
- :plugin/open-logseq-dir "Obrir carpeta Logseq"
+ :plugin/open-logseq-dir "Obrir carpeta Blocklog"
  :plugin/open-package "Obrir paquet"
  :plugin/open-preferences "Obrir preferències"
  :plugin/open-settings "Obrir opcions"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "Les URL admeten tant els repositoris de GitHub com els servidors de desenvolupament local. (Per exemple: {1}, {2})"
  :plugin.install-from-web-url/theme-label "tema"
 
- :plugin.package-config/detach-desc "Treure'l només desvincula el connector de Logseq i manté intacta la carpeta d'origen."
+ :plugin.package-config/detach-desc "Treure'l només desvincula el connector de Blocklog i manté intacta la carpeta d'origen."
  :plugin.package-config/parse-error "No s'ha pogut analitzar la configuració del paquet del connector."
  :plugin.package-config/remove-error "No s'ha pogut eliminar el connector trencat."
  :plugin.package-config/remove-external-success "S'ha eliminat el connector trencat de la llista de connectors."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Surt del mode de codi"
  :plugin.settings/title "Configuració de connectors"
 
- :plugin.themes/default-desc "Tema per defecte de Logseq ({1})."
+ :plugin.themes/default-desc "Tema per defecte de Blocklog ({1})."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "Temes ({1})"
  :plugin.themes/light-and-dark "temes clars & foscos"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Auto chmod"
  :settings.advanced/auto-chmod-desc "Definir permisos de fitxers automàticament"
  :settings.advanced/developer-mode "Mode desenvolupador"
- :settings.advanced/developer-mode-desc "El mode desenvolupador permet als col·laboradors i desenvolupadors d'extensions provar les integracions amb Logseq de manera més eficient."
+ :settings.advanced/developer-mode-desc "El mode desenvolupador permet als col·laboradors i desenvolupadors d'extensions provar les integracions amb Blocklog de manera més eficient."
  :settings.advanced/network-proxy "Proxy de xarxa"
 
  :settings.ai/enable-mcp-server "Activar servidor MCP"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Pujant..."
  :sync/user-doesnt-exist-yet "L'usuari encara no existeix"
 
- :theme/logseq-default "Tema per defecte de Logseq"
+ :theme/logseq-default "Tema per defecte de Blocklog"
  :theme/switch-to "Canvia al tema {1}"
 
  :ui/all-done "Tot fet"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "El reproductor de YouTube encara no està preparat."
 
  :zotero/attachments "Adjunts"
- :zotero/imported-file-warning "Aquest és un fitxer importat de Zotero, configura directori de dades de Zotero per obrir el fitxer a Logseq."
- :zotero/linked-file-warning "Aquest és un fitxer enllaçat de Zotero, configura directori base dels adjunts enllaçats de Zotero per obrir el fitxer a Logseq."
+ :zotero/imported-file-warning "Aquest és un fitxer importat de Zotero, configura directori de dades de Zotero per obrir el fitxer a Blocklog."
+ :zotero/linked-file-warning "Aquest és un fitxer enllaçat de Zotero, configura directori base dels adjunts enllaçats de Zotero per obrir el fitxer a Blocklog."
  :zotero/notes "Notes"
 }

@@ -204,7 +204,7 @@
 
 (defn- set-app-menu! []
   (let [about-fn (fn []
-                   (.showMessageBox dialog (clj->js {:title "Logseq"
+                   (.showMessageBox dialog (clj->js {:title "Blocklog"
                                                      :icon (node-path/join js/__dirname "icons/logseq.png")
                                                      :message (t :electron/version version)})))
         template (if mac?
@@ -304,7 +304,7 @@
           :running-under-arm64-translation? (boolean (.-runningUnderARM64Translation app))})
     (-> (.showMessageBox
          dialog
-         (clj->js (assoc (release-warning/warning-dialog-options t) :title "Logseq")))
+         (clj->js (assoc (release-warning/warning-dialog-options t) :title "Blocklog")))
         (.then
          (fn [result]
            (when-let [url (release-warning/selected-release-url (.-response result))]

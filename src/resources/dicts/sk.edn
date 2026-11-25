@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Nahrať typy súborov ako obrázok, PDF, DOCX atď."
  :editor.slash/yesterday-desc "Vložiť včerajší dátum"
 
- :electron/about "O Logseq"
+ :electron/about "O Blocklog"
  :electron/add-to-dictionary "Pridať do slovníku"
  :electron/block-not-exist "Otvorenie odkazu zlyhalo. ID bloku `{1}` v grafe neexistuje."
  :electron/cancel "Zrušiť"
@@ -632,7 +632,7 @@
  :graph/create-new "Vytvoriť nový graf"
  :graph/creating "Vytváranie grafu"
  :graph/delete-local-action "Odstrániť lokálny graf"
- :graph/delete-local-confirm-desc "Ste si istý, že chcete natrvalo vymazať graf \"{1}\" z Logseq?"
+ :graph/delete-local-confirm-desc "Ste si istý, že chcete natrvalo vymazať graf \"{1}\" z Blocklog?"
  :graph/delete-server-action "Odstrániť zo servera"
  :graph/delete-warning "⚠️ Upozorňujeme, že po vymazaní nemôžeme tento graf obnoviť. Pred vymazaním sa ujistite, že máte zálohy."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Pridať stránky"
  :library/title "Knižnica"
 
- :mobile/camera-access-denied "Prístup fotoaparátu je zamietnutý. Povolte ho v Nastavení > Logseq."
- :mobile/microphone-access-denied "Prístup k mikrofónu je zamietnutý. Povolte ho v Nastavení > Logseq."
+ :mobile/camera-access-denied "Prístup fotoaparátu je zamietnutý. Povolte ho v Nastavení > Blocklog."
+ :mobile/microphone-access-denied "Prístup k mikrofónu je zamietnutý. Povolte ho v Nastavení > Blocklog."
 
  :mobile.header/actions "Akce"
  :mobile.header/create-graph "Vytvoriť graf"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "Import dat"
 
  :onboarding.setup/desc "Pracovný priestor pre vaše znalosti"
- :onboarding.setup/title (fn [] ["Vitajte v " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Vitajte v " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Pridať do obľúbených"
  :page/added-tag-to-node "Pridaná značka \"{1}\" k \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Prejsť domov"
  :page/hide-properties "Skryť vlastnosti"
  :page/local-storage "lokálne úložisko"
- :page/logseq-is-having-a-problem "Logseq má problém. Skúste tieto bezpečné kroky, aby ste ho dostali do funkčného stavu:"
+ :page/logseq-is-having-a-problem "Blocklog má problém. Skúste tieto bezpečné kroky, aby ste ho dostali do funkčného stavu:"
  :page/make-private "Označiť stránku ako súkromnú"
  :page/make-public "Označiť stránku ako verejnú"
  :page/moved-to-recycle "Uzol bol presunutý do Koša"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "Nový plugin zaregistrován"
  :plugin/no-settings-schema "Žiadna schéma nastavení!"
  :plugin/open-logs "Zobraziť záznamy"
- :plugin/open-logseq-dir "Otvoriť složku Logseq"
+ :plugin/open-logseq-dir "Otvoriť složku Blocklog"
  :plugin/open-package "Otvoriť balík"
  :plugin/open-preferences "Otvoriť předvolby"
  :plugin/open-settings "Otvoriť nastavenia"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "Adresy URL podporujú úložiská GitHub aj lokálne vývojové servery. (Príklady: {1}, {2})"
  :plugin.install-from-web-url/theme-label "téma"
 
- :plugin.package-config/detach-desc "Jeho odstránenie plugin iba odpojí od Logseq a ponechá zdrojový priečinok bez zmeny."
+ :plugin.package-config/detach-desc "Jeho odstránenie plugin iba odpojí od Blocklog a ponechá zdrojový priečinok bez zmeny."
  :plugin.package-config/parse-error "Nepodarilo sa spracovať konfiguráciu balíka pluginu."
  :plugin.package-config/remove-error "Nepodarilo sa odstrániť poškodený plugin."
  :plugin.package-config/remove-external-success "Poškodený plugin bol odstránený zo zoznamu pluginov."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Ukončiť režim kódu"
  :plugin.settings/title "Nastavenia pluginov"
 
- :plugin.themes/default-desc "Predvolený {1} motív Logseq."
+ :plugin.themes/default-desc "Predvolený {1} motív Blocklog."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1} motívy"
  :plugin.themes/light-and-dark "svetlé & tmavé motívy"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Automatický chmod"
  :settings.advanced/auto-chmod-desc "Automaticky nastavovat oprávnění súborů"
  :settings.advanced/developer-mode "Režim pre vývojárov"
- :settings.advanced/developer-mode-desc "Režim pre vývojárov pomáha prispievateľom a vývojárom doplnkov efektívnejšie testovať integráciu s Logseq."
+ :settings.advanced/developer-mode-desc "Režim pre vývojárov pomáha prispievateľom a vývojárom doplnkov efektívnejšie testovať integráciu s Blocklog."
  :settings.advanced/network-proxy "Sieťová proxy"
 
  :settings.ai/enable-mcp-server "Zapnúť server MCP"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Nahrávanie..."
  :sync/user-doesnt-exist-yet "Uživatel ešte neexistuje"
 
- :theme/logseq-default "Predvolený motív Logseq"
+ :theme/logseq-default "Predvolený motív Blocklog"
  :theme/switch-to "Prepnúť na motív {1}"
 
  :ui/all-done "Všetko hotovo"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "Prehrávač YouTube ešte nie je pripravený."
 
  :zotero/attachments "Prílohy"
- :zotero/imported-file-warning "Toto je importovaný súbor Zotero, nastavte dátový adresár Zotera, aby ste mohli súbor otvoriť v Logseq."
- :zotero/linked-file-warning "Toto je prepojený súbor Zotero, nastavte základný adresár prepojených príloh Zotera, aby ste mohli súbor otvoriť v Logseq."
+ :zotero/imported-file-warning "Toto je importovaný súbor Zotero, nastavte dátový adresár Zotera, aby ste mohli súbor otvoriť v Blocklog."
+ :zotero/linked-file-warning "Toto je prepojený súbor Zotero, nastavte základný adresár prepojených príloh Zotera, aby ste mohli súbor otvoriť v Blocklog."
  :zotero/notes "Poznámky"
 }

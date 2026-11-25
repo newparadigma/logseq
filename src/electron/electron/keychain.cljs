@@ -11,7 +11,7 @@
     (let [app-name (try (.getName app)
                         (catch :default _ nil))]
       (if (string/blank? app-name)
-        "Logseq"
+        "Blocklog"
         app-name))))
 
 (defn- keychain-service

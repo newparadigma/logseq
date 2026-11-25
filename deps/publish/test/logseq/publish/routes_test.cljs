@@ -145,7 +145,7 @@
                   body (.text response)]
             (is (= 200 (.-status response)))
             (is (re-find #"<!doctype html>" body))
-            (is (re-find #"Logseq Publish" body))
+            (is (re-find #"Blocklog Publish" body))
             (done))
           (p/catch (fn [error]
                      (is nil (str error))

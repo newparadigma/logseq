@@ -123,7 +123,7 @@
  :bug-report.inspector/tip "Something wrong? No problem, click to go back to the previous step."
  :bug-report.inspector/title "Clipboard data inspector"
 
- :bug-report.issue/action-desc "Help Make Logseq Better!"
+ :bug-report.issue/action-desc "Help Make Blocklog Better!"
  :bug-report.issue/action-title "Submit a bug report"
  :bug-report.issue/desc "If there are no tools available for you to gather additional information, please report the bug directly."
  :bug-report.issue/report-link "Report issue"
@@ -509,11 +509,11 @@
  :editor.slash/upload-asset-desc "Upload file types like image, PDF, DOCX, etc."
  :editor.slash/yesterday-desc "Insert the date of yesterday"
 
- :electron/about "About Logseq"
+ :electron/about "About Blocklog"
  :electron/add-to-dictionary "Add to dictionary"
  :electron/block-not-exist "Open link failed. Block-id `{1}` doesn't exist in the graph."
  :electron/cancel "Cancel"
- :electron/cli-install-failed "Failed to install Logseq CLI.\n{1}"
+ :electron/cli-install-failed "Failed to install Blocklog CLI.\n{1}"
  :electron/copy-image "Copy Image"
  :electron/link-open-confirm "Are you sure you want to open this link? \n{1}"
  :electron/link-open-failed-missing-graph "Failed to open link. Missing graph identifier after `blocklog://graph/`."
@@ -681,7 +681,7 @@
  :graph/creating "Creating graph"
  :graph/db-worker-recovery-failed-error "Unable to reconnect to the database worker for graph \"{1}\". Please try again or reopen the graph."
  :graph/delete-local-action "Delete local graph"
- :graph/delete-local-confirm-desc "Are you sure you want to permanently delete the graph \"{1}\" from Logseq?"
+ :graph/delete-local-confirm-desc "Are you sure you want to permanently delete the graph \"{1}\" from Blocklog?"
  :graph/delete-server-action "Delete from server"
  :graph/delete-server-confirm-desc "Are you sure you want to permanently delete the graph \"{1}\" from the sync server?"
  :graph/delete-warning "⚠️ Notice that we can't recover this graph after being deleted. Make sure you have backups before deleting it."
@@ -704,7 +704,7 @@
  :graph/left "Left graph."
  :graph/link-count (fn [n] (str n " " (if (= 1 n) "link" "links")))
  :graph/local-graphs "Local graphs:"
- :graph/missing-confirm-desc "The folder of graph \"{1}\" was not found. It may have been deleted or moved outside Logseq. Remove it from the graph list?"
+ :graph/missing-confirm-desc "The folder of graph \"{1}\" was not found. It may have been deleted or moved outside Blocklog. Remove it from the graph list?"
  :graph/missing-startup-warning "Graph \"{1}\" was not opened because its folder was not found."
  :graph/name-placeholder "your graph name"
  :graph/no-selected-node "No graph node selected."
@@ -953,8 +953,8 @@
  :library/add-pages "Add pages"
  :library/title "Library"
 
- :mobile/camera-access-denied "Camera access is denied. Enable it in Settings > Logseq."
- :mobile/microphone-access-denied "Microphone access is denied. Enable it in Settings > Logseq."
+ :mobile/camera-access-denied "Camera access is denied. Enable it in Settings > Blocklog."
+ :mobile/microphone-access-denied "Microphone access is denied. Enable it in Settings > Blocklog."
 
  :mobile.header/actions "Actions"
  :mobile.header/create-graph "Create new graph"
@@ -1037,15 +1037,15 @@
 
  :notification/copied "Copied!"
 
- :onboarding.import/desc "If they are in an EDN or Markdown format Logseq can work with them."
+ :onboarding.import/desc "If they are in an EDN or Markdown format Blocklog can work with them."
  :onboarding.import/sqlite-desc "Import a SQLite DB Export of your Logseq graph into a new DB graph"
  :onboarding.import/title "Do you already have notes that you want to import?"
 
  :onboarding.import-option/desc "You can also do this later in the app."
  :onboarding.import-option/title "Import existing notes"
 
- :onboarding.setup/desc "First you need to choose a folder where Logseq will store your thoughts, ideas, notes."
- :onboarding.setup/title (fn [] ["Welcome to " [:strong "Logseq!"]])
+ :onboarding.setup/desc "First you need to choose a folder where Blocklog will store your thoughts, ideas, notes."
+ :onboarding.setup/title (fn [] ["Welcome to " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Add to Favorites"
  :page/added-tag-to-node "Added tag \"{1}\" to \"{2}\""
@@ -1065,7 +1065,7 @@
  :page/go-back-home "Go back home"
  :page/hide-properties "Hide properties"
  :page/local-storage "local storage"
- :page/logseq-is-having-a-problem "Logseq is having a problem. To try to get it back to a working state, please try the following safe steps in order:"
+ :page/logseq-is-having-a-problem "Blocklog is having a problem. To try to get it back to a working state, please try the following safe steps in order:"
  :page/make-private "Make it private"
  :page/make-public "Make it public for publishing"
  :page/moved-to-recycle "Node has been moved to Recycle"
@@ -1236,7 +1236,7 @@
  :plugin.install-from-web-url/supports-note "URLs support both GitHub repositories and local development servers. (For Examples: {1}, {2})"
  :plugin.install-from-web-url/theme-label "theme"
 
- :plugin.package-config/detach-desc "Removing it only detaches the plugin from Logseq and keeps the source folder untouched."
+ :plugin.package-config/detach-desc "Removing it only detaches the plugin from Blocklog and keeps the source folder untouched."
  :plugin.package-config/parse-error "Failed to parse the plugin package config."
  :plugin.package-config/remove-error "Failed to remove the broken plugin."
  :plugin.package-config/remove-external-success "Removed the broken plugin from the plugin list."
@@ -1252,7 +1252,7 @@
  :plugin.settings/exit-code-mode "Exit code mode"
  :plugin.settings/title "Plugins"
 
- :plugin.themes/default-desc "Logseq default {1} theme."
+ :plugin.themes/default-desc "Blocklog default {1} theme."
  :plugin.themes/default-name "Default {1} Theme"
  :plugin.themes/group "{1} themes"
  :plugin.themes/light-and-dark "light & dark themes"
@@ -1616,7 +1616,7 @@
  :settings.advanced/auto-chmod "Automatically change file permissions"
  :settings.advanced/auto-chmod-desc "Disable to allow editing by multiple users with permissions granted by group membership."
  :settings.advanced/developer-mode "Developer mode"
- :settings.advanced/developer-mode-desc "Developer mode helps contributors and extension developers test their integrations with Logseq more efficiently."
+ :settings.advanced/developer-mode-desc "Developer mode helps contributors and extension developers test their integrations with Blocklog more efficiently."
  :settings.advanced/network-proxy "Network proxy"
 
  :settings.ai/enable-mcp-server "MCP Server"
@@ -1771,7 +1771,7 @@
  :sync.personal-access-token/created-warning "Copy this token now. It cannot be shown again."
  :sync.personal-access-token/date-summary "Created {1}; expires {2}"
  :sync.personal-access-token/deleted-graph "Deleted graph"
- :sync.personal-access-token/description "Create graph-specific credentials for the Logseq REST API."
+ :sync.personal-access-token/description "Create graph-specific credentials for the Blocklog REST API."
  :sync.personal-access-token/empty "No personal access tokens."
  :sync.personal-access-token/existing-title "Existing tokens"
  :sync.personal-access-token/expiration "Expiration"
@@ -1786,7 +1786,7 @@
  :sync.personal-access-token.permission/read "Read"
  :sync.personal-access-token.permission/write "Write"
 
- :theme/logseq-default "Logseq Default theme"
+ :theme/logseq-default "Blocklog Default theme"
  :theme/switch-to "Switch to {1} theme"
 
  :ui/all-done "All Done!"
@@ -1927,7 +1927,7 @@
  :youtube/player-not-ready "YouTube player isn't ready yet."
 
  :zotero/attachments "Attachments"
- :zotero/imported-file-warning "This is a Zotero imported file, set Zotero data directory to open the file in Logseq."
- :zotero/linked-file-warning "This is a Zotero linked file, set Zotero linked attachment base directory to open the file in Logseq."
+ :zotero/imported-file-warning "This is a Zotero imported file, set Zotero data directory to open the file in Blocklog."
+ :zotero/linked-file-warning "This is a Zotero linked file, set Zotero linked attachment base directory to open the file in Blocklog."
  :zotero/notes "Notes"
 }

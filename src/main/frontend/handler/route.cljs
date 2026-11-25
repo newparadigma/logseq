@@ -171,7 +171,7 @@
   [name path-params]
   (case name
     :home
-    "Logseq"
+    "Blocklog"
     :graphs
     (t :mobile.tab/graphs)
     :graph
@@ -194,7 +194,7 @@
     (t :nav/settings)
     :import
     (t :import/title)
-    "Logseq"))
+    "Blocklog"))
 
 (defn- format-page-route-title
   [{:keys [page-title block-title]}]
@@ -208,14 +208,14 @@
           (if (> (count content) 48)
             (str (subs content 0 48) "...")
             content)))
-      "Logseq"))
+      "Blocklog"))
 
 (defn- <page-route-title
   [route-name]
   (if-let [repo (state/get-current-repo)]
     (p/let [title-info (state/<invoke-db-worker :thread-api/get-route-title repo route-name)]
       (format-page-route-title title-info))
-    "Logseq"))
+    "Blocklog"))
 
 (defn get-title
   [name path-params]

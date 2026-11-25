@@ -97,7 +97,7 @@
  :bug-report.inspector/tip "문제가 있으신가요? 괜찮습니다. 클릭하면 이전 단계로 돌아갈 수 있습니다."
  :bug-report.inspector/title "클립보드 데이터 검사"
 
- :bug-report.issue/action-desc "여러분의 도움으로 Logseq가 더 좋아집니다!"
+ :bug-report.issue/action-desc "여러분의 도움으로 Blocklog가 더 좋아집니다!"
  :bug-report.issue/action-title "버그 보고서 제출"
  :bug-report.issue/desc "추가 정보 수집 도구를 사용할 수 없는 경우 직접 버그를 보고해 주세요."
  :bug-report.issue/report-link "문제 보고"
@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "이미지, PDF, DOCX 등의 파일 업로드"
  :editor.slash/yesterday-desc "어제 날짜 삽입"
 
- :electron/about "Logseq에 대해"
+ :electron/about "Blocklog에 대해"
  :electron/add-to-dictionary "사전에 추가"
  :electron/block-not-exist "링크 열기에 실패했습니다. 블록 ID `{1}` 가 그래프에 존재하지 않습니다."
  :electron/cancel "취소"
@@ -632,7 +632,7 @@
  :graph/create-new "새 그래프 만들기"
  :graph/creating "그래프 생성 중"
  :graph/delete-local-action "로컬 그래프 삭제"
- :graph/delete-local-confirm-desc "정말로 Logseq에서 그래프 \"{1}\"을(를) 영구적으로 삭제하시겠습니까?"
+ :graph/delete-local-confirm-desc "정말로 Blocklog에서 그래프 \"{1}\"을(를) 영구적으로 삭제하시겠습니까?"
  :graph/delete-server-action "서버에서 삭제"
  :graph/delete-warning "⚠️ 삭제된 그래프는 복구할 수 없습니다. 삭제하기 전에 백업이 있는지 확인하세요."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "페이지 추가"
  :library/title "라이브러리"
 
- :mobile/camera-access-denied "카메라 액세스가 거부되었습니다. 설정 > Logseq에서 활성화하세요."
- :mobile/microphone-access-denied "마이크 액세스가 거부되었습니다. 설정 > Logseq에서 활성화하세요."
+ :mobile/camera-access-denied "카메라 액세스가 거부되었습니다. 설정 > Blocklog에서 활성화하세요."
+ :mobile/microphone-access-denied "마이크 액세스가 거부되었습니다. 설정 > Blocklog에서 활성화하세요."
 
  :mobile.header/actions "작업"
  :mobile.header/create-graph "그래프 만들기"
@@ -902,7 +902,7 @@
 
  :notification/copied "복사했습니다"
 
- :onboarding.import/desc "EDN 또는 Markdown 형식의 노트를 Logseq에서 가져올 수 있습니다."
+ :onboarding.import/desc "EDN 또는 Markdown 형식의 노트를 Blocklog에서 가져올 수 있습니다."
  :onboarding.import/sqlite-desc "SQLite 데이터베이스에서 가져오기"
  :onboarding.import/title "가져올 기존 노트가 있으신가요?"
 
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "기존 노트 가져오기"
 
  :onboarding.setup/desc "먼저 생각과 아이디어, 노트를 저장할 폴더를 선택하세요."
- :onboarding.setup/title (fn [] [["환영합니다! " [:strong "Logseq"] "에 오신 것을 환영합니다!"]])
+ :onboarding.setup/title (fn [] [["환영합니다! " [:strong "Blocklog"] "에 오신 것을 환영합니다!"]])
 
  :page/add-to-favorites "즐겨찾기에 추가"
  :page/added-tag-to-node "\"{2}\"에 \"{1}\" 태그를 추가했습니다."
@@ -929,7 +929,7 @@
  :page/go-back-home "홈으로 돌아가기"
  :page/hide-properties "속성 숨기기"
  :page/local-storage "로컬 스토리지"
- :page/logseq-is-having-a-problem "Logseq에 문제가 발생하였습니다. 작업 환경으로 돌아가기 위해서는 다음 지시를 따라주십시오."
+ :page/logseq-is-having-a-problem "Blocklog에 문제가 발생하였습니다. 작업 환경으로 돌아가기 위해서는 다음 지시를 따라주십시오."
  :page/make-private "비공개 상태로 만들기"
  :page/make-public "출판 전 공개 상태로 만들기"
  :page/moved-to-recycle "노드가 휴지통으로 이동되었습니다"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "새 플러그인이 등록되었습니다"
  :plugin/no-settings-schema "설정 스키마 없음!"
  :plugin/open-logs "로그 보기"
- :plugin/open-logseq-dir "Logseq 디렉토리 열기"
+ :plugin/open-logseq-dir "Blocklog 디렉토리 열기"
  :plugin/open-package "패키지 열기"
  :plugin/open-preferences "환경설정 열기"
  :plugin/open-settings "설정 열기"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "URL은 GitHub 저장소와 로컬 개발 서버를 모두 지원합니다. (예시: {1}, {2})"
  :plugin.install-from-web-url/theme-label "테마"
 
- :plugin.package-config/detach-desc "제거해도 Logseq에서 플러그인 연결만 해제되며 원본 폴더는 그대로 유지됩니다."
+ :plugin.package-config/detach-desc "제거해도 Blocklog에서 플러그인 연결만 해제되며 원본 폴더는 그대로 유지됩니다."
  :plugin.package-config/parse-error "플러그인 패키지 설정을 파싱하지 못했습니다."
  :plugin.package-config/remove-error "손상된 플러그인을 제거하지 못했습니다."
  :plugin.package-config/remove-external-success "손상된 플러그인을 플러그인 목록에서 제거했습니다."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "코드 모드 종료"
  :plugin.settings/title "플러그인 설정"
 
- :plugin.themes/default-desc "Logseq 기본 {1} 테마."
+ :plugin.themes/default-desc "Blocklog 기본 {1} 테마."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1} 테마"
  :plugin.themes/light-and-dark "라이트 및 다크 테마"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "파일 권한 자동 설정"
  :settings.advanced/auto-chmod-desc "파일 저장 시 권한을 자동 설정합니다"
  :settings.advanced/developer-mode "개발자 모드"
- :settings.advanced/developer-mode-desc "개발자 모드는 컨트리뷰터와 확장 프로그램 개발자들이 Logseq과의 연동을 더 쉽고 효율적으로 테스트할 수 있게 도와줍니다."
+ :settings.advanced/developer-mode-desc "개발자 모드는 컨트리뷰터와 확장 프로그램 개발자들이 Blocklog과의 연동을 더 쉽고 효율적으로 테스트할 수 있게 도와줍니다."
  :settings.advanced/network-proxy "네트워크 프록시"
 
  :settings.ai/enable-mcp-server "MCP 서버 활성화"
@@ -1546,7 +1546,7 @@
  :sync/uploading "업로드 중..."
  :sync/user-doesnt-exist-yet "사용자가 아직 존재하지 않습니다"
 
- :theme/logseq-default "Logseq 기본 테마"
+ :theme/logseq-default "Blocklog 기본 테마"
  :theme/switch-to "{1} 테마로 전환"
 
  :ui/all-done "완료"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "YouTube 플레이어가 아직 준비되지 않았습니다."
 
  :zotero/attachments "첨부 파일"
- :zotero/imported-file-warning "이 파일은 Zotero에서 가져온 파일입니다, Logseq에서 파일을 열려면 Zotero 데이터 디렉터리를 설정하세요."
- :zotero/linked-file-warning "이 파일은 Zotero에 연결된 파일입니다, Logseq에서 파일을 열려면 Zotero 연결 첨부파일 기본 디렉터리를 설정하세요."
+ :zotero/imported-file-warning "이 파일은 Zotero에서 가져온 파일입니다, Blocklog에서 파일을 열려면 Zotero 데이터 디렉터리를 설정하세요."
+ :zotero/linked-file-warning "이 파일은 Zotero에 연결된 파일입니다, Blocklog에서 파일을 열려면 Zotero 연결 첨부파일 기본 디렉터리를 설정하세요."
  :zotero/notes "노트"
 }

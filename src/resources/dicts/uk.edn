@@ -122,7 +122,7 @@
  :bug-report.inspector/tip "Щось не так? Не проблема — натисніть, щоб повернутися до попереднього кроку."
  :bug-report.inspector/title "Інструмент перегляду даних буфера обміну"
 
- :bug-report.issue/action-desc "Допоможіть зробити Logseq кращим!"
+ :bug-report.issue/action-desc "Допоможіть зробити Blocklog кращим!"
  :bug-report.issue/action-title "Надіслати звіт про помилку"
  :bug-report.issue/desc "Якщо у вас немає доступних інструментів для збору додаткової інформації, будь ласка, повідомте про помилку безпосередньо."
  :bug-report.issue/report-link "Повідомити про проблему"
@@ -507,11 +507,11 @@
  :editor.slash/upload-asset-desc "Завантажити типи файлів, такі як зображення, PDF, DOCX тощо"
  :editor.slash/yesterday-desc "Вставити вчорашню дату"
 
- :electron/about "Про Logseq"
+ :electron/about "Про Blocklog"
  :electron/add-to-dictionary "Додати до словника"
  :electron/block-not-exist "Не вдалося відкрити посилання. Ідентифікатор блоку `{1}` не існує в графі."
  :electron/cancel "Скасувати"
- :electron/cli-install-failed "Не вдалося встановити Logseq CLI.\n{1}"
+ :electron/cli-install-failed "Не вдалося встановити Blocklog CLI.\n{1}"
  :electron/copy-image "Копіювати зображення"
  :electron/link-open-confirm "Ви впевнені, що хочете відкрити це посилання?\n{1}"
  :electron/link-open-failed-missing-graph "Не вдалося відкрити посилання. Відсутній ідентифікатор графа після `blocklog://graph/`."
@@ -671,7 +671,7 @@
  :graph/creating "Створення графа"
  :graph/db-worker-recovery-failed-error "Не вдається повторно підключитися до робітника бази даних для графа \"{1}\". Будь ласка, спробуйте ще раз або відкрийте граф знову."
  :graph/delete-local-action "Видалити локальний граф"
- :graph/delete-local-confirm-desc "Ви впевнені, що бажаєте остаточно видалити граф \"{1}\" з Logseq?"
+ :graph/delete-local-confirm-desc "Ви впевнені, що бажаєте остаточно видалити граф \"{1}\" з Blocklog?"
  :graph/delete-server-action "Видалити з сервера"
  :graph/delete-warning "⚠️ Зверніть увагу, що ми не можемо відновити цей граф після його видалення. Переконайтесь, що у вас є резервні копії перед видаленням."
  :graph/diff "Git diff"
@@ -892,8 +892,8 @@
  :library/add-pages "Додати сторінки"
  :library/title "Бібліотека"
 
- :mobile/camera-access-denied "Доступ до камери заборонено. Увімкніть його в Параметри > Logseq."
- :mobile/microphone-access-denied "Доступ до мікрофона заборонено. Увімкніть його в Параметри > Logseq."
+ :mobile/camera-access-denied "Доступ до камери заборонено. Увімкніть його в Параметри > Blocklog."
+ :mobile/microphone-access-denied "Доступ до мікрофона заборонено. Увімкніть його в Параметри > Blocklog."
 
  :mobile.header/actions "Дії"
  :mobile.header/create-graph "Створити граф"
@@ -976,15 +976,15 @@
 
  :notification/copied "Скопійовано!"
 
- :onboarding.import/desc "Якщо вони у форматі EDN або Markdown, Logseq може з ними працювати."
+ :onboarding.import/desc "Якщо вони у форматі EDN або Markdown, Blocklog може з ними працювати."
  :onboarding.import/sqlite-desc "Імпортуйте експорт вашого графа Logseq у форматі бази даних SQLite до нового графа на базі даних."
  :onboarding.import/title "Чи є у вас уже нотатки, які ви хочете імпортувати?"
 
  :onboarding.import-option/desc "Ви також можете зробити це пізніше в додатку."
  :onboarding.import-option/title "Імпортувати наявні нотатки"
 
- :onboarding.setup/desc "Спершу потрібно вибрати папку, в якій Logseq зберігатиме ваші думки, ідеї та нотатки."
- :onboarding.setup/title (fn [] ["Ласкаво просимо до " [:strong "Logseq!"]])
+ :onboarding.setup/desc "Спершу потрібно вибрати папку, в якій Blocklog зберігатиме ваші думки, ідеї та нотатки."
+ :onboarding.setup/title (fn [] ["Ласкаво просимо до " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Додати до Обраного"
  :page/added-tag-to-node "Додано тег \"{1}\" до \"{2}\""
@@ -1003,7 +1003,7 @@
  :page/go-back-home "Повернутися на головну"
  :page/hide-properties "Сховати властивості"
  :page/local-storage "локальне сховище"
- :page/logseq-is-having-a-problem "У Logseq виникла проблема. Щоб спробувати повернути його до робочого стану, виконайте такі безпечні кроки по порядку:"
+ :page/logseq-is-having-a-problem "У Blocklog виникла проблема. Щоб спробувати повернути його до робочого стану, виконайте такі безпечні кроки по порядку:"
  :page/make-private "Зробити приватним"
  :page/make-public "Зробити загальнодоступним для публікації"
  :page/moved-to-recycle "Вузол переміщено до Кошика"
@@ -1172,7 +1172,7 @@
  :plugin.install-from-web-url/supports-note "URL-адреси підтримують як репозиторії GitHub, так і локальні сервери розробки. (Приклади: {1}, {2})"
  :plugin.install-from-web-url/theme-label "тема"
 
- :plugin.package-config/detach-desc "Видалення лише від'єднає плагін від Logseq і залишить вихідну теку без змін."
+ :plugin.package-config/detach-desc "Видалення лише від'єднає плагін від Blocklog і залишить вихідну теку без змін."
  :plugin.package-config/parse-error "Не вдалося розібрати конфігурацію пакета плагіна."
  :plugin.package-config/remove-error "Не вдалося видалити пошкоджений плагін."
  :plugin.package-config/remove-external-success "Пошкоджений плагін видалено зі списку плагінів."
@@ -1188,7 +1188,7 @@
  :plugin.settings/exit-code-mode "Вийти з режиму коду"
  :plugin.settings/title "Плагіни"
 
- :plugin.themes/default-desc "Типова {1} тема Logseq."
+ :plugin.themes/default-desc "Типова {1} тема Blocklog."
  :plugin.themes/default-name "Тема за замовчуванням {1}"
  :plugin.themes/group "{1} тем"
  :plugin.themes/light-and-dark "світлі і темні теми"
@@ -1548,7 +1548,7 @@
  :settings.advanced/auto-chmod "Автоматично змінювати права доступу до файлів"
  :settings.advanced/auto-chmod-desc "Вимкніть, щоб дозволити редагування кількома користувачами, які отримали відповідні права завдяки членству в групі."
  :settings.advanced/developer-mode "Режим розробника"
- :settings.advanced/developer-mode-desc "Режим розробника допомагає учасникам і розробникам розширень ефективніше тестувати свою інтеграцію з Logseq."
+ :settings.advanced/developer-mode-desc "Режим розробника допомагає учасникам і розробникам розширень ефективніше тестувати свою інтеграцію з Blocklog."
  :settings.advanced/network-proxy "Мережевий проксі"
 
  :settings.ai/enable-mcp-server "Сервер MCP"
@@ -1683,7 +1683,7 @@
  :sync/uploading "Вивантаження..."
  :sync/user-doesnt-exist-yet "Користувача ще не існує"
 
- :theme/logseq-default "Тема Logseq за замовчуванням"
+ :theme/logseq-default "Тема Blocklog за замовчуванням"
  :theme/switch-to "Перейти на тему {1}"
 
  :ui/all-done "Готово!"
@@ -1823,7 +1823,7 @@
  :youtube/player-not-ready "Програвач YouTube ще не готовий."
 
  :zotero/attachments "Вкладення"
- :zotero/imported-file-warning "Це імпортований файл Zotero, укажіть каталог даних Zotero, щоб відкрити файл у Logseq."
- :zotero/linked-file-warning "Це пов’язаний файл Zotero, укажіть базовий каталог пов’язаних вкладень Zotero, щоб відкрити файл у Logseq."
+ :zotero/imported-file-warning "Це імпортований файл Zotero, укажіть каталог даних Zotero, щоб відкрити файл у Blocklog."
+ :zotero/linked-file-warning "Це пов’язаний файл Zotero, укажіть базовий каталог пов’язаних вкладень Zotero, щоб відкрити файл у Blocklog."
  :zotero/notes "Нотатки"
 }

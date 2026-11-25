@@ -92,7 +92,7 @@
                       theme-mode (state/get-state :ui/theme)]
                   (set! (.-href base) js/location.href)
                   (.appendChild (.-head doc) base)
-                  (set! (.-title doc) (or (:filename pdf-current) "Logseq"))
+                  (set! (.-title doc) (or (:filename pdf-current) "Blocklog"))
                   (set! (.-dataset doc-el) -theme (str theme-mode))
                   (set! (.-dataset doc-el) -color (or (some-> (state/get-state :ui/radix-color) (name)) "logseq"))
                   (resolve-classes! doc)

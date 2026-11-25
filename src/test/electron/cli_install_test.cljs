@@ -127,7 +127,7 @@
                                 :write-file! (fn [& _]
                                                (throw (js/Error. "disk full")))})]
       (is (= [] (:messages result)))
-      (is (= "Logseq" (:title (first (:errors result)))))
+      (is (= "Blocklog" (:title (first (:errors result)))))
       (is (string/includes? (:content (first (:errors result)))
                             "Failed to install Logseq CLI"))
       (is (string/includes? (:content (first (:errors result)))
@@ -140,6 +140,6 @@
                                 :cli-dir! (fn []
                                             (throw (js/Error. "permission denied")))})]
       (is (= [] (:messages result)))
-      (is (= "Logseq" (:title (first (:errors result)))))
+      (is (= "Blocklog" (:title (first (:errors result)))))
       (is (string/includes? (:content (first (:errors result)))
                             "permission denied")))))

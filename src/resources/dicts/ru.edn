@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Загрузить типы файлов, такие как изображение, PDF, DOCX и т. д."
  :editor.slash/yesterday-desc "Вставить вчерашнюю дату"
 
- :electron/about "О Logseq"
+ :electron/about "О Blocklog"
  :electron/add-to-dictionary "Добавить в словарь"
  :electron/block-not-exist "Не удалось открыть ссылку. Идентификатор блока `{1}` не существует в графе."
  :electron/cancel "Отмена"
@@ -632,7 +632,7 @@
  :graph/create-new "Создать новый граф"
  :graph/creating "Создание графа"
  :graph/delete-local-action "Удалить локальный граф"
- :graph/delete-local-confirm-desc "Вы уверены, что хотите окончательно удалить граф \"{1}\" из Logseq?"
+ :graph/delete-local-confirm-desc "Вы уверены, что хотите окончательно удалить граф \"{1}\" из Blocklog?"
  :graph/delete-server-action "Удалить с сервера"
  :graph/delete-server-confirm-desc "Вы уверены, что хотите окончательно удалить граф \"{1}\" с сервера синхронизации?"
  :graph/delete-warning "⚠️ Обратите внимание, что после удаления мы не сможем восстановить этот граф. Перед удалением убедитесь, что у вас есть резервные копии."
@@ -647,7 +647,7 @@
  :graph/left "Граф покинут"
  :graph/link-count (fn [n] (str n " " (if (= 1 n) "ссылка" "ссылок")))
  :graph/local-graphs "Локальные графы"
- :graph/missing-confirm-desc "Папка графа «{1}» не найдена. Возможно, её удалили или переместили вне Logseq. Убрать граф из списка?"
+ :graph/missing-confirm-desc "Папка графа «{1}» не найдена. Возможно, её удалили или переместили вне Blocklog. Убрать граф из списка?"
  :graph/missing-startup-warning "Граф «{1}» не открыт: его папка не найдена."
  :graph/name-placeholder "имя вашего графа"
  :graph/preparing "подготовка"
@@ -830,8 +830,8 @@
  :library/add-pages "Добавить страницы"
  :library/title "Библиотека"
 
- :mobile/camera-access-denied "Доступ к камере запрещен. Включите его в Настройки > Logseq."
- :mobile/microphone-access-denied "Доступ к микрофону запрещен. Включите его в Настройки > Logseq."
+ :mobile/camera-access-denied "Доступ к камере запрещен. Включите его в Настройки > Blocklog."
+ :mobile/microphone-access-denied "Доступ к микрофону запрещен. Включите его в Настройки > Blocklog."
 
  :mobile.header/actions "Действия"
  :mobile.header/create-graph "Создать граф"
@@ -918,7 +918,7 @@
  :onboarding.import-option/title "Импорт данных"
 
  :onboarding.setup/desc "Рабочее пространство для ваших знаний"
- :onboarding.setup/title (fn [] ["Добро пожаловать в " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Добро пожаловать в " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Добавить в Избранное"
  :page/added-tag-to-node "Добавлен тег «{1}» к «{2}»."
@@ -937,7 +937,7 @@
  :page/go-back-home "Вернуться на главную"
  :page/hide-properties "Скрыть свойства"
  :page/local-storage "локальное хранилище"
- :page/logseq-is-having-a-problem "У Logseq возникла проблема. Чтобы попытаться вернуть его в рабочее состояние, пожалуйста, попробуйте выполнить следующие безопасные шаги по порядку:"
+ :page/logseq-is-having-a-problem "У Blocklog возникла проблема. Чтобы попытаться вернуть его в рабочее состояние, пожалуйста, попробуйте выполнить следующие безопасные шаги по порядку:"
  :page/make-private "Сделать приватной"
  :page/make-public "Сделать доступной для публикации"
  :page/moved-to-recycle "Узел перемещён в корзину"
@@ -1051,7 +1051,7 @@
  :plugin/new-registered "Новый плагин зарегистрирован"
  :plugin/no-settings-schema "Нет схемы настроек!"
  :plugin/open-logs "Просмотр журналов"
- :plugin/open-logseq-dir "Открыть папку Logseq"
+ :plugin/open-logseq-dir "Открыть папку Blocklog"
  :plugin/open-package "Открыть пакет"
  :plugin/open-preferences "Открыть настройки"
  :plugin/open-settings "Открыть настройки"
@@ -1080,7 +1080,7 @@
  :plugin.install-from-web-url/supports-note "URL-адреса поддерживают как репозитории GitHub, так и локальные серверы разработки. (Примеры: {1}, {2})"
  :plugin.install-from-web-url/theme-label "тема"
 
- :plugin.package-config/detach-desc "Удаление только отсоединит плагин от Logseq и оставит исходную папку без изменений."
+ :plugin.package-config/detach-desc "Удаление только отсоединит плагин от Blocklog и оставит исходную папку без изменений."
  :plugin.package-config/parse-error "Не удалось разобрать конфигурацию пакета плагина."
  :plugin.package-config/remove-error "Не удалось удалить повреждённый плагин."
  :plugin.package-config/remove-external-success "Повреждённый плагин удалён из списка плагинов."
@@ -1096,7 +1096,7 @@
  :plugin.settings/exit-code-mode "Выйти из режима кода"
  :plugin.settings/title "Настройки плагинов"
 
- :plugin.themes/default-desc "Стандартная {1} тема Logseq."
+ :plugin.themes/default-desc "Стандартная {1} тема Blocklog."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1} темы"
  :plugin.themes/light-and-dark "светлые & тёмные темы"
@@ -1439,7 +1439,7 @@
  :settings.advanced/auto-chmod "Авто chmod"
  :settings.advanced/auto-chmod-desc "Автоматически устанавливать права файлов"
  :settings.advanced/developer-mode "Режим разработчика"
- :settings.advanced/developer-mode-desc "Режим разработчика помогает людям, участвующим в разработке расширений, более эффективно тестировать свои интеграции с Logseq"
+ :settings.advanced/developer-mode-desc "Режим разработчика помогает людям, участвующим в разработке расширений, более эффективно тестировать свои интеграции с Blocklog"
  :settings.advanced/network-proxy "Прокси-сервер"
 
  :settings.ai/enable-mcp-server "Включить сервер MCP"
@@ -1563,7 +1563,7 @@
  :sync/uploading "Отправка..."
  :sync/user-doesnt-exist-yet "Пользователь ещё не существует"
 
- :theme/logseq-default "Тема Logseq по умолчанию"
+ :theme/logseq-default "Тема Blocklog по умолчанию"
  :theme/switch-to "Переключиться на тему {1}"
 
  :ui/all-done "Всё готово"
@@ -1694,7 +1694,7 @@
  :youtube/player-not-ready "Проигрыватель YouTube еще не готов."
 
  :zotero/attachments "Вложения"
- :zotero/imported-file-warning "Это импортированный файл Zotero, укажите каталог данных Zotero, чтобы открыть файл в Logseq."
- :zotero/linked-file-warning "Это связанный файл Zotero, укажите базовый каталог связанных вложений Zotero, чтобы открыть файл в Logseq."
+ :zotero/imported-file-warning "Это импортированный файл Zotero, укажите каталог данных Zotero, чтобы открыть файл в Blocklog."
+ :zotero/linked-file-warning "Это связанный файл Zotero, укажите базовый каталог связанных вложений Zotero, чтобы открыть файл в Blocklog."
  :zotero/notes "Заметки"
 }

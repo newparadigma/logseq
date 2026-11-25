@@ -229,7 +229,7 @@
      [:meta {:http-equiv "X-UA-Compatible" :content "ie=edge"}]
      [:title title]
      [:link {:href favicon-href :rel "icon" :type "image/svg+xml"}]
-     [:meta {:content "Logseq" :name "apple-mobile-web-app-title"}]
+     [:meta {:content "Blocklog" :name "apple-mobile-web-app-title"}]
      [:meta {:content "yes" :name "apple-mobile-web-app-capable"}]
      [:meta {:content "yes" :name "apple-touch-fullscreen"}]
      [:meta {:content "black-translucent" :name "apple-mobile-web-app-status-bar-style"}]
@@ -1504,7 +1504,7 @@
               [:svg#publish-home-bg.publish-home-bg
                {:aria-hidden "true"}]
               (into [:main.publish-home-card
-                     [:div.publish-home-logo "Logseq Publish"]]
+                     [:div.publish-home-logo "Blocklog Publish"]]
                     card-nodes)
               home-background-script]]]
     (str "<!doctype html>" (render-hiccup doc))))
@@ -1512,14 +1512,14 @@
 (defn render-home-html
   []
   (render-home-layout
-   "Logseq Publish"
+   "Blocklog Publish"
    [:h1.publish-home-title
     "Small notes,"
     [:br]
     [:strong "big "]
     "connections!"]
    [:p.publish-home-subtitle
-    "Publish your Logseq notes to the web. Each note links through "
+    "Publish your Blocklog notes to the web. Each note links through "
     [:code "#tag"]
     " or "
     [:code "[[page]] references"]

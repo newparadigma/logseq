@@ -97,7 +97,7 @@
  :bug-report.inspector/tip "Ada yang salah? Tidak masalah, klik untuk kembali ke langkah sebelumnya."
  :bug-report.inspector/title "Pemeriksa data papan klip"
 
- :bug-report.issue/action-desc "Bantu Jadikan Logseq Lebih Baik!"
+ :bug-report.issue/action-desc "Bantu Jadikan Blocklog Lebih Baik!"
  :bug-report.issue/action-title "Mengirimkan laporan bug"
  :bug-report.issue/desc "Jika tidak ada alat bantu yang tersedia bagi Anda untuk mengumpulkan informasi tambahan, silakan laporkan bug secara langsung."
  :bug-report.issue/report-link "Laporkan masalah"
@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Unggah jenis file seperti gambar, PDF, DOCX, dll."
  :editor.slash/yesterday-desc "Sisipkan tanggal kemarin"
 
- :electron/about "Tentang Logseq"
+ :electron/about "Tentang Blocklog"
  :electron/add-to-dictionary "Tambahkan ke kamus"
  :electron/block-not-exist "Gagal membuka tautan. ID blok `{1}` tidak ada di grafik."
  :electron/cancel "Batal"
@@ -632,7 +632,7 @@
  :graph/create-new "Buat graf baru"
  :graph/creating "Membuat graf"
  :graph/delete-local-action "Hapus graf lokal"
- :graph/delete-local-confirm-desc "Apakah Anda yakin ingin menghapus graf \"{1}\" dari Logseq secara permanen?"
+ :graph/delete-local-confirm-desc "Apakah Anda yakin ingin menghapus graf \"{1}\" dari Blocklog secara permanen?"
  :graph/delete-server-action "Hapus dari server"
  :graph/delete-warning "⚠️ Perhatikan bahwa kami tidak dapat memulihkan graf ini setelah dihapus. Pastikan Anda memiliki salinan cadangan sebelum menghapusnya."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Tambah halaman"
  :library/title "Pustaka"
 
- :mobile/camera-access-denied "Akses kamera ditolak. Aktifkan di Setelan > Logseq."
- :mobile/microphone-access-denied "Akses mikrofon ditolak. Aktifkan di Setelan > Logseq."
+ :mobile/camera-access-denied "Akses kamera ditolak. Aktifkan di Setelan > Blocklog."
+ :mobile/microphone-access-denied "Akses mikrofon ditolak. Aktifkan di Setelan > Blocklog."
 
  :mobile.header/actions "Tindakan"
  :mobile.header/create-graph "Buat grafik"
@@ -902,15 +902,15 @@
 
  :notification/copied "Disalin"
 
- :onboarding.import/desc "Jika ia dalam format EDN atau Markdown, Logseq dapat bekerja dengannya."
+ :onboarding.import/desc "Jika ia dalam format EDN atau Markdown, Blocklog dapat bekerja dengannya."
  :onboarding.import/sqlite-desc "Impor dari database SQLite"
  :onboarding.import/title "Apakah Anda sudah memiliki catatan yang ingin Anda impor?"
 
  :onboarding.import-option/desc "Anda juga dapat melakukan ini nanti di aplikasi."
  :onboarding.import-option/title "Mengimpor catatan yang ada"
 
- :onboarding.setup/desc "Pertama, Anda harus memilih folder di mana Logseq akan menyimpan pemikiran, ide, catatan Anda."
- :onboarding.setup/title (fn [] ["Selamat datang di " [:strong "Logseq!"]])
+ :onboarding.setup/desc "Pertama, Anda harus memilih folder di mana Blocklog akan menyimpan pemikiran, ide, catatan Anda."
+ :onboarding.setup/title (fn [] ["Selamat datang di " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Tambahkan ke Favorit"
  :page/added-tag-to-node "Menambahkan tag \"{1}\" ke \"{2}\""
@@ -929,7 +929,7 @@
  :page/go-back-home "Kembali ke beranda"
  :page/hide-properties "Sembunyikan properti"
  :page/local-storage "penyimpanan lokal"
- :page/logseq-is-having-a-problem "Logseq mengalami masalah. Untuk mencoba mengembalikannya ke keadaan yang berfungsi, silakan coba langkah-langkah aman berikut ini secara berurutan:"
+ :page/logseq-is-having-a-problem "Blocklog mengalami masalah. Untuk mencoba mengembalikannya ke keadaan yang berfungsi, silakan coba langkah-langkah aman berikut ini secara berurutan:"
  :page/make-private "Buat pribadi"
  :page/make-public "Buat publik untuk dipublikasikan"
  :page/moved-to-recycle "Node telah dipindahkan ke Tempat Sampah"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "URL mendukung repositori GitHub dan server pengembangan lokal. (Contoh: {1}, {2})"
  :plugin.install-from-web-url/theme-label "tema"
 
- :plugin.package-config/detach-desc "Menghapusnya hanya melepaskan plugin dari Logseq dan membiarkan folder sumber tetap utuh."
+ :plugin.package-config/detach-desc "Menghapusnya hanya melepaskan plugin dari Blocklog dan membiarkan folder sumber tetap utuh."
  :plugin.package-config/parse-error "Gagal mengurai konfigurasi paket plugin."
  :plugin.package-config/remove-error "Gagal menghapus plugin rusak."
  :plugin.package-config/remove-external-success "Plugin rusak telah dihapus dari daftar plugin."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Keluar dari mode kode"
  :plugin.settings/title "Pengaturan plugin"
 
- :plugin.themes/default-desc "Tema {1} bawaan Logseq."
+ :plugin.themes/default-desc "Tema {1} bawaan Blocklog."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "tema {1}"
  :plugin.themes/light-and-dark "tema terang & gelap"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "chmod otomatis"
  :settings.advanced/auto-chmod-desc "Atur izin file secara otomatis"
  :settings.advanced/developer-mode "Mode pengembang"
- :settings.advanced/developer-mode-desc "Mode pengembang membantu kontributor dan pengembang ekstensi menguji integrasi mereka dengan Logseq dengan lebih efisien."
+ :settings.advanced/developer-mode-desc "Mode pengembang membantu kontributor dan pengembang ekstensi menguji integrasi mereka dengan Blocklog dengan lebih efisien."
  :settings.advanced/network-proxy "Proxy jaringan"
 
  :settings.ai/enable-mcp-server "Aktifkan server MCP"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Mengunggah..."
  :sync/user-doesnt-exist-yet "Pengguna belum ada"
 
- :theme/logseq-default "Tema bawaan Logseq"
+ :theme/logseq-default "Tema bawaan Blocklog"
  :theme/switch-to "Beralih ke tema {1}"
 
  :ui/all-done "Semua Selesai!"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "Pemutar YouTube belum siap."
 
  :zotero/attachments "Lampiran"
- :zotero/imported-file-warning "Ini adalah file Zotero yang diimpor, atur direktori data Zotero untuk membuka file ini di Logseq."
- :zotero/linked-file-warning "Ini adalah file Zotero yang ditautkan, atur direktori dasar lampiran tertaut Zotero untuk membuka file ini di Logseq."
+ :zotero/imported-file-warning "Ini adalah file Zotero yang diimpor, atur direktori data Zotero untuk membuka file ini di Blocklog."
+ :zotero/linked-file-warning "Ini adalah file Zotero yang ditautkan, atur direktori dasar lampiran tertaut Zotero untuk membuka file ini di Blocklog."
  :zotero/notes "Catatan"
 }

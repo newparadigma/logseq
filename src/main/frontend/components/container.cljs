@@ -289,7 +289,7 @@
          [:span.flex.items-center.pr-2.opacity-40 (ui/icon icon {:size 20})]
          [:strong.font-normal title]]))]
    [:div.ft.pl-11.pb-3.flex.flex-col.gap-1
-    [:span.opacity.text-xs.opacity-30 "Logseq " version]
+    [:span.opacity.text-xs.opacity-30 "Blocklog " version]
     (when-let [revision (not-empty (build-version/revision))]
       [:span.opacity.text-xs.opacity-30 (t :help/revision revision)])]])
 

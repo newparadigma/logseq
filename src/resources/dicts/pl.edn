@@ -479,7 +479,7 @@
  :editor.slash/upload-asset-desc "Prześlij typy plików takie jak obraz, PDF, DOCX itp."
  :editor.slash/yesterday-desc "Wstaw wczorajszą datę"
 
- :electron/about "O Logseq"
+ :electron/about "O Blocklog"
  :electron/add-to-dictionary "Dodaj do słownika"
  :electron/block-not-exist "Otwarcie linku nie powiodło się. Identyfikator bloku `{1}` nie istnieje w grafie."
  :electron/cancel "Anuluj"
@@ -632,7 +632,7 @@
  :graph/create-new "Utwórz nowy graf"
  :graph/creating "Tworzenie grafu"
  :graph/delete-local-action "Usuń lokalny graf"
- :graph/delete-local-confirm-desc "Czy na pewno chcesz trwale usunąć graf \"{1}\" z Logseq?"
+ :graph/delete-local-confirm-desc "Czy na pewno chcesz trwale usunąć graf \"{1}\" z Blocklog?"
  :graph/delete-server-action "Usuń z serwera"
  :graph/delete-warning "⚠️ Zwróć uwagę, że nie możemy odzyskać tego grafu po jego usunięciu. Upewnij się, że masz kopie zapasowe przed usunięciem."
  :graph/diff "Git diff"
@@ -822,8 +822,8 @@
  :library/add-pages "Dodaj strony"
  :library/title "Biblioteka"
 
- :mobile/camera-access-denied "Dostęp do aparatu jest zablokowany. Włącz go w Ustawieniach > Logseq."
- :mobile/microphone-access-denied "Dostęp do mikrofonu jest zablokowany. Włącz go w Ustawieniach > Logseq."
+ :mobile/camera-access-denied "Dostęp do aparatu jest zablokowany. Włącz go w Ustawieniach > Blocklog."
+ :mobile/microphone-access-denied "Dostęp do mikrofonu jest zablokowany. Włącz go w Ustawieniach > Blocklog."
 
  :mobile.header/actions "Akcje"
  :mobile.header/create-graph "Utwórz graf"
@@ -910,7 +910,7 @@
  :onboarding.import-option/title "Import danych"
 
  :onboarding.setup/desc "Przestrzeń robocza dla Twojej wiedzy"
- :onboarding.setup/title (fn [] ["Witaj w " [:strong "Logseq!"]])
+ :onboarding.setup/title (fn [] ["Witaj w " [:strong "Blocklog!"]])
 
  :page/add-to-favorites "Dodaj do ulubionych"
  :page/added-tag-to-node "Dodano tag „{1}” do „{2}”"
@@ -929,7 +929,7 @@
  :page/go-back-home "Wróć na stronę główną"
  :page/hide-properties "Ukryj właściwości"
  :page/local-storage "pamięć lokalna"
- :page/logseq-is-having-a-problem "Logseq ma problem. Żeby przywrócić go do działającego stanu wykonaj po kolei następujące bezpieczne kroki:"
+ :page/logseq-is-having-a-problem "Blocklog ma problem. Żeby przywrócić go do działającego stanu wykonaj po kolei następujące bezpieczne kroki:"
  :page/make-private "Oznacz jako prywatną"
  :page/make-public "Oznacz jako publiczną"
  :page/moved-to-recycle "Węzeł został przeniesiony do Kosza"
@@ -1043,7 +1043,7 @@
  :plugin/new-registered "Nowa wtyczka zarejestrowana"
  :plugin/no-settings-schema "Brak schematu ustawień!"
  :plugin/open-logs "Wyświetl dzienniki"
- :plugin/open-logseq-dir "Otwórz folder Logseq"
+ :plugin/open-logseq-dir "Otwórz folder Blocklog"
  :plugin/open-package "Otwórz paczkę"
  :plugin/open-preferences "Otwórz preferencje"
  :plugin/open-settings "Otwórz ustawienia"
@@ -1072,7 +1072,7 @@
  :plugin.install-from-web-url/supports-note "Adresy URL obsługują zarówno repozytoria GitHub, jak i lokalne serwery deweloperskie. (Na przykład: {1}, {2})"
  :plugin.install-from-web-url/theme-label "motyw"
 
- :plugin.package-config/detach-desc "Usunięcie jedynie odłącza wtyczkę od Logseq i pozostawia folder źródłowy bez zmian."
+ :plugin.package-config/detach-desc "Usunięcie jedynie odłącza wtyczkę od Blocklog i pozostawia folder źródłowy bez zmian."
  :plugin.package-config/parse-error "Nie udało się przeanalizować konfiguracji pakietu wtyczki."
  :plugin.package-config/remove-error "Nie udało się usunąć uszkodzonej wtyczki."
  :plugin.package-config/remove-external-success "Usunięto uszkodzoną wtyczkę z listy wtyczek."
@@ -1088,7 +1088,7 @@
  :plugin.settings/exit-code-mode "Wyjdź z trybu kodu"
  :plugin.settings/title "Ustawienia wtyczek"
 
- :plugin.themes/default-desc "Domyślny {1} motyw Logseq."
+ :plugin.themes/default-desc "Domyślny {1} motyw Blocklog."
  :plugin.themes/default-name "Default {1} theme"
  :plugin.themes/group "{1} motywy"
  :plugin.themes/light-and-dark "jasne & ciemne motywy"
@@ -1431,7 +1431,7 @@
  :settings.advanced/auto-chmod "Automatyczny chmod"
  :settings.advanced/auto-chmod-desc "Automatycznie ustawiaj uprawnienia plików"
  :settings.advanced/developer-mode "Tryb programisty"
- :settings.advanced/developer-mode-desc "Tryb programisty pomaga kontrybutorom i programistom rozszerzeń lepiej przetestować ich integracje w Logseq."
+ :settings.advanced/developer-mode-desc "Tryb programisty pomaga kontrybutorom i programistom rozszerzeń lepiej przetestować ich integracje w Blocklog."
  :settings.advanced/network-proxy "Ustawienia proxy"
 
  :settings.ai/enable-mcp-server "Włącz serwer MCP"
@@ -1546,7 +1546,7 @@
  :sync/uploading "Przesyłanie..."
  :sync/user-doesnt-exist-yet "Użytkownik jeszcze nie istnieje"
 
- :theme/logseq-default "Domyślny motyw Logseq"
+ :theme/logseq-default "Domyślny motyw Blocklog"
  :theme/switch-to "Przełącz na motyw {1}"
 
  :ui/all-done "Wszystko gotowe"
@@ -1677,7 +1677,7 @@
  :youtube/player-not-ready "Odtwarzacz YouTube nie jest jeszcze gotowy."
 
  :zotero/attachments "Załączniki"
- :zotero/imported-file-warning "To jest zaimportowany plik Zotero, ustaw katalog danych Zotero, aby otworzyć plik w Logseq."
- :zotero/linked-file-warning "To jest powiązany plik Zotero, ustaw katalog bazowy powiązanych załączników Zotero, aby otworzyć plik w Logseq."
+ :zotero/imported-file-warning "To jest zaimportowany plik Zotero, ustaw katalog danych Zotero, aby otworzyć plik w Blocklog."
+ :zotero/linked-file-warning "To jest powiązany plik Zotero, ustaw katalog bazowy powiązanych załączników Zotero, aby otworzyć plik w Blocklog."
  :zotero/notes "Notatki"
 }
