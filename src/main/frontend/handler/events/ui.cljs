@@ -30,7 +30,6 @@
             [frontend.handler.events :as events]
             [frontend.handler.notification :as notification]
             [frontend.handler.page :as page-handler]
-            [frontend.handler.plugin :as plugin-handler]
             [frontend.handler.reaction :as reaction-handler]
             [frontend.handler.route :as route-handler]
             [frontend.handler.user :as user-handler]
@@ -74,9 +73,6 @@
 
 (defevent! :go/plugins [_]
   (plugin/open-plugins-modal!))
-
-(defevent! :go/plugins-waiting-lists [_]
-  (plugin/open-waiting-updates-modal!))
 
 (defevent! :go/plugins-from-file [[_ plugins]]
   (plugin/open-plugins-from-file-modal! plugins))
@@ -156,43 +152,6 @@
        {:id popup-id
         :focus-trigger? false
         :align :end}))))
-
-(defevent! :plugin/consume-updates [[_ id prev-pending? updated?]]
-  (let [downloading?   (:plugin/updates-downloading? (state/get-state))]
-    (when-let [coming (and (not downloading?)
-                           (get-in (state/get-state) [:plugin/updates-coming id]))]
-      (let [error-code (:error-code coming)
-            error-code (if (= error-code (str :no-new-version)) nil error-code)
-            title      (:title coming)]
-        (when prev-pending?
-          (if-not error-code
-            (plugin/set-updates-sub-content! (str title "...") 0)
-            (notification/show!
-             (str "[" (t :plugin/checked) "]<" title "> " error-code) :error)))))
-
-    (if (and updated? downloading?)
-      ;; try to start consume downloading item
-      (if-let [next-coming (state/get-next-selected-coming-update)]
-        (plugin-handler/check-or-update-marketplace-plugin!
-         (assoc next-coming :only-check false :error-code nil)
-         (fn [^js e] (js/console.error "[Download Err]" next-coming e)))
-        (plugin-handler/close-updates-downloading))
-
-      ;; try to start consume pending item
-      (if-let [next-pending (second (first (:plugin/updates-pending (state/get-state))))]
-        (do
-          (println "Updates: take next pending - " (:id next-pending))
-          (js/setTimeout
-           #(plugin-handler/check-or-update-marketplace-plugin!
-             (assoc next-pending :only-check true :error-code nil)
-             (fn [^js e]
-               (notification/show! (.toString e) :error)
-               (js/console.error "[Check Err]" next-pending e))) 500))
-
-        ;; try to open waiting updates list
-        (when (and prev-pending?
-                   (seq (state/all-available-coming-updates)))
-          (plugin/open-waiting-updates-modal!))))))
 
 (defevent! :plugin/loader-perf-tip [[_ {:keys [^js o _s _e]}]]
   (when-let [opts (.-options o)]

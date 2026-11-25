@@ -64,8 +64,8 @@
 (deftest install-cli-launcher-does-not-show-success-dialog
   (testing "successful Unix install writes to ~/.local/bin without showing a success dialog"
     (let [result (run-install! {:existing-files #{"/app/logseq-cli.js"}})]
-      (is (= "/home/me/.local/bin/logseqDEV" (ffirst (:writes result))))
-      (is (= [["/home/me/.local/bin/logseqDEV" "755"]] (:chmods result)))
+      (is (= "/home/me/.local/bin/blocklog" (ffirst (:writes result))))
+      (is (= [["/home/me/.local/bin/blocklog" "755"]] (:chmods result)))
       (is (= [] (:errors result)))
       (is (= [] (:messages result)))
       (is (= [] (:deferred result))))))
@@ -104,8 +104,8 @@
                                        :exe-path "/tmp/.mount_LogseqD4E5F6/logseq"
                                        :appimage-path appimage-path
                                        :existing-files #{"/tmp/.mount_LogseqD4E5F6/resources/app.asar/js/logseq-cli.js"
-                                                         "/home/me/.local/bin/logseqDEV"}
-                                       :existing-contents {"/home/me/.local/bin/logseqDEV" content}})]
+                                                         "/home/me/.local/bin/blocklog"}
+                                       :existing-contents {"/home/me/.local/bin/blocklog" content}})]
             (is (= [] (:writes restart)))
             (is (= [] (:errors restart)))))))))
 
@@ -115,7 +115,7 @@
           result (run-install! {:windows? true
                                 :cli-dir windows-dir
                                 :existing-files #{"/app/logseq-cli.js"}})]
-      (is (= (str windows-dir "/logseqDEV.cmd") (ffirst (:writes result))))
+      (is (= (str windows-dir "/blocklog.cmd") (ffirst (:writes result))))
       (is (= [] (:chmods result)))
       (is (= [] (:errors result)))
       (is (= [] (:messages result)))

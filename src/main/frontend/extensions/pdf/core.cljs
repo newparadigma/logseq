@@ -978,8 +978,7 @@
              opts          {:url           url
                             :password      (or doc-password "")
                             :ownerDocument (.-ownerDocument loader-el)
-                            :cMapUrl       (str (if (some-> js/location.host (string/ends-with? "logseq.com"))
-                                                  "./static/" "./") "js/pdfjs/cmaps/")
+                            :cMapUrl       "./js/pdfjs/cmaps/"
                             ;:cMapUrl       "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.9.179/cmaps/"
                             :cMapPacked true
                             :supportsMouseWheelZoomCtrlKey true

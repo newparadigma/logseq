@@ -4,7 +4,7 @@
             [frontend.util.repo :as repo-util]))
 
 ;; Keep same as electron/electron.core
-(def LSP_SCHEME "logseq")
+(def LSP_SCHEME "blocklog")
 
 ;; Keep same as electron/electron.url
 (def encode js/encodeURI)
@@ -29,7 +29,7 @@
 
 (defn get-logseq-graph-url
   "The URL represents an graph, for example:
-   logseq://graph/abc
+   blocklog://graph/abc
    Ensure repo is valid before hand.
    host: set to `nil` for local graph
    protocol?: if true, returns URL with protocol prefix"
@@ -43,7 +43,7 @@
 
 (defn get-logseq-graph-uuid-url
   "The URL represents an entity in graph with uuid, for example:
-   logseq://graph/abc?block-id=<uuid>
+   blocklog://graph/abc?block-id=<uuid>
    Ensure repo and uuid are valid before hand.
    host: set to `nil` for local graph
    protocol?: if true, returns URL with protocol prefix"
@@ -85,7 +85,7 @@
   "URL to put on the clipboard for a page or block.
 
   Prefer the canonical web URL when `graph-id` is known. Local-only graphs have
-  no shareable web identity, so fall back to a desktop `logseq://` URL. Returns
+  no shareable web identity, so fall back to a desktop `blocklog://` URL. Returns
   nil when neither identity is available."
   [app-base-url graph-id repo entity-id kind]
   (cond
@@ -118,11 +118,11 @@
   [parsed-url]
   (let [hash (.-hash parsed-url)]
     (when (string/starts-with? hash "#/")
-      (js/URL. (subs hash 1) "https://logseq.com"))))
+      (js/URL. (subs hash 1) "http://localhost"))))
 
 (defn parse-web-url-target
   [url]
-  (let [parsed-url (js/URL. url "https://logseq.com")
+  (let [parsed-url (js/URL. url "http://localhost")
         hash-url (hash-route-url parsed-url)
         graph-id (or (some-> hash-url .-searchParams (.get "graph-id"))
                      (.get (.-searchParams parsed-url) "graph-id"))

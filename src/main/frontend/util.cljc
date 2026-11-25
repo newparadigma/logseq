@@ -7,7 +7,6 @@
                      ["@capacitor/clipboard" :as CapacitorClipboard]
                      ["@capacitor/core" :refer [Capacitor]]
                      ["@capacitor/status-bar" :refer [^js StatusBar Style]]
-                     ["semver" :as semver]
                      [cljs-bean.core :as bean]
                      [cljs-time.core :as t]
                      [clojure.pprint]
@@ -80,7 +79,6 @@
      (-namespace [_] nil)))
 
 #?(:cljs (defonce ^js node-path utils/nodePath))
-#?(:cljs (defonce ^js sem-ver semver))
 
 #?(:cljs (defn app-scroll-container-node
            ([]
@@ -191,21 +189,6 @@
   (some->> (string/split class' #"\.")
            (string/join " ")
            (string/trim)))
-
-#?(:cljs
-   (defn fetch
-     ([url on-ok on-failed]
-      (fetch url {} on-ok on-failed))
-     ([url opts on-ok on-failed]
-      (-> (js/fetch url (bean/->js opts))
-          (.then (fn [resp]
-                   (if (>= (.-status resp) 400)
-                     (on-failed resp)
-                     (if (.-ok resp)
-                       (-> (.json resp)
-                           (.then bean/->clj)
-                           (.then #(on-ok %)))
-                       (on-failed resp)))))))))
 
 #?(:cljs (def zero-pad common-util/zero-pad))
 

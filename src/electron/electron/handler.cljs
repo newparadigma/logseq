@@ -433,9 +433,6 @@
 (defmethod handle :installMarketPlugin [_ [_ manifest]]
   (plugin/install-or-update! manifest))
 
-(defmethod handle :updateMarketPlugin [_ [_ pkg]]
-  (plugin/install-or-update! pkg))
-
 (defmethod handle :uninstallMarketPlugin [_ [_ id]]
   (plugin/uninstall! id))
 

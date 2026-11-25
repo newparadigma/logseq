@@ -30,7 +30,7 @@
      (when (and url
                 (or
                  (string/starts-with? url "https://logseq.com/mobile/")
-                 (string/starts-with? url "logseq://mobile/")
+                 (string/starts-with? url "blocklog://mobile/")
                  (not (and (= @*last-shared-url url)
                            (<= (- (.getSeconds (js/Date.)) @*last-shared-seconds) 1)))))
        (reset! *last-shared-url url)
@@ -84,7 +84,7 @@
                 (when-let [url (.-url data)]
                   (log/info ::launch-url data)
                   (reset! mobile-state/*app-launch-url url)
-                  (when (= url "logseq://mobile/go/quick-add")
+                  (when (= url "blocklog://mobile/go/quick-add")
                     (mobile-state/set-tab! "capture")
                     (js/setTimeout #(bottom-tabs/select! "capture") 2000))
                   (handle-incoming-url! url)))))

@@ -73,7 +73,7 @@
                                    headers (-> (bean/->clj requestHeaders)
                                                (dissoc :Cookie :cookie)
                                                (assoc :Referrer-Policy "strict-origin-when-cross-origin"
-                                                      :referer "https://logseq.com"))]
+                                                      :referer "https://github.com/newparadigma/logseq"))]
                                (callback (bean/->js
                                           {:cancel         false
                                            :requestHeaders headers})))))

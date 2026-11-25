@@ -60,7 +60,7 @@
                                   (p/resolved nil))]
             (#'user-handler/set-token! token)
             (is (= 1 (count @writes*)))
-            (is (= "/tmp/home/logseq-dev/auth.json" (:path (first @writes*))))
+            (is (= "/tmp/home/blocklog/auth.json" (:path (first @writes*))))
             (is (= {:id-token token
                     :access-token token
                     :refresh-token token}

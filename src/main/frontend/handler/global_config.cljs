@@ -35,7 +35,7 @@
 (def default-content (rc/inline "templates/global-config.edn"))
 
 (defn- ensure-global-config-file!
-  "Creates ~/.logseqDEV/config/config.edn and its parent directory if they do not exist."
+  "Creates ~/.blocklog/config/config.edn and its parent directory if they do not exist."
   []
   (let [config-dir (global-config-dir)
         config-path (global-config-path)]

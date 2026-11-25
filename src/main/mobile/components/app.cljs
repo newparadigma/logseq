@@ -283,7 +283,7 @@
         home? (and (= tab "home") (nil? view))
         [quick-add-launched? set-quick-add-launched!] (hooks/use-state
                                                        (= @mobile-state/*app-launch-url
-                                                          "logseq://mobile/go/quick-add"))]
+                                                          "blocklog://mobile/go/quick-add"))]
     (hooks/use-effect!
      (fn []
        (when (and (= tab "home") quick-add-launched?)

@@ -75,7 +75,7 @@ CLI global flags take precedence over environment variables, which take preceden
 Legacy notes:
 * Migration note: If you previously used `~/.logseq/cli-graphs` or `~/.logseq/cli.edn`, pass `--root-dir` and/or `--config` to continue using equivalent custom locations.
 * `:e2ee-password` in `cli.edn` is ignored and removed silently during config read/update. Use `sync start --e2ee-password` or `sync download --e2ee-password` instead.
-* `cli.edn` no longer persists cloud auth tokens. CLI login state is stored separately in `~/logseq-dev/auth.json`.
+* `cli.edn` no longer persists cloud auth tokens. CLI login state is stored separately in `~/blocklog/auth.json`.
 
 ### Custom Queries
 
@@ -88,7 +88,7 @@ Custom queries are defined in `:custom-queries` of a config file. This config is
 
 There is no Logseq account sign-in. The CLI signs in to a self-hosted sync server with a token issued for it by `deps/db-sync/scripts/selfhost-token.mjs`.
 
-- `logseq login --token <token>` checks that the token is a JWT with `sub` and a future `exp`, then writes `~/logseq-dev/auth.json` (or the configured `:auth-path`) with mode 0600. It returns `auth-path`, `updated-at`, and available `email`/`sub`; the token is never printed.
+- `logseq login --token <token>` checks that the token is a JWT with `sub` and a future `exp`, then writes `~/blocklog/auth.json` (or the configured `:auth-path`) with mode 0600. It returns `auth-path`, `updated-at`, and available `email`/`sub`; the token is never printed.
 - The token is stored as the `id-token`, `access-token` and `refresh-token`, as the desktop app does. Tokens are not refreshed: when the token expires, authenticated commands fail with `missing-auth`; issue a new token and run `logseq login --token` again.
 - `logseq logout` removes the auth file.
 - Sync commands pass an in-memory runtime `:auth-token` to db-sync, resolved from `auth.json`.
@@ -263,7 +263,7 @@ Sync config persistence:
 
 E2EE password persistence locations:
 - Browser runtime stores the refresh-token-encrypted password payload in its platform secret storage.
-- Node runtime prefers the OS keychain under the `LogseqDEV E2EE` service. If keychain access fails, it falls back to `<root-dir>/kv-store.json`. CLI E2E mode uses the KV store directly.
+- Node runtime prefers the OS keychain under the `Blocklog E2EE` service. If keychain access fails, it falls back to `<root-dir>/kv-store.json`. CLI E2E mode uses the KV store directly.
 
 Inspect and edit commands:
 - `list page [--expand] [--limit <n>] [--offset <n>] [--sort <field>] [--order asc|desc]` - list pages (defaults to `--sort updated-at --order desc`)

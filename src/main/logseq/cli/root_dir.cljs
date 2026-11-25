@@ -7,7 +7,7 @@
 
 (defn default-root-dir
   []
-  (node-path/join (.homedir os) "logseq-dev"))
+  (node-path/join (.homedir os) "blocklog"))
 
 (defn normalize-root-dir
   [path]

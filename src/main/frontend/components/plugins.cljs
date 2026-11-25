@@ -25,7 +25,6 @@
             [logseq.shui.ui :as shui]
             [promesa.core :as p]))
 
-(declare open-waiting-updates-modal!)
 (defonce PER-PAGE-SIZE 15)
 (defonce DISABLED-PLUGINS-CLEANUP-THRESHOLD 100)
 (defonce DISABLED-PLUGINS-CLEANUP-SNOOZE-MS (* 1000 60 60 24 30))
@@ -234,9 +233,7 @@
       (p/catch #(js/console.error %))))
 
 (hsx/defc card-ctls-of-installed
-  [id name url sponsors unpacked? disabled?
-   installing-or-updating? has-other-pending?
-   new-version item]
+  [id name url sponsors unpacked? disabled?]
   [:div.ctl
    [:div.l
     [:div.de
@@ -273,21 +270,6 @@
        {:on-click #(js-invoke js/LSPluginCore "reload" id)}
        (t :plugin/reload)])
 
-    (when (not unpacked?)
-      [:div.updates-actions
-       [:a.btn
-        {:class    (util/classnames [{:disabled installing-or-updating?}])
-         :on-click #(when-not has-other-pending?
-                      (plugin-handler/check-or-update-marketplace-plugin!
-                       (assoc item :only-check (not new-version))
-                       (fn [^js e] (notification/show! (.toString e) :error))))}
-
-        (if installing-or-updating?
-          (t :plugin/updating)
-          (if new-version
-            [:span (t :plugin/update) " 👉 " new-version]
-            (t :plugin/check-update)))]])
-
     (ui/toggle (not disabled?)
                (fn []
                  (set-plugin-disabled! id (not disabled?))
@@ -318,19 +300,16 @@
 
 (hsx/defc plugin-item-card
   [t {:keys [id name title version url description author icon iir repo sponsors webPkg] :as item}
-   disabled? *search-key has-other-pending?
-   installing-or-updating? coming-update]
+   disabled? *search-key installing-or-updating?]
 
   (let [name (or title name (t :ui/untitled))
         web? (not (nil? webPkg))
-        unpacked? (and (not web?) (not iir))
-        new-version (state/coming-update-new-version? coming-update)]
+        unpacked? (and (not web?) (not iir))]
     [:div.cp__plugins-item-card
      {:key   (str "lsp-card-" id)
       :class (util/classnames
               [{:installed       true
-                :updating        installing-or-updating?
-                :has-new-version new-version}])}
+                :updating        installing-or-updating?}])}
 
      [:div.l.link-block.cursor-pointer
       {:on-click (get-open-plugin-readme-handler url item repo)}
@@ -378,8 +357,7 @@
           (svg/github {:width 16 :height 16})])]
 
       (card-ctls-of-installed
-       id name url sponsors unpacked? disabled?
-       installing-or-updating? has-other-pending? new-version item)]]))
+       id name url sponsors unpacked? disabled?)]]))
 
 (hsx/defc panel-tab-search
   [search-key *search-key *search-ref]
@@ -475,8 +453,6 @@
           :on-change   #(set-opts! (assoc opts :test (util/trim-safe (util/evalue %))))
           :value       (or (:test opts) "")}]
         [:datalist#proxy-test-url-datalist
-         [:option "https://api.logseq.com/logseq/version"]
-         [:option "https://logseq-connectivity-testing-prod.s3.us-east-1.amazonaws.com/logseq-connectivity-testing"]
          [:option "https://www.google.com"]
          [:option "https://s3.amazonaws.com"]
          [:option "https://clients3.google.com/generate_204"]]]
@@ -795,11 +771,7 @@
 
                      {:title   (t :plugin/unpacked)
                       :options {:on-click #(reset! *filter-by :unpacked)}
-                      :icon    (ui/icon (aim-icon :unpacked))}
-
-                     {:title   (t :plugin/update-available)
-                      :options {:on-click #(reset! *filter-by :update-available)}
-                      :icon    (ui/icon (aim-icon :update-available))}]]
+                      :icon    (ui/icon (aim-icon :unpacked))}]]
         (ui/button
          (ui/icon "filter")
          :class (str (when-not (contains? #{:default} filter-by) "picked ") "sort-or-filter-by")
@@ -809,10 +781,8 @@
                                       {:as-dropdown? true})
          :variant :ghost))
 
-      ;; more - updater
-      (let [items (concat [{:title [:span.flex.items-center.gap-1 (ui/icon "rotate-clockwise") (t :plugin/check-all-updates)]
-                            :options {:on-click #(plugin-handler/user-check-enabled-for-updates! (not= :plugins category))}}]
-                          (when (contains? #{:plugins :themes} category)
+      ;; more
+      (let [items (concat (when (contains? #{:plugins :themes} category)
                             [{:title [:span.flex.items-center.gap-1 (ui/icon "trash") (t :plugin/bulk-remove-disabled)]
                               :options {:on-click #(open-bulk-remove-disabled-plugins-dialog! category)}}])
 
@@ -833,7 +803,7 @@
                                           #(p/let [root (plugin-handler/get-ls-dotdir-root)]
                                              (js/apis.openPath (str root "/preferences.json")))}}
                                {:title [:span.flex.items-center.whitespace-nowrap.gap-1
-                                        (ui/icon "bug") (t :plugin/open-logseq-dir) [:code "~/.logseqDEV"]]
+                                        (ui/icon "bug") (t :plugin/open-logseq-dir) [:code "~/.blocklog"]]
                                 :options {:on-click
                                           #(p/let [root (plugin-handler/get-ls-dotdir-root)]
                                              (js/apis.openPath root))}}]
@@ -888,7 +858,6 @@
         updating              (rfx/use-sub [:plugin/installing])
         develop-mode?         (rfx/use-sub [:ui/developer-mode?])
         selected-unpacked-pkg (rfx/use-sub [:plugin/selected-unpacked-pkg])
-        coming-updates        (rfx/use-sub [:plugin/updates-coming])
         agent-opts            (rfx/use-sub [:electron/user-cfgs :settings/agent])
         *filter-by            (hooks/use-memo #(atom :default) [])
         *search-key           (hooks/use-memo #(atom "") [])
@@ -914,7 +883,6 @@
                                               :enabled (not disabled)
                                               :disabled disabled
                                               :unpacked (not (:iir it))
-                                              :update-available (state/plugin-update-available? (:id it))
                                               true))) filtered-plugins)
                                 filtered-plugins)
         filtered-plugins      (if-not (string/blank? search-key)
@@ -968,78 +936,14 @@
          (let [pid (keyword (:id item))]
            ^{:key (:id item)}
            [plugin-item-card t item
-            (get-in item [:settings :disabled]) *search-key updating
-            (and updating (= (keyword (:id updating)) pid))
-            (get coming-updates pid)]))]
+            (get-in item [:settings :disabled]) *search-key
+            (and updating (= (keyword (:id updating)) pid))]))]
 
       (if (seq sorted-plugins)
         (lazy-items-loader load-more-pages!)
         [:div.flex.items-center.justify-center.py-28.flex-col.gap-2.opacity-30
          (shui/tabler-icon "list-search" {:size 40})
          [:span.text-sm (t :plugin/empty)]])]]))
-
-(hsx/defc waiting-coming-updates
-  []
-  (hooks/use-effect! #(state/reset-unchecked-update) [])
-  (let [_            (rfx/use-sub [:plugin/updates-coming])
-        downloading? (rfx/use-sub [:plugin/updates-downloading?])
-        unchecked    (rfx/use-sub [:plugin/updates-unchecked])
-        updates      (state/all-available-coming-updates)]
-
-    [:div.cp__plugins-waiting-updates
-     [:h1.mb-4.text-2xl.p-1 (t :plugin/found-n-updates (count updates))]
-
-     (if (seq updates)
-       ;; lists
-       [:ul
-        {:class (when downloading? "downloading")}
-        (for [it updates
-              :let [k     (str "lsp-it-" (:id it))
-                    c?    (not (contains? unchecked (:id it)))
-                    notes (util/trim-safe (:latest-notes it))]]
-          [:li.flex.items-center
-           {:key   k
-            :class (when c? "checked")}
-
-           [:label.flex-1
-            {:for k}
-            (shui/checkbox
-             {:id k
-              :default-checked c?
-              :on-checked-change (fn [checked?]
-                                   (when-not downloading?
-                                     (state/set-unchecked-update (:id it) (not checked?))))})
-            [:strong.px-3 (:title it)
-             [:sup (str (:version it) " 👉 " (:latest-version it))]]]
-
-           [:div.px-4
-            (when-not (string/blank? notes)
-              (ui/tooltip [:span.opacity-30.hover:opacity-80 (ui/icon "info-circle")] [:p notes]))]])]
-
-       ;; all done
-       [:div.py-4 [:strong.text-4xl (str "🎉 " (t :plugin/update-all-success))]])
-
-     ;; actions
-     (when (seq updates)
-       [:div.pt-5.flex.justify-end
-        (ui/button
-         (if downloading?
-           [:span (ui/loading (t :plugin/updates-downloading))]
-           [:span.flex.items-center (ui/icon "download") (t :plugin/update-all-selected)])
-
-         :on-click
-         #(when-not downloading?
-            (plugin-handler/open-updates-downloading)
-            (if-let [n (state/get-next-selected-coming-update)]
-              (plugin-handler/check-or-update-marketplace-plugin!
-               (assoc n :only-check false)
-               (fn [^js e] (notification/show! (.toString e) :error)))
-              (plugin-handler/close-updates-downloading)))
-
-         :disabled
-         (or downloading?
-             (and (seq unchecked)
-                  (= (count unchecked) (count updates)))))])]))
 
 (hsx/defc plugins-from-file
   [plugins]
@@ -1125,9 +1029,8 @@
       [:<>])))
 
 (hsx/defc toolbar-plugins-manager-list
-  [updates-coming items]
-  (let [badge-updates? (seq (state/all-available-coming-updates updates-coming))
-        items (fn []
+  [items]
+  (let [items (fn []
                 (->> (concat
                       (for [[_ {:keys [key pinned?] :as opts} pid] items
                             :let [pkey (str (name pid) ":" key)]]
@@ -1158,14 +1061,7 @@
                        {:title (t :nav/settings)
                         :options {:on-click #(plugin-handler/goto-plugins-settings!)
                                   :class "extra-item"}
-                        :icon (ui/icon "adjustments")}
-
-                       (when badge-updates?
-                         {:title [:div.flex.items-center.space-x-5.leading-none
-                                  [:span (t :plugin/found-updates)] (ui/point "bg-red-700" 5 {:style {:margin-top 2}})]
-                          :options {:on-click #(open-waiting-updates-modal!)
-                                    :class "extra-item"}
-                          :icon (ui/icon "download")})])
+                        :icon (ui/icon "adjustments")}])
                      (remove nil?)))]
 
     [:div.toolbar-plugins-manager.flex.items-center
@@ -1178,9 +1074,7 @@
                            :content-props {:class "toolbar-plugins-manager-content"}}))}
 
      (shui/button-ghost-icon :puzzle
-                             {:class "flex relative toolbar-plugins-manager-trigger"}
-                             (when badge-updates?
-                               (ui/point "bg-red-600.top-1.right-1.absolute" 4 {:style {:margin-right 2 :margin-top 2}})))]))
+                             {:class "flex relative toolbar-plugins-manager-trigger"})]))
 
 (hsx/defc header-ui-items-list-wrap
   [children]
@@ -1192,7 +1086,6 @@
   [type]
   (let [installed-ui-items (rfx/use-sub [:plugin/installed-ui-items])
         pinned-items       (rfx/use-sub [:plugin/preferences :pinnedToolbarItems])
-        updates-coming     (rfx/use-sub [:plugin/updates-coming])
         toolbar?           (= :toolbar type)
         pinned-items       (and (sequential? pinned-items) (into #{} pinned-items))]
     (when installed-ui-items
@@ -1221,7 +1114,7 @@
 
             ;; manage plugin buttons
             (when toolbar?
-              [toolbar-plugins-manager-list updates-coming items])]])))))
+              [toolbar-plugins-manager-list items])]])))))
 
 (hsx/defc hook-ui-fenced-code
   [block content {:keys [render edit] :as _opts}]
@@ -1305,53 +1198,15 @@
      [:div.panels
       (installed-plugins)]]))
 
-(def *updates-sub-content-timer (atom nil))
-(def *updates-sub-content (atom nil))
-
-(defn set-updates-sub-content!
-  [content duration]
-  (reset! *updates-sub-content content)
-
-  (when (> duration 0)
-    (some-> @*updates-sub-content-timer (js/clearTimeout))
-    (->> (js/setTimeout #(reset! *updates-sub-content nil) duration)
-         (reset! *updates-sub-content-timer))))
-
-(hsx/defc updates-notifications-impl
-  [check-pending?]
-  (let [[uid, set-uid] (hooks/use-state nil)
-        [sub-content, _set-sub-content!] (hooks/use-atom *updates-sub-content)
-        notify! (fn [content status]
-                  (let [cb #(plugin-handler/cancel-user-checking!)]
-                    (try
-                      (set-uid (notification/show! content status false uid nil cb))
-                      (catch js/Error _
-                        (set-uid (notification/show! content status false nil nil cb))))))]
-
-    (hooks/use-effect!
-     (fn []
-       (if check-pending?
-         (notify!
-          [:div
-           [:div (t :plugin/checking-for-updates)]
-           (when sub-content [:p.opacity-60 sub-content])]
-          :info)
-         (when uid (notification/clear! uid))))
-     [check-pending? sub-content])
-
-    (hooks/use-effect!
-     (fn []
-       (let [timer (js/setTimeout show-disabled-plugins-cleanup-warning!
-                                  (if (util/electron?) 4000 (* 61 1000)))]
-         #(js/clearTimeout timer)))
-     [])
-
-    [:<>]))
-
-(hsx/defc updates-notifications
+(hsx/defc disabled-plugins-warning
   []
-  (let [updates-pending (rfx/use-sub [:plugin/updates-pending])]
-    (updates-notifications-impl (boolean (seq updates-pending)))))
+  (hooks/use-effect!
+   (fn []
+     (let [timer (js/setTimeout show-disabled-plugins-cleanup-warning!
+                                (if (util/electron?) 4000 (* 61 1000)))]
+       #(js/clearTimeout timer)))
+   [])
+  [:<>])
 
 (hsx/defc focused-settings-content
   [title]
@@ -1440,13 +1295,6 @@
    (plugins-page)
    {:label :plugins-dashboard
     :align :start}))
-
-(defn open-waiting-updates-modal!
-  []
-  (shui/dialog-open!
-   (fn []
-     (waiting-coming-updates))
-   {:center? true}))
 
 (defn open-plugins-from-file-modal!
   [plugins]

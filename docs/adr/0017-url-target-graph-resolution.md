@@ -8,7 +8,7 @@ Logseq URLs can point at a graph, page, block, or file. Today the graph target i
 not carried through one coherent flow.
 
 The custom protocol path is handled in Electron main:
-- `logseq://graph/<graph>` and `logseq://new-window/<graph>` are parsed in
+- `blocklog://graph/<graph>` and `blocklog://new-window/<graph>` are parsed in
   `electron.url/local-url-handler`.
 - Electron resolves `<graph>` through `electron.handler/get-graph-name`.
 - If no window is already associated with that graph, Electron asks the current
@@ -78,16 +78,16 @@ Canonical generated web URLs use graph ids:
 - `https://logseq.com/block/<block-uuid>?graph-id=<graph-uuid>`
 
 Electron protocol URLs accept graph ids through the same graph identifier slot:
-- `logseq://graph/<graph-uuid>`
-- `logseq://graph/<graph-uuid>?page=<page-name-or-uuid>`
-- `logseq://graph/<graph-uuid>?block-id=<block-uuid>`
-- `logseq://new-window/<graph-uuid>?page=<page-name-or-uuid>`
+- `blocklog://graph/<graph-uuid>`
+- `blocklog://graph/<graph-uuid>?page=<page-name-or-uuid>`
+- `blocklog://graph/<graph-uuid>?block-id=<block-uuid>`
+- `blocklog://new-window/<graph-uuid>?page=<page-name-or-uuid>`
 
 Compatibility URLs remain accepted:
-- `logseq://graph/<graph-name>`
-- `logseq://graph/<graph-name>?page=<page-name>`
-- `logseq://graph/<graph-name>?block-id=<uuid>`
-- `logseq://graph/<graph-name>?file=<file>`
+- `blocklog://graph/<graph-name>`
+- `blocklog://graph/<graph-name>?page=<page-name>`
+- `blocklog://graph/<graph-name>?block-id=<uuid>`
+- `blocklog://graph/<graph-name>?file=<file>`
 - `https://logseq.com/#/?graph=<graph-name>`
 - `https://logseq.com/#/page/<page-name>?graph=<graph-name>`
 

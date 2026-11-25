@@ -133,12 +133,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UINavigationControllerDel
         switch shortcutItem.type {
         case "logseq.quickadd":
             donateQuickAddShortcut()
-            openURL("logseq://mobile/go/quick-add")
+            openURL("blocklog://mobile/go/quick-add")
             return true
 
         case "logseq.voice":
             donateAudioShortcut()
-            openURL("logseq://mobile/go/audio")
+            openURL("blocklog://mobile/go/audio")
             return true
 
         default:
@@ -151,12 +151,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UINavigationControllerDel
                      restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
 
         if userActivity.activityType == "com.logseq.quickadd" {
-            openURL("logseq://mobile/go/quick-add")
+            openURL("blocklog://mobile/go/quick-add")
             return true
         }
 
         if userActivity.activityType == "com.logseq.audio" {
-            openURL("logseq://mobile/go/audio")
+            openURL("blocklog://mobile/go/audio")
             return true
         }
 

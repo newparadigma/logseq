@@ -144,7 +144,7 @@
         ui-ready (p/do!
                   (idb/start)
                   (get-system-info)
-                  ;; after system info: token changes are written to <home>/logseq-dev/auth.json
+                  ;; after system info: token changes are written to <home>/blocklog/auth.json
                   (user-handler/restore-tokens-from-localstorage)
                   (plugin-handler/setup!)
                   (render))]

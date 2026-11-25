@@ -226,7 +226,7 @@
                  (#'sync-crypt/<save-e2ee-password "password"))
                (p/then (fn [_]
                          (is (= 1 (count @auth-read-calls)))
-                         (is (= "~/logseq-dev/auth.json" (:path (first @auth-read-calls))))
+                         (is (= "~/blocklog/auth.json" (:path (first @auth-read-calls))))
                          (is (= [["refresh-from-auth-file" "password"]] @encrypt-calls))
                          (is (= 1 (count @secret-calls)))
                          (is (= platform-map (:platform (first @secret-calls))))
@@ -266,7 +266,7 @@
                  (#'sync-crypt/<save-e2ee-password "password"))
                (p/then (fn [_]
                          (is (= 1 (count @auth-read-calls)))
-                         (is (= "~/logseq-dev/auth.json" (:path (first @auth-read-calls))))
+                         (is (= "~/blocklog/auth.json" (:path (first @auth-read-calls))))
                          (is (= [["refresh-from-auth-file" "password"]] @encrypt-calls))
                          (is (= 1 (count @secret-calls)))
                          (is (= platform-map (:platform (first @secret-calls))))

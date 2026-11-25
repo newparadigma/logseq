@@ -57,7 +57,7 @@ charlie/
 /.claude/settings.local.json
 /.preprocessor-cljs
 docker
-# Build tooling for LogseqDEV (Dockerfile, scripts) is versioned.
+# Build tooling for Blocklog (Dockerfile, scripts) is versioned.
 !/docker/
 android/app/src/main/assets/capacitor.plugin.json
 ios/App/App/capacitor.config.json

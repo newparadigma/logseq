@@ -52,8 +52,6 @@
       (js/console.error e) s)))
 
 ;; state handlers
-(defonce central-endpoint "https://raw.githubusercontent.com/logseq/marketplace/master/")
-(defonce plugins-url (str central-endpoint "plugins.json"))
 (declare select-a-plugin-theme get-ls-dotdir-root)
 
 (def ^:private illegal-plugin-package-error-pattern
@@ -187,47 +185,6 @@
 (defn gh-repo-url [repo]
   (str "https://github.com/" repo))
 
-(defn load-marketplace-plugins
-  [refresh?]
-  (if (or refresh? (nil? (:plugin/marketplace-pkgs (state/get-state))))
-    (p/create
-      (fn [resolve reject]
-        (let [on-ok (fn [res]
-                      (if-let [res (and res (bean/->clj res))]
-                        (let [pkgs (:packages res)
-                              pkgs (if (util/electron?) pkgs
-                                     (some->> pkgs (filterv #(or (true? (:web %)) (not (true? (:effect %)))))))]
-                          (state/set-state! :plugin/marketplace-pkgs pkgs)
-                          (resolve pkgs))
-                        (reject nil)))]
-          (if (state/http-proxy-enabled-or-val?)
-            (-> (ipc/ipc :httpFetchJSON plugins-url)
-              (p/then on-ok)
-              (p/catch reject))
-            (util/fetch plugins-url on-ok reject)))))
-    (p/resolved (:plugin/marketplace-pkgs (state/get-state)))))
-
-(defn check-or-update-marketplace-plugin!
-  [{:keys [id] :as pkg} error-handler]
-  (when-not (and (:plugin/installing (state/get-state))
-              (not (plugin-common-handler/installed? id)))
-    (state/set-state! :plugin/installing pkg)
-
-    (-> (load-marketplace-plugins false)
-      (p/then (fn [manifests]
-                (let [mft (some #(when (= (:id %) id) %) manifests)
-                      opts (merge (dissoc pkg :logger) mft)]
-                  ;;TODO: (throw (js/Error. [:not-found-in-marketplace id]))
-                  (if (util/electron?)
-                    (ipc/ipc :updateMarketPlugin opts)
-                    (plugin-common-handler/async-install-or-update-for-web! opts)))
-                true))
-      (p/catch (fn [^js e]
-                 (state/reset-all-updates-state)
-                 (error-handler e)
-                 (state/set-state! :plugin/installing nil)
-                 (js/console.error e))))))
-
 (defn get-plugin-inst
   [pid]
   (try
@@ -249,22 +206,6 @@
         (state/pub-event!
           [:exec-plugin-cmd {:type type :key key :pid pid :cmd (assoc cmd :args args) :action action}])))))
 
-(defn open-updates-downloading
-  []
-  (when (and (not (:plugin/updates-downloading? (state/get-state)))
-          (seq (state/all-available-coming-updates)))
-    (->> (:plugin/updates-coming (state/get-state))
-      (map #(if (state/coming-update-new-version? (second %1))
-              (update % 1 dissoc :error-code) %1))
-      (into {})
-      (state/set-state! :plugin/updates-coming))
-    (state/set-state! :plugin/updates-downloading? true)))
-
-(defn close-updates-downloading
-  []
-  (when (:plugin/updates-downloading? (state/get-state))
-    (state/set-state! :plugin/updates-downloading? false)))
-
 (defn has-setting-schema?
   [id]
   (when-let [^js pl (and id (get-plugin-inst (name id)))]
@@ -280,14 +221,12 @@
   (let [channel (name :lsp-updates)
         listener (fn [ctx ^js evt]
                    (let [e (or evt ctx)]
-                     (when-let [{:keys [status payload only-check]} (bean/->clj e)]
+                     (when-let [{:keys [status payload]} (bean/->clj e)]
                        (case (keyword status)
                          :completed
                          (let [{:keys [id dst name title theme web-pkg]} payload
                                name (or title name "Untitled")]
-                           (if only-check
-                             (state/consume-updates-from-coming-plugin! payload false)
-                             (if (plugin-common-handler/installed? id)
+                           (if (plugin-common-handler/installed? id)
                                ;; update plugin
                                (when-let [^js pl (get-plugin-inst id)]
                                  (p/then
@@ -299,8 +238,7 @@
                                         (set! (.-webPkg (.-options pl)) (bean/->js web-pkg))
                                         (invoke-exported-api :save_installed_web_plugin (.toJSON pl false)))
                                       (notification/show!
-                                        (t :plugin/update-plugin name (.-version (.-options pl))) :success)
-                                      (state/consume-updates-from-coming-plugin! payload true))))
+                                        (t :plugin/update-plugin name (.-version (.-options pl))) :success))))
                                ;; register plugin
                                (-> (js/LSPluginCore.register (bean/->js {:key id :url dst :webPkg web-pkg}))
                                  (p/then (fn []
@@ -313,38 +251,13 @@
                                  (p/catch (fn [^js e]
                                              (notification/show!
                                                (t :plugin/install-error name (.-message e))
-                                               :error)))))))
+                                               :error))))))
 
                          :error
-                         (let [error-code (keyword (string/replace (:error-code payload) #"^[\s\:\[]+" ""))
-                               fake-error? (contains? #{:no-new-version} error-code)
-                               [msg type] (case error-code
-
-                                            :no-new-version
-                                            [(t :plugin/up-to-date ":)") :success]
-
-                                            [error-code :error])
-                               rate-limit-error? (some-> msg str (string/includes? "API rate limit"))
-                               pending? (seq (:plugin/updates-pending (state/get-state)))]
-
-                           (if (and only-check pending?)
-                             (state/consume-updates-from-coming-plugin! payload false)
-
-                             (do
-                               ;; consume failed download updates
-                               (when (and (not only-check) (not pending?))
-                                 (state/consume-updates-from-coming-plugin! payload true))
-
-                               ;; notify human tips
-                               (when-not rate-limit-error?
-                                 (notification/show!
-                                   (str
-                                     (if (= :error type) "[Error]" "")
-                                     "<" (:id payload) "> "
-                                     msg) type))))
-
-                           (when-not fake-error?
-                             (js/console.error "Update Error:" (:error-code payload))))
+                         (let [error-code (string/replace (:error-code payload) #"^[\s\:\[]+" "")]
+                           (when-not (string/includes? error-code "API rate limit")
+                             (notification/show! (str "[Error]<" (:id payload) "> " error-code) :error))
+                           (js/console.error "Install Error:" (:error-code payload)))
 
                          :default)))
 
@@ -1002,26 +915,6 @@
     (p/catch (fn [e]
                (js/console.error "[get-user-default-plugins:error]" e)))))
 
-(defn get-user-checking?
-  []
-  (boolean (seq (:plugin/updates-pending (state/get-state)))))
-
-(defn cancel-user-checking!
-  []
-  (when (get-user-checking?)
-    (state/set-state! :plugin/updates-pending {})))
-
-(defn user-check-enabled-for-updates!
-  [theme?]
-  (when-not (get-user-checking?)
-    ;; TODO: too many requests may be limited by GitHub API
-    (when-let [plugins (seq (take 32 (state/get-enabled?-installed-plugins theme?)))]
-      (->> plugins
-        (map (fn [v] [(keyword (:id v)) v]))
-        (into {})
-        (state/set-state! :plugin/updates-pending))
-      (state/pub-event! [:plugin/consume-updates]))))
-
 (defn call-plugin
   [^js pl type payload]
   (when pl
@@ -1066,13 +959,7 @@
   (if (not (and (string? url) (string/starts-with? url "http")))
     (p/rejected (js/Error. "Invalid web url"))
     (p/let [url (string/replace url #"/+$" "")
-            github? (string/includes? url "github.com")
-            github-repo (when github?
-                          (some-> (re-find #"github.com/([^/]+/[^/]+)" url) (last)))
-            package-url (if github?
-                          (some-> github-repo
-                            (plugin-common-handler/get-web-plugin-checker-url!))
-                          (str url "/package.json"))
+            package-url (str url "/package.json")
             ^js res (js/window.fetch (str package-url "?v=" (js/Date.now)))
             package (if (and (.-ok res)
                           (= (.-status res) 200))
@@ -1081,10 +968,8 @@
                       (throw (js/Error. (.text res))))
             logseq (or (:logseq package)
                      (throw (js/Error. "Illegal logseq package")))]
-      (let [id (if github?
-                 (some-> github-repo (string/replace "/" "_"))
-                 (or (:id logseq) (:name package)))
-            repo (or github-repo id)
+      (let [id (or (:id logseq) (:name package))
+            repo id
             theme? (some? (or (:theme logseq) (:themes logseq)))]
 
         (plugin-common-handler/emit-lsp-updates!
@@ -1094,10 +979,7 @@
                      :repo repo
                      :dst repo
                      :theme theme?
-                     :web-pkg (cond-> package
-
-                                (not github?)
-                                (assoc :installedFromUserWebUrl url))}}))
+                     :web-pkg (assoc package :installedFromUserWebUrl url)}}))
       url)))
 
 ;; components

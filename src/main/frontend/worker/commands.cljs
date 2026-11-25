@@ -140,8 +140,7 @@
 
 (defn- repeat-next-timestamp
   "Dispatch on repeat-type db-ident to compute the next occurrence. Mirrors the
-  three org-mode repeater cookies documented at
-  docs.logseq.com: `.+` (dotted-plus), `+` (plus), `++` (double-plus)."
+  three org-mode repeater cookies: `.+` (dotted-plus), `+` (plus), `++` (double-plus)."
   ([datetime recur-unit period-f frequency repeat-type]
    (repeat-next-timestamp datetime recur-unit period-f frequency repeat-type (t/now)))
   ([datetime recur-unit period-f frequency repeat-type now]

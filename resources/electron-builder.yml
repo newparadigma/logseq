@@ -1,4 +1,4 @@
-appId: com.logseq.logseqdev
+appId: life.zabey.blocklog
 electronUpdaterCompatibility: ">=2.16"
 
 directories:
@@ -37,9 +37,9 @@ toolsets:
   appimage: "1.0.2"
 
 protocols:
-  - name: logseq
+  - name: blocklog
     schemes:
-      - logseq
+      - blocklog
 
 
 extraResources:
@@ -82,4 +82,4 @@ linux:
     - AppImage
     - zip
   mimeTypes:
-    - x-scheme-handler/logseq
+    - x-scheme-handler/blocklog

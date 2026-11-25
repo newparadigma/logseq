@@ -51,27 +51,11 @@
        (ui/toggle state on-toggle true)
        detail-text]]]))
 
-(hsx/defc app-updater
+(hsx/defc app-version
   [version]
   [:span.cp__settings-app-updater
    [:div.ctls.flex.items-center
     [:div.mt-1.sm:mt-0.sm:col-span-2.flex.gap-4.items-center.flex-wrap
-     [:div (cond
-             (mobile-util/native-android?)
-             (ui/button
-              (t :settings.general/check-for-updates)
-              :class "text-sm mr-1"
-              :href "https://github.com/newparadigma/logseq/releases")
-
-             (mobile-util/native-ios?)
-             (ui/button
-              (t :settings.general/check-for-updates)
-              :class "text-sm mr-1"
-              :href "https://apps.apple.com/app/logseq/id1601013908")
-
-             :else
-             nil)]
-
      (let [revision (build-version/revision)]
        [:div.text-sm.cursor
         {:title (t :settings.general/revision revision)
@@ -84,26 +68,7 @@
                                            revision]]
                                          :info
                                          false))}
-        version])
-
-     [:a.text-sm.fade-link.underline.inline
-      {:target "_blank"
-       :href "https://docs.logseq.com/#/page/changelog"}
-      (t :settings.general/changelog)]]]])
-
-(hsx/defc outdenting-hint
-  []
-  [:div.rounded-lg.border.overflow-hidden.bg-card
-   {:style {:box-shadow "0 4px 20px 4px rgba(0, 20, 60, .1), 0 4px 80px -8px rgba(0, 20, 60, .2)"}}
-   [:div {:style {:margin "12px" :max-width "500px"}}
-    [:p.text-sm
-     (t :settings.editor/preferred-outdenting-tip)
-     [:a.text-sm
-      {:target "_blank" :href "https://discuss.logseq.com/t/whats-your-preferred-outdent-behavior-the-direct-one-or-the-logical-one/978"}
-      (t :settings.editor/preferred-outdenting-tip-more)]]
-    [:img {:src    "https://discuss.logseq.com/uploads/default/original/1X/e8ea82f63a5e01f6d21b5da827927f538f3277b9.gif"
-           :width  500
-           :height 500}]]])
+        version])]]])
 
 (hsx/defc auto-expand-hint
   []
@@ -419,9 +384,7 @@
 
 (defn outdenting-row [t logical-outdenting?]
   (toggle "preferred_outdenting"
-          [(t :settings.editor/preferred-outdenting)
-           (ui/tooltip [:span.flex.px-2 (svg/info)]
-                       (outdenting-hint) {:content-props {:side "right"}})]
+          (t :settings.editor/preferred-outdenting)
           logical-outdenting?
           config-handler/toggle-logical-outdenting!))
 
@@ -501,7 +464,7 @@
 
 (defn version-row [t version]
   (row-with-button-action {:left-label (t :settings.general/current-version)
-                           :action     (app-updater version)
+                           :action     (app-version version)
                            :-for       "current-version"}))
 
 (defn developer-mode-row [t developer-mode?]
@@ -1256,13 +1219,7 @@
      [])
     [:div.panel-wrap.is-personal-access-tokens.mb-8.flex.flex-col.gap-6
      [:p.text-sm.opacity-70
-      (t :sync.personal-access-token/description)
-      " "
-      [:a.external-link
-       {:href "https://api.logseq.io/api-docs"
-        :target "_blank"
-        :rel "noreferrer"}
-       (t :sync.personal-access-token/api-docs)]]
+      (t :sync.personal-access-token/description)]
      (personal-access-token-create-form
       graph-items pending? set-pending! on-created!)
      (personal-access-token-created created-token)

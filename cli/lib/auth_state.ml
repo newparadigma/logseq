@@ -24,7 +24,7 @@ let default_auth_path () =
   Filename.concat
     (Filename.concat
        (Sys.getenv_opt "HOME" |> Option.value ~default:".")
-       "logseq-dev")
+       "blocklog")
     "auth.json"
 
 let auth_path config =

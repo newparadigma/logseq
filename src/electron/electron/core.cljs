@@ -31,7 +31,7 @@
             [promesa.core :as p]))
 
 ;; Keep same as main/frontend.util.url
-(defonce LSP_SCHEME "logseq")
+(defonce LSP_SCHEME "blocklog")
 (defonce FILE_LSP_SCHEME "lsp")
 (defonce FILE_ASSETS_SCHEME "assets")
 (defonce LSP_PROTOCOL (str FILE_LSP_SCHEME "://"))
@@ -40,7 +40,7 @@
 (defonce EXTERNAL_PLUGIN_URL (str LSP_PROTOCOL "logseq.io/external/"))
 (defonce HOST_PLUGIN_URL (str STATIC_URL "plugins/"))
 (defonce HOST_EXTERNAL_PLUGIN_URL (str STATIC_URL "external/"))
-(defonce PLUGINS_ROOT (.join node-path (.homedir os) ".logseqDEV/plugins"))
+(defonce PLUGINS_ROOT (.join node-path (.homedir os) ".blocklog/plugins"))
 
 (defonce *setup-fn (volatile! nil))
 (defonce *teardown-fn (volatile! nil))
@@ -249,15 +249,10 @@
                                      ;; switch alwaysOnTop state
                                      (.setAlwaysOnTop browserWindow (.-checked menuItem)))}])})
         ;; Windows has no about role
-        template (conj template
-                       (if mac?
-                         {:role "help"
-                          :submenu [{:label (t :electron/official-docs)
-                                     :click #(.openExternal shell "https://docs.logseq.com/")}]}
-                         {:role "help"
-                          :submenu [{:label (t :electron/official-docs)
-                                     :click #(.openExternal shell "https://docs.logseq.com/")}
-                                    {:role "about"
+        template (cond-> template
+                   (not mac?)
+                   (conj {:role "help"
+                          :submenu [{:role "about"
                                      :label (t :electron/about)
                                      :click about-fn}]}))
         ;; Enable Cmd/Ctrl+= Zoom In

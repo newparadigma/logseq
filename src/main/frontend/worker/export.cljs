@@ -130,7 +130,7 @@
            (keep (fn [{:keys [e a v t]}]
                    (cond
                      (and (= a :block/title) (common-util/url? v))
-                     (d/datom e a "https://logseq.com/debug" t)
+                     (d/datom e a "https://example.com/debug" t)
 
                      (and (contains? #{:block/title :block/name} a)
                           (let [entity (d/entity @conn e)]

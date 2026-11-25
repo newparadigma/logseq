@@ -642,7 +642,7 @@ let () =
 
   test "CLI parity root-dir defaults and normalization stay stable" (fun () ->
       let home = Sys.getenv_opt "HOME" |> Option.value ~default:"." in
-      let default_root = Node.Path.join [| home; "logseq-dev" |] in
+      let default_root = Node.Path.join [| home; "blocklog" |] in
       expect_equal "default root" default_root
         (Root_dir_types.normalize_root_dir None);
       expect_equal "relative root"
@@ -670,7 +670,7 @@ let () =
 
   test "CLI parity auth default path follows HOME logseq auth.json" (fun () ->
       let home = Sys.getenv_opt "HOME" |> Option.value ~default:"." in
-      let expected = Node.Path.join [| home; "logseq-dev"; "auth.json" |] in
+      let expected = Node.Path.join [| home; "blocklog"; "auth.json" |] in
       expect_equal "default auth path" expected
         (Auth_state.default_auth_path ()));
 
@@ -1025,7 +1025,7 @@ let () =
         expect_equal "config path" cfg_path config.config_path;
         expect_equal "root-dir"
           (Node.Path.join
-             [| Sys.getenv_opt "HOME" |> Option.value ~default:"."; "logseq-dev" |])
+             [| Sys.getenv_opt "HOME" |> Option.value ~default:"."; "blocklog" |])
           config.root_dir;
         expect_none "no default ws-url" config.ws_url;
         expect_none "no default http-base" config.http_base;
@@ -1047,7 +1047,7 @@ let () =
         expect_equal "config path" cfg_path config.config_path;
         expect_equal "root-dir"
           (Node.Path.join
-             [| Sys.getenv_opt "HOME" |> Option.value ~default:"."; "logseq-dev" |])
+             [| Sys.getenv_opt "HOME" |> Option.value ~default:"."; "blocklog" |])
           config.root_dir;
         expect_none "no default ws-url" config.ws_url;
         expect_none "no default http-base" config.http_base;

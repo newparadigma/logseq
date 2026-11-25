@@ -1,7 +1,7 @@
 (ns frontend.commands
   "Provides functionality for commands and advanced commands"
   (:require [clojure.string :as string]
-            [frontend.context.i18n :as i18n :refer [interpolate-sentence t t-en]]
+            [frontend.context.i18n :as i18n :refer [t t-en]]
             [frontend.date :as date]
             [frontend.db.async :as db-async]
             [frontend.extensions.video.youtube :as youtube]
@@ -41,12 +41,7 @@
     [:li.mb-1 [:code "{{query (or [[page 1]] [[page 2]])}}"]]
     [:li.mb-1 [:code "{{query (and (between -7d +7d) (task Done))}}"]]
     [:li.mb-1 [:code "{{query (property key value)}}"]]
-    [:li.mb-1 [:code "{{query (tags #tag)}}"]]]
-   [:p
-    (interpolate-sentence
-     (t :query/examples-desc)
-     :links [{:href "https://docs.logseq.com/#/page/queries"
-              :target "_blank"}])]])
+    [:li.mb-1 [:code "{{query (tags #tag)}}"]]]])
 
 (defn link-steps []
   [[:editor/input (str command-trigger "link")]

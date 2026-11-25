@@ -596,7 +596,7 @@
                   notification/show! (fn [content status & _]
                                        (swap! shown conj [content status]))]
       (page-handler/copy-page-url page-uuid)
-      (is (= "logseq://graph/work?block-id=33333333-3333-3333-3333-333333333333"
+      (is (= "blocklog://graph/work?block-id=33333333-3333-3333-3333-333333333333"
              @copied))
       (is (empty? @shown)))))
 

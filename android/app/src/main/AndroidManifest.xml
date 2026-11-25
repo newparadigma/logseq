@@ -52,7 +52,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="logseq" />
+                <data android:scheme="blocklog" />
             </intent-filter>
         </activity>
 

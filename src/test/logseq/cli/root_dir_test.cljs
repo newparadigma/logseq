@@ -44,8 +44,8 @@
               (is (= (node-path/resolve target) (:path data))))))))))
 
 (deftest normalize-root-dir-default
-  (testing "defaults to ~/logseq-dev"
-    (let [expected (node-path/resolve (node-path/join (.homedir os) "logseq-dev"))
+  (testing "defaults to ~/blocklog"
+    (let [expected (node-path/resolve (node-path/join (.homedir os) "blocklog"))
           resolved (root-dir/normalize-root-dir nil)]
       (is (= expected resolved)))))
 

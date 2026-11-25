@@ -268,13 +268,8 @@
       :plugin/simple-commands                {}
       :plugin/selected-theme                 nil
       :plugin/selected-unpacked-pkg          nil
-      :plugin/marketplace-pkgs               nil
       :plugin/installing                     nil
       :plugin/active-readme                  nil
-      :plugin/updates-pending                {}
-      :plugin/updates-coming                 {}
-      :plugin/updates-downloading?           false
-      :plugin/updates-unchecked              #{}
       :plugin/navs-settings?                 true
       :plugin/focused-settings               nil ;; plugin id
 
@@ -1904,55 +1899,6 @@ should be done through this fn in order to get global config and config defaults
 
 (def lsp-enabled?
   (lsp-enabled?-or-theme))
-
-(defn consume-updates-from-coming-plugin!
-  [payload updated?]
-  (when-let [id (keyword (:id payload))]
-    (let [prev-pending? (boolean (seq (:plugin/updates-pending (rfx/snapshot))))]
-      (println "Updates: consumed pending - " id)
-      (swap-state! update :plugin/updates-pending dissoc id)
-      (if updated?
-        (if-let [error (:error-code payload)]
-          (swap-state! update-in [:plugin/updates-coming id] assoc :error-code error)
-          (swap-state! update :plugin/updates-coming dissoc id))
-        (swap-state! update :plugin/updates-coming assoc id payload))
-      (pub-event! [:plugin/consume-updates id prev-pending? updated?]))))
-
-(defn coming-update-new-version?
-  [pkg]
-  (and pkg (:latest-version pkg)))
-
-(defn plugin-update-available?
-  [id]
-  (when-let [pkg (and id (get (:plugin/updates-coming (rfx/snapshot)) (keyword id)))]
-    (coming-update-new-version? pkg)))
-
-(defn all-available-coming-updates
-  ([] (all-available-coming-updates (:plugin/updates-coming (rfx/snapshot))))
-  ([updates] (when-let [updates (vals updates)]
-               (filterv #(coming-update-new-version? %) updates))))
-
-(defn get-next-selected-coming-update
-  []
-  (when-let [updates (all-available-coming-updates)]
-    (let [unchecked (:plugin/updates-unchecked (rfx/snapshot))]
-      (first (filter #(and (not (and (seq unchecked) (contains? unchecked (:id %))))
-                           (not (:error-code %))) updates)))))
-
-(defn set-unchecked-update
-  [id unchecked?]
-  (swap-state! update :plugin/updates-unchecked (if unchecked? conj disj) id))
-
-(defn reset-unchecked-update
-  []
-  (swap-state! assoc :plugin/updates-unchecked #{}))
-
-(defn reset-all-updates-state
-  []
-  (swap-state! assoc
-         :plugin/updates-pending                {}
-         :plugin/updates-coming                 {}
-         :plugin/updates-downloading?           false))
 
 (defn use-right-sidebar-blocks
   []

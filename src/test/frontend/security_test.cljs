@@ -5,13 +5,13 @@
 (deftest sanitize-html-uses-logseq-sanitization-policy
   (testing "sanitize-html delegates to DOMPurify with the repository's supported plugin policy"
     (let [called (atom nil)
-          html "<p onclick=\"alert('x')\">safe</p><iframe src=\"logseq://plugin/frame\" is=\"plugin-frame\"></iframe><script>alert('x')</script>"
+          html "<p onclick=\"alert('x')\">safe</p><iframe src=\"blocklog://plugin/frame\" is=\"plugin-frame\"></iframe><script>alert('x')</script>"
           fake-purify #js {:sanitize (fn [input opts]
                                        (reset! called {:input input
                                                        :opts (js->clj opts)})
-                                       "<p>safe</p><iframe src=\"logseq://plugin/frame\" is=\"plugin-frame\"></iframe>")}]
+                                       "<p>safe</p><iframe src=\"blocklog://plugin/frame\" is=\"plugin-frame\"></iframe>")}]
       (with-redefs [security/get-dompurify (fn [] fake-purify)]
-        (is (= "<p>safe</p><iframe src=\"logseq://plugin/frame\" is=\"plugin-frame\"></iframe>"
+        (is (= "<p>safe</p><iframe src=\"blocklog://plugin/frame\" is=\"plugin-frame\"></iframe>"
                (security/sanitize-html html)))
         (is (= html (:input @called)))
         (is (= ["iframe"] (get-in @called [:opts "ADD_TAGS"])))

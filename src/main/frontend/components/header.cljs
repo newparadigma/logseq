@@ -166,11 +166,8 @@
                       "Plugins: " (string/join ", " (map (fn [[k v]]
                                                            (str (name k) " (" (:version v) ")"))
                                                          installed-plugins)))]
-    (str "https://github.com/newparadigma/logseq/issues/new?"
-         "title=&"
-         "template=bug_report.yaml&"
-         "labels=from:in-app&"
-         "platform="
+    ;; The fork has no issue forms: the platform details prefill the body
+    (str "https://github.com/newparadigma/logseq/issues/new?body="
          (js/encodeURIComponent platform))))
 
 (defn- stop-event!
@@ -569,7 +566,7 @@
        (when config/lsp-enabled?
          [:<>
           (plugins/hook-ui-items :toolbar)
-          (plugins/updates-notifications)])
+          (plugins/disabled-plugins-warning)])
 
        (when (state/feature-http-server-enabled?)
          (server/server-indicator (rfx/use-sub [:electron/server])))

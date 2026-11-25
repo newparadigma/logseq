@@ -44,7 +44,7 @@
                 <string>com.logseq.logseq</string>
                 <key>CFBundleURLSchemes</key>
                 <array>
-                    <string>logseq</string>
+                    <string>blocklog</string>
                 </array>
             </dict>
         </array>

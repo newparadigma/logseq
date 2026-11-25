@@ -167,7 +167,7 @@ let global_options =
         "Graph name";
       option
         (Vec.singleton "--root-dir")
-        (Required_value "path") "Path to CLI root dir (default ~/logseq-dev)";
+        (Required_value "path") "Path to CLI root dir (default ~/blocklog)";
       option
         (Vec.singleton "--timeout-ms")
         (Required_value "ms") "Request timeout in ms (default 10000)";

@@ -289,17 +289,7 @@
          [:span.text-base (t :ui/logout)]])
 
       [:div.flex.flex-row.flex-row.gap-4
-       [:a {:href "https://discord.com/invite/KpN4eHY"
-            :target "_blank"}
-        [:div.flex.items-center
-         (ui/icon "brand-discord")
-         [:span.ml-1 (t :mobile.settings/discord-community)]]]
-       [:a {:href "https://discuss.logseq.com"
-            :target "_blank"}
-        [:div.flex.items-center
-         (ui/icon "message")
-         [:span.ml-1 (t :mobile.settings/forum)]]]
-       [:a {:href "https://github.com/logseq/logseq"
+       [:a {:href "https://github.com/newparadigma/logseq"
             :target "_blank"}
         [:div.flex.items-center
          (ui/icon "brand-github")

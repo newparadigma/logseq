@@ -716,7 +716,7 @@
    [:div.flex.justify-between.items-center.px-1
     [:h5.text-error.pb-1 title]
     [:a.text-xs.opacity-50.hover:opacity-80
-     {:href "https://github.com/newparadigma/logseq/issues/new?labels=from:in-app&template=bug_report.yaml"
+     {:href "https://github.com/newparadigma/logseq/issues/new"
       :target "_blank"} (t :bug-report.issue/report-link)]]
    (when content [:pre.m-0.text-sm (str content)])])
 
@@ -849,14 +849,6 @@
   (if (map? text)
     (button-inner nil text)
     (button-inner text opts)))
-
-(hsx/defc point
-  ([] (point "bg-red-600" 5 nil))
-  ([klass size {:keys [class style] :as opts}]
-   [:span.ui__point.overflow-hidden.rounded-full.inline-block
-    (merge {:class (str (util/hiccup->class klass) " " class)
-            :style (merge {:width size :height size} style)}
-           (dissoc opts :style :class))]))
 
 (hsx/defc with-shortcut
   [shortcut-key position content & [title tooltip-opts]]

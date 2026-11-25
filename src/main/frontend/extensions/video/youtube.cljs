@@ -78,7 +78,7 @@
                    :allow-full-screen "allowfullscreen"
                    :allow             "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                    :referrer-policy   "strict-origin-when-cross-origin"
-                   :referer           "https://logseq.com"
+                   :referer           "https://github.com/newparadigma/logseq"
                    :frame-border      "0"
                    :src               url}]]
       (if iframe-only?

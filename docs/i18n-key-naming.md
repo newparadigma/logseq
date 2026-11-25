@@ -283,7 +283,7 @@ Use this table to resolve common conflicts.
 | `shell` | Built-in shell command runner UI and its workflow | Built-in command descriptions or generic terminal wording outside the shell runner feature |
 | `profiler` | Built-in profiling and diagnostics UI for developers or advanced users | Bug reporting copy, generic settings, or runtime performance logs |
 | `updater` | App-release update lifecycle: checking, availability, download/install progress, restart/install actions, and updater-specific errors/status | Settings-shell copy, plugin-update UI, or other container/entry-point copy |
-| `deeplink` | `logseq://` or deep-link open flows and deep-link resolution errors | Generic navigation labels or route names |
+| `deeplink` | `blocklog://` or deep-link open flows and deep-link resolution errors | Generic navigation labels or route names |
 
 #### Product domain conflict rules
 

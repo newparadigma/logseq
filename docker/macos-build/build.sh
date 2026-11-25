@@ -2,7 +2,7 @@
 # Runs inside the builder container. The project is mounted read-write at
 # /work/src; the cache volume is mounted at /work (opam switch, Maven/pnpm/
 # Electron caches, the Darwin packaging tree). Writes the signed app (no zip) to
-# /work/src/.tmp/macos-build/LogseqDEV.app.
+# /work/src/.tmp/macos-build/Blocklog.app.
 set -euo pipefail
 
 SRC=/work/src
@@ -98,7 +98,7 @@ step "electron-builder"
 rm -rf dist
 CSC_IDENTITY_AUTO_DISCOVERY=false pnpm exec electron-builder --config electron-builder.yml --publish never \
   -c.mac.hardenedRuntime=false -c.npmRebuild=false --mac dir --arm64
-APP=dist/mac-arm64/LogseqDEV.app
+APP=dist/mac-arm64/Blocklog.app
 
 step "ad-hoc sign"
 cd "$CACHE/rcodesign"
@@ -109,7 +109,7 @@ cd "$PKG/static"
 "$CACHE/rcodesign/rcodesign" sign "$APP" 2>&1 | tail -2
 
 step "copy app to project"
-rm -f "$OUT"/LogseqDEV-darwin-arm64-*.zip "$OUT/SHA256SUMS"
-rsync -a --delete "$APP/" "$OUT/LogseqDEV.app/"
+rm -f "$OUT"/Blocklog-darwin-arm64-*.zip "$OUT/SHA256SUMS"
+rsync -a --delete "$APP/" "$OUT/Blocklog.app/"
 step "done"
 echo BUILD-OK

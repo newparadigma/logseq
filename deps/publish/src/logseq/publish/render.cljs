@@ -209,7 +209,6 @@
                            [:meta {:content "summary" :name "twitter:card"}]
                            (when description
                              [:meta {:content description :name "twitter:description"}])
-                           [:meta {:content "@logseq" :name "twitter:site"}]
                            [:meta {:content title :name "twitter:title"}]
                            (when description
                              [:meta {:content description :name "twitter:image:alt"}])

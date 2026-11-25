@@ -75,7 +75,7 @@
   (register
    {:id :document/open-logseq-doc
     :desc \"Document: open Logseq documents\"
-    :action (fn [] (js/window.open \"https://docs.logseq.com/\"))})
+    :action (fn [] (js/window.open \"https://example.com/\"))})
   ```
 
   To add i18n support, prefix `id` with command and put that item in dict.
@@ -115,4 +115,4 @@
   (register
    {:id :document/open-logseq-doc
     :desc "Document: open Logseq documents"
-    :action (fn [] (js/window.open "https://docs.logseq.com/"))}))
+    :action (fn [] (js/window.open "https://example.com/"))}))

@@ -55,7 +55,7 @@
  ;; Specify a custom JS import.
  ;; This option takes precedence over the local `logseq/custom.js` file.
  ;; Example usage:
- ;; :custom-js-url "https://cdn.logseq.com/custom.js"
+ ;; :custom-js-url "https://example.com/custom.js"
 
  ;; Set bullet indentation when exporting
  ;; Available options:
@@ -95,7 +95,7 @@
  ;; 4. Use false to disable a specific shortcut.
  ;; 5. You can define multiple bindings for a single action, e.g., ["ctrl+j" "down"].
  ;; The full list of configurable shortcuts is available at:
- ;; https://github.com/logseq/logseq/blob/master/src/main/frontend/modules/shortcut/config.cljs
+ ;; https://github.com/newparadigma/logseq/blob/private/src/main/frontend/modules/shortcut/config.cljs
  ;; Example:
  ;; :shortcuts
  ;; {:editor/new-block       "enter"

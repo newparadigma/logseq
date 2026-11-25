@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds LogseqDEV for macOS ARM64 in Docker from this project folder and
+# Builds Blocklog for macOS ARM64 in Docker from this project folder and
 # installs it into /Applications.
 #   docker/macos-build/run.sh             build + install
 #   docker/macos-build/run.sh --no-install
@@ -13,9 +13,9 @@ IMAGE=logseq-macos-builder:local
 VOLUME=logseq-macos-build-cache
 NAME=logseq-macos-build
 OUT=$ROOT/.tmp/macos-build
-BUILT_APP=$OUT/LogseqDEV.app
+BUILT_APP=$OUT/Blocklog.app
 IMAGE_TAR=$ROOT/docker/macos-build/image/logseq-macos-builder.tar.gz
-APP=/Applications/LogseqDEV.app
+APP=/Applications/Blocklog.app
 mode=${1:-build-and-install}
 
 mkdir -p "$OUT"
@@ -47,16 +47,16 @@ echo "Build took $(( $(date +%s) - start ))s"
 fi
 
 [ "$mode" = "--no-install" ] && exit 0
-if pgrep -f "$APP/Contents/MacOS/LogseqDEV" >/dev/null; then
-  echo "LogseqDEV is running: quit it, then install with: $0 --install-only"
+if pgrep -f "$APP/Contents/MacOS/Blocklog" >/dev/null; then
+  echo "Blocklog is running: quit it, then install with: $0 --install-only"
   exit 1
 fi
-tmp=/Applications/.LogseqDEV-install
+tmp=/Applications/.Blocklog-install
 rm -rf "$tmp"; mkdir "$tmp"
-ditto "$BUILT_APP" "$tmp/LogseqDEV.app"
-codesign --verify --deep --strict "$tmp/LogseqDEV.app"
-[ -d "$APP" ] && mv "$APP" "$HOME/.Trash/LogseqDEV-$(date +%Y%m%d-%H%M%S).app"
-mv "$tmp/LogseqDEV.app" "$APP"
+ditto "$BUILT_APP" "$tmp/Blocklog.app"
+codesign --verify --deep --strict "$tmp/Blocklog.app"
+[ -d "$APP" ] && mv "$APP" "$HOME/.Trash/Blocklog-$(date +%Y%m%d-%H%M%S).app"
+mv "$tmp/Blocklog.app" "$APP"
 rmdir "$tmp"
 touch "$APP"
 codesign --verify --deep --strict "$APP"

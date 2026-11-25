@@ -35,13 +35,13 @@
                                          "block-uuid"
                                          :block))))
   (testing "local-only graphs copy a desktop protocol URL instead of throwing"
-    (is (= "logseq://graph/work?block-id=page-uuid"
+    (is (= "blocklog://graph/work?block-id=page-uuid"
            (url-util/entity-url-for-copy "https://logseq.com"
                                          nil
                                          "logseq_db_work"
                                          "page-uuid"
                                          :page)))
-    (is (= "logseq://graph/work?block-id=block-uuid"
+    (is (= "blocklog://graph/work?block-id=block-uuid"
            (url-util/entity-url-for-copy "https://logseq.com"
                                          nil
                                          "logseq_db_work"

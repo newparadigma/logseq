@@ -54,12 +54,12 @@
 (deftest t-test
   (testing "t translates the current locale"
     (set-language! :en)
-    (is (= "About Logseq"
-           (i18n/t :help/about)))
+    (is (= "Bug report"
+           (i18n/t :help/bug)))
 
     (set-language! :es)
-    (is (= "Acerca de Logseq"
-           (i18n/t :help/about))))
+    (is (= "Reportar un problema"
+           (i18n/t :help/bug))))
 
   (testing "t keeps locale-specific punctuation around placeholders"
     (set-language! :en)
@@ -88,8 +88,8 @@
 (deftest tt-test
   (testing "tt returns the first translated key"
     (set-language! :en)
-    (is (= "About Logseq"
-           (i18n/tt :missing/key :help/about))))
+    (is (= "Bug report"
+           (i18n/tt :missing/key :help/bug))))
 
   (testing "tt returns nil when every key is missing"
     (is (nil? (i18n/tt :missing/one :missing/two)))))

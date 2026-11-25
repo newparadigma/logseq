@@ -296,11 +296,11 @@
 
 (defn- local-graphs-dir
   "Resolved DB graphs directory from Electron main (`:system/info :graphs-dir`).
-  Falls back to `~/logseq-dev/graphs` when the renderer has not received system info."
+  Falls back to `~/blocklog/graphs` when the renderer has not received system info."
   []
   (or (get-in (state/get-state) [:system/info :graphs-dir])
       (path/path-join (get-in (state/get-state) [:system/info :home-dir])
-                      "logseq-dev"
+                      "blocklog"
                       "graphs")))
 
 (defn get-local-dir

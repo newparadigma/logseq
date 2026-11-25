@@ -255,16 +255,8 @@
 
 (def help-menu-items
   [{:title (t :help.shortcuts/label) :icon "command" :on-click #(state/sidebar-add-block! (state/get-current-repo) "shortcut-settings" :shortcut-settings)}
-   {:title (t :help/docs) :icon "help" :href "https://docs.logseq.com/"}
    :hr
-   {:title (t :help/bug) :icon "bug" :on-click #(rfe/push-state :bug-report)}
-   {:title (t :help/feature) :icon "git-pull-request" :href "https://discuss.logseq.com/c/feedback/feature-requests/"}
-   {:title (t :help/submit-feedback) :icon "messages" :href "https://discuss.logseq.com/c/feedback/13"}
-   :hr
-   {:title (t :help/ask-community) :icon "brand-discord" :href "https://discord.com/invite/KpN4eHY"}
-   {:title (t :help/support-forum) :icon "message" :href "https://discuss.logseq.com/"}
-   :hr
-   {:title (t :help/release-notes) :icon "asterisk" :href "https://docs.logseq.com/#/page/changelog"}])
+   {:title (t :help/bug) :icon "bug" :on-click #(rfe/push-state :bug-report)}])
 
 (hsx/defc help-menu-popup
   []

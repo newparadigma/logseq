@@ -10,7 +10,7 @@
 ;; FIXME: move configs.edn to where it should be
 ;; os.homedir follows $HOME (Electron's app home path does not), like the
 ;; graphs dir and auth.json, so a run with another HOME stays separate
-(defonce dot-root (.join node-path (.homedir os) ".logseqDEV"))
+(defonce dot-root (.join node-path (.homedir os) ".blocklog"))
 (defonce cfg-root (.getPath app "userData"))
 (defonce cfg-path (.join node-path cfg-root "configs.edn"))
 

@@ -55,7 +55,7 @@
       (when (seq stripped)
         (str db-version-prefix stripped)))))
 
-(defonce default-graphs-dir "~/logseq-dev/graphs")
+(defonce default-graphs-dir "~/blocklog/graphs")
 (defonce local-assets-dir "assets")
 (defonce unlinked-graphs-dir "Unlinked graphs")
 

@@ -1,4 +1,4 @@
-# Toolchain for building the LogseqDEV macOS (ARM64) app on Linux.
+# Toolchain for building the Blocklog macOS (ARM64) app on Linux.
 # Rebuilt from the layers of the original logseq-macos-builder:local image.
 FROM debian:13.7-slim
 

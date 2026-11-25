@@ -59,8 +59,7 @@
   (js/console.log
    "
     Welcome to Logseq!
-    If you encounter any problem, feel free to file an issue on GitHub (https://github.com/logseq/logseq)
-    or join our forum (https://discuss.logseq.com).
+    If you encounter any problem, feel free to file an issue on GitHub (https://github.com/newparadigma/logseq).
     .____
     |    |    ____   ____  ______ ____  ______
     |    |   /  _ \\ / ___\\/  ___// __ \\/ ____/

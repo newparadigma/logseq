@@ -34,7 +34,7 @@ type source = Defaults | Env | File of Cli_primitive.path | Argv
 type resolved = { config : t; sources : source Rrbvec.t }
 
 let default_root_dir () =
-  Filename.concat (Sys.getenv_opt "HOME" |> Option.value ~default:".") "logseq-dev"
+  Filename.concat (Sys.getenv_opt "HOME" |> Option.value ~default:".") "blocklog"
 
 let default_config_path root_dir = Filename.concat root_dir "cli.edn"
 

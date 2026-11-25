@@ -627,8 +627,8 @@
   [state]
   (transit/write kv-transit-writer state))
 
-;; LogseqDEV-specific: "Logseq E2EE" belongs to the official Logseq app.
-(def ^:private keychain-service "LogseqDEV E2EE")
+;; Blocklog-specific: "Logseq E2EE" belongs to the official Logseq app.
+(def ^:private keychain-service "Blocklog E2EE")
 
 (defn- <save-secret-text!
   [kv key text]

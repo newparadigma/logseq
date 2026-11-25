@@ -1,8 +1,8 @@
 (ns electron.deeplink
-  "Pure helpers for desktop protocol URLs (`logseq://...`)."
+  "Pure helpers for desktop protocol URLs (`blocklog://...`)."
   (:require [clojure.string :as string]))
 
-(def LSP_SCHEME "logseq")
+(def LSP_SCHEME "blocklog")
 
 (defn find-deeplink-url
   "Extract a deeplink URL from a sequence of command-line argument strings."
@@ -38,7 +38,7 @@
   "Keep startup actions in arrival order, taking the last of consecutive graph navigations."
   [pending-urls argv mac?]
   (let [argv-url (when-not mac? (find-deeplink-url (rest argv)))
-        graph-url? #(and % (re-find #"^logseq://graph(?:[/?#]|$)" %))]
+        graph-url? #(and % (re-find #"^blocklog://graph(?:[/?#]|$)" %))]
     (reduce (fn [urls url]
               (conj (if (and (graph-url? url) (graph-url? (peek urls)))
                       (pop urls)

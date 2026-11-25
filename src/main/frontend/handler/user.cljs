@@ -80,7 +80,7 @@
 (defn- auth-file-path
   []
   (when-let [home-dir (state/get-state [:system/info :home-dir])]
-    (path/path-join home-dir "logseq-dev" "auth.json")))
+    (path/path-join home-dir "blocklog" "auth.json")))
 
 (defn- auth-file-payload
   []

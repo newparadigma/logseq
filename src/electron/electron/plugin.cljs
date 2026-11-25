@@ -7,7 +7,6 @@
             ["path" :as node-path]
             [clojure.string :as string]
             [electron.utils :refer [fetch extract-zip] :as utils]
-            [electron.github-api :as github-api]
             [electron.logger :as logger]
             [electron.configs :as cfgs]
             [electron.window :refer [get-all-windows]]))
@@ -20,26 +19,7 @@
               (.. win -webContents
                   (send (name type) (bean/->js payload))))))
 
-(defonce github-api-0 "https://api.github.com")
-(defonce github-api-1 "https://plugins.logseq.io/github/api")
-(defonce *github-api (atom github-api-0))
-(defonce *last-valid-github-api (atom nil))
-
-(defn valid-github-api!
-  []
-  (when (or (nil? @*last-valid-github-api)
-            (> (- (js/Date.now) @*last-valid-github-api) (* 1000 60)))
-    (let [target github-api-1]
-      (-> (fetch (str target "/rate_limit") {:timeout 2000})
-          (p/then (fn [^js res]
-                    (p/let [body (when (= 200 (.-status res))
-                                   (-> (.json res) (p/catch (constantly nil))))]
-                      (when-not (github-api/proxy-usable? (.-status res) body)
-                        (throw (js/Error. (str "GitHub API proxy unusable: " (.-status res) " " (.-statusText res))))))))
-          (p/then #(do (reset! *github-api target) (debug "INFO: use github api - " target)))
-          (p/catch #(do (reset! *github-api github-api-0) (debug "ERR: valid github api - " %)))
-          (p/finally #(reset! *last-valid-github-api (js/Date.now)))))))
-
+(def ^:private github-api "https://api.github.com")
 
 (defn dotdir-file?
   [file]
@@ -56,9 +36,8 @@
 (defn- fetch-release-asset
   [{:keys [repo theme]} url-suffix {:keys [response-transform]
                                     :or   {response-transform identity}}]
-  (-> (p/let [_            (valid-github-api!)
-              repo         (some-> repo (string/trim) (string/replace #"^/+(.+?)/+$" "$1"))
-              api          #(str @*github-api "/repos/" repo "/" %)
+  (-> (p/let [repo         (some-> repo (string/trim) (string/replace #"^/+(.+?)/+$" "$1"))
+              api          #(str github-api "/repos/" repo "/" %)
               endpoint     (api url-suffix)
               ^js res      (fetch endpoint {:timeout (* 1000 5)})
               illegal-text (when-not (= 200 (.-status res)) (.text res))
@@ -106,7 +85,7 @@
                             ;; cases. Previous logseq versions did not store the
                             ;; plugin's git tag required to correctly install it
                             (let [repo' (some-> repo (string/trim) (string/replace #"^/+(.+?)/+$" "$1"))
-                                  api   #(str @*github-api "/repos/" repo' "/" %)]
+                                  api   #(str github-api "/repos/" repo' "/" %)]
                               (fetch (api "releases/latest")))
                             res))}))
 

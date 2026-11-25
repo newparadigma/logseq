@@ -35,10 +35,10 @@ struct ShortcutsEntryView: View {
     }
 
     var body: some View {
-        Link(destination: URL(string: "logseq://mobile/go/quick-add")!) {
+        Link(destination: URL(string: "blocklog://mobile/go/quick-add")!) {
             VStack(alignment: .leading, spacing: 0) {
                 // Top heading
-                Link(destination: URL(string: "logseq://mobile")!) {
+                Link(destination: URL(string: "blocklog://mobile")!) {
                     HStack(alignment: .top, spacing: 8) {
                         Text(weekday)
                           .font(.subheadline)
@@ -66,7 +66,7 @@ struct ShortcutsEntryView: View {
                 // Bottom buttons row
                 HStack(spacing: 8) {
                     // Left button (audio waves)
-                    Link(destination: URL(string: "logseq://mobile/go/audio")!) {
+                    Link(destination: URL(string: "blocklog://mobile/go/audio")!) {
                         Image(systemName: "waveform")
                             .font(.body)
                             .foregroundColor(.white)
@@ -77,7 +77,7 @@ struct ShortcutsEntryView: View {
                     }
 
                     // Right button (quick add)
-                    Link(destination: URL(string: "logseq://mobile/go/quick-add")!) {
+                    Link(destination: URL(string: "blocklog://mobile/go/quick-add")!) {
                         Image(systemName: "plus")
                           .font(.body)
                           .foregroundColor(.white)
